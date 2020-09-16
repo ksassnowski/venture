@@ -4,27 +4,25 @@ namespace Sassnowski\LaravelWorkflow\Graph;
 
 class DependencyGraph
 {
-    private const DEPENDENCY = 1;
-    private const DEPENDANT = -1;
-    private array $adjacencyMatrix = [];
+    private array $dependencies = [];
+    private array $dependants = [];
 
-    public function addDependency(string $src, string $dest)
+    public function addDependantJob($job, array $dependencies): void
     {
-        $this->adjacencyMatrix[$src][$dest] = self::DEPENDENCY;
-        $this->adjacencyMatrix[$dest][$src] = self::DEPENDANT;
+        $this->dependencies[get_class($job)] = $dependencies;
+
+        foreach ($dependencies as $dependency) {
+            $this->dependants[$dependency][] = $job;
+        }
     }
 
-    public function getDependants(string $vertex): array
+    public function getDependantJobs($job): array
     {
-        return array_keys(array_filter($this->adjacencyMatrix[$vertex], function ($value) {
-            return $value === self::DEPENDANT;
-        }));
+        return $this->dependants[get_class($job)] ?? [];
     }
 
-    public function getDependencies(string $vertex): array
+    public function getDependencies($job): array
     {
-        return array_keys(array_filter($this->adjacencyMatrix[$vertex], function ($value) {
-            return $value === self::DEPENDENCY;
-        }));
+        return $this->dependencies[get_class($job)] ?? [];
     }
 }

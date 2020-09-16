@@ -2,18 +2,32 @@
 
 namespace Sassnowski\LaravelWorkflow;
 
-use Sassnowski\LaravelWorkflow\Graph\DependencyGraph;
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Bus\Dispatcher;
 
 class Workflow
 {
-    private array $initialBatch;
-    private DependencyGraph $graph;
-    private array $finishedJobs = [];
+    private string $id;
+    private array $finishedJobs;
+    private int $jobCount;
+    private int $jobsProcessed;
+    private int $jobsFailed;
+    private WorkflowRepository $repository;
 
-    public function __construct(array $initialBatch, DependencyGraph $graph)
-    {
-        $this->initialBatch = $initialBatch;
-        $this->graph = $graph;
+    public function __construct(
+        string $id,
+        WorkflowRepository $repository,
+        array $finishedJobs = [],
+        int $jobCount = 0,
+        int $jobsProcessed = 0,
+        int $jobsFailed = 0
+    ) {
+        $this->id = $id;
+        $this->jobCount = $jobCount;
+        $this->jobsProcessed = $jobsProcessed;
+        $this->jobsFailed = $jobsFailed;
+        $this->finishedJobs = $finishedJobs;
+        $this->repository = $repository;
     }
 
     public static function withInitialJobs(array $initialJobs)
@@ -21,40 +35,50 @@ class Workflow
         return new PendingWorkflow($initialJobs);
     }
 
-    public function start(): void
+    public function getId()
     {
-        // Create record in database to track state
+        return $this->id;
+    }
 
-        // Dispatch initial batch
-        collect($this->initialBatch)->each(function ($job) {
-            echo 'dispatching job ' . $job . PHP_EOL;
-            $this->onStepFinished($job);
+    public function start(array $initialBatch): void
+    {
+        collect($initialBatch)->each(function ($job) {
+            $this->dispatchJob($job);
         });
     }
 
-    public function onStepFinished(string $job)
+    public function onStepFinished($job)
     {
         $this->markJobAsFinished($job);
 
-        collect($this->graph->getDependants($job))
-            ->filter(function (string $job) {
+        $this->repository->updateValues($this->id, [
+            'state' => $this->finishedJobs,
+            'jobs_processed' => $this->jobsProcessed + 1,
+        ]);
+
+        collect($job->dependantJobs)
+            ->filter(function ($job) {
                 return $this->canJobRun($job);
             })
-            ->each(function (string $job) {
-                echo 'dispatching job ' . $job . PHP_EOL;
-                $this->onStepFinished($job);
+            ->each(function ($job) {
+                $this->dispatchJob($job);
             });
     }
 
-    private function markJobAsFinished(string $job): void
+    private function markJobAsFinished($job): void
     {
-        $this->finishedJobs[] = $job;
+        $this->finishedJobs[] = get_class($job);
     }
 
-    private function canJobRun(string $job): bool
+    private function canJobRun($job): bool
     {
-        return collect($this->graph->getDependencies($job))->every(function (string $dependency) {
+        return collect($job->dependencies)->every(function (string $dependency) {
             return in_array($dependency, $this->finishedJobs);
         });
+    }
+
+    private function dispatchJob($job)
+    {
+        Container::getInstance()->get(Dispatcher::class)->dispatch($job);
     }
 }
