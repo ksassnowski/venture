@@ -2,42 +2,54 @@
 
 namespace Sassnowski\LaravelWorkflow;
 
-use Illuminate\Container\Container;
 use Sassnowski\LaravelWorkflow\Graph\DependencyGraph;
 
 class PendingWorkflow
 {
     private array $initialJobs;
-    private array $jobs;
+    private array $jobs = [];
     private DependencyGraph $graph;
 
     public function __construct(array $initialJobs)
     {
         $this->initialJobs = $initialJobs;
-        $this->jobs = $initialJobs;
+        collect($initialJobs)->each(function ($job) {
+            return $this->addJob($job, []);
+        });
         $this->graph = new DependencyGraph();
     }
 
-    public function addJob($job, array $dependencies): self
+    public function addJob($job, array $dependencies, ?string $name = null): self
     {
-        $this->graph->addDependantJob($job, $dependencies);
+        if (count($dependencies) > 0) {
+            $this->graph->addDependantJob($job, $dependencies);
+        }
 
-        $this->jobs[] = $job;
+        $this->jobs[] = [
+            'job' => $job,
+            'name' => $name ?: get_class($job),
+        ];
 
         return $this;
     }
 
     public function start(): void
     {
-        /** @var Workflow $workflow */
-        $workflow = Container::getInstance()->get(WorkflowRepository::class)->store($this);
+        $workflow = Workflow::create([
+            'job_count' => $this->jobCount(),
+            'jobs_processed' => 0,
+            'jobs_failed' => 0,
+            'finished_jobs' => [],
+        ]);
 
         foreach ($this->jobs as $job) {
-            $job
-                ->withWorkflowId($workflow->getId())
-                ->withDependantJobs($this->graph->getDependantJobs($job))
-                ->withDependencies($this->graph->getDependencies($job));
+            $job['job']
+                ->withWorkflowId($workflow->id)
+                ->withDependantJobs($this->graph->getDependantJobs($job['job']))
+                ->withDependencies($this->graph->getDependencies($job['job']));
         }
+
+        $workflow->addJobs($this->jobs);
 
         $workflow->start($this->initialJobs);
     }

@@ -2,32 +2,31 @@
 
 namespace Sassnowski\LaravelWorkflow;
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Container\Container;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Bus\Dispatcher;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Workflow
+/**
+ * @method Workflow create(array $attributes)
+ * @property string $id
+ * @property array $finished_jobs
+ * @property int $jobs_processed
+ */
+class Workflow extends Model
 {
-    private string $id;
-    private array $finishedJobs;
-    private int $jobCount;
-    private int $jobsProcessed;
-    private int $jobsFailed;
-    private WorkflowRepository $repository;
+    protected $guarded = [];
 
-    public function __construct(
-        string $id,
-        WorkflowRepository $repository,
-        array $finishedJobs = [],
-        int $jobCount = 0,
-        int $jobsProcessed = 0,
-        int $jobsFailed = 0
-    ) {
-        $this->id = $id;
-        $this->jobCount = $jobCount;
-        $this->jobsProcessed = $jobsProcessed;
-        $this->jobsFailed = $jobsFailed;
-        $this->finishedJobs = $finishedJobs;
-        $this->repository = $repository;
+    protected $casts = [
+        'finished_jobs' => 'json',
+    ];
+
+    public function __construct($attributes = [])
+    {
+        $this->table = config('workflows.workflow_table');
+        parent::__construct($attributes);
     }
 
     public static function withInitialJobs(array $initialJobs)
@@ -35,9 +34,9 @@ class Workflow
         return new PendingWorkflow($initialJobs);
     }
 
-    public function getId()
+    public function jobs(): HasMany
     {
-        return $this->id;
+        return $this->hasMany(WorkflowJob::class);
     }
 
     public function start(array $initialBatch): void
@@ -47,14 +46,25 @@ class Workflow
         });
     }
 
-    public function onStepFinished($job)
+    public function addJobs(array $jobs): void
+    {
+        collect($jobs)->map(fn ($job) => [
+            'job' => serialize($job['job']),
+            'name' => $job['name']
+        ])
+            ->pipe(function ($jobs) {
+                $this->jobs()->createMany($jobs);
+            });
+    }
+
+    public function onStepFinished($job): void
     {
         $this->markJobAsFinished($job);
 
-        $this->repository->updateValues($this->id, [
-            'state' => $this->finishedJobs,
-            'jobs_processed' => $this->jobsProcessed + 1,
-        ]);
+        if ($this->isFinished()) {
+            $this->update(['finished_at' => Carbon::now()]);
+            return;
+        }
 
         collect($job->dependantJobs)
             ->filter(function ($job) {
@@ -65,15 +75,24 @@ class Workflow
             });
     }
 
+    public function isFinished(): bool
+    {
+        return $this->job_count === $this->jobs_processed;
+    }
+
     private function markJobAsFinished($job): void
     {
-        $this->finishedJobs[] = get_class($job);
+        DB::transaction(function () use ($job) {
+            $this->finished_jobs = array_merge($this->finished_jobs, [get_class($job)]);
+            $this->jobs_processed++;
+            $this->save();
+        });
     }
 
     private function canJobRun($job): bool
     {
         return collect($job->dependencies)->every(function (string $dependency) {
-            return in_array($dependency, $this->finishedJobs);
+            return in_array($dependency, $this->finished_jobs);
         });
     }
 

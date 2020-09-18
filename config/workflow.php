@@ -2,4 +2,5 @@
 
 return [
     'workflow_table' => 'workflows',
+    'jobs_table' => 'workflow_jobs',
 ];

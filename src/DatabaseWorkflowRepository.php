@@ -34,18 +34,13 @@ class DatabaseWorkflowRepository implements WorkflowRepository
 
     public function store(PendingWorkflow $workflow): Workflow
     {
-        $id = (string) Str::orderedUuid();
-
-        $this->connection->table($this->table)
-            ->insert([
-                'id' => $id,
-                'job_count' => $workflow->jobCount(),
-                'jobs_processed' => 0,
-                'jobs_failed' => 0,
-                'state' => json_encode([]),
-            ]);
-
-        return $this->find($id);
+        return Workflow::create([
+            'id' => (string) Str::orderedUuid(),
+            'job_count' => $workflow->jobCount(),
+            'jobs_processed' => 0,
+            'jobs_failed' => 0,
+            'state' => [],
+        ]);
     }
 
     public function updateValues(string $workflowId, array $values)

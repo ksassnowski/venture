@@ -2,15 +2,14 @@
 
 namespace Sassnowski\LaravelWorkflow;
 
-use Illuminate\Container\Container;
-
 trait WorkflowStep
 {
     public array $dependantJobs = [];
     public array $dependencies = [];
-    public ?string $workflowId = null;
+    public ?int $workflowId = null;
+    public ?int $stepId = null;
 
-    public function withWorkflowId(string $workflowId): self
+    public function withWorkflowId(int $workflowId): self
     {
         $this->workflowId = $workflowId;
 
@@ -23,7 +22,7 @@ trait WorkflowStep
             return null;
         }
 
-        return Container::getInstance()->get(WorkflowRepository::class)->find($this->workflowId);
+        return Workflow::find($this->workflowId);
     }
 
     public function withDependantJobs(array $jobs): self

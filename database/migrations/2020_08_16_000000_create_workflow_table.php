@@ -9,11 +9,23 @@ class CreateWorkflowTable extends Migration
     public function up()
     {
         Schema::create(config('workflow.workflow_table'), function (Blueprint $table) {
-            $table->string('id')->primary();
+            $table->id();
             $table->integer('job_count');
             $table->integer('jobs_processed');
             $table->integer('jobs_failed');
-            $table->json('state');
+            $table->json('finished_jobs');
+            $table->timestamps();
+        });
+
+        Schema::create(config('workflow.jobs_table'), function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->text('job');
+            $table->unsignedBigInteger('workflow_id');
+            $table->timestamp('finished_at')->nullable();
+
+            $table->foreign('workflow_id')->references('id')->on(config('workflow.workflow_table'))
+                ->onUpdate('cascade')->onDelete('cascade');
         });
     }
 }
