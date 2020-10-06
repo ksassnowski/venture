@@ -2,6 +2,7 @@
 
 namespace Sassnowski\LaravelWorkflow;
 
+use Illuminate\Support\Str;
 use Sassnowski\LaravelWorkflow\Graph\DependencyGraph;
 
 class PendingWorkflow
@@ -45,6 +46,7 @@ class PendingWorkflow
         foreach ($this->jobs as $job) {
             $job['job']
                 ->withWorkflowId($workflow->id)
+                ->withStepId(Str::orderedUuid())
                 ->withDependantJobs($this->graph->getDependantJobs($job['job']))
                 ->withDependencies($this->graph->getDependencies($job['job']));
         }

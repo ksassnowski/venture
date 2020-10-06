@@ -2,12 +2,14 @@
 
 namespace Sassnowski\LaravelWorkflow;
 
+use Ramsey\Uuid\UuidInterface;
+
 trait WorkflowStep
 {
     public array $dependantJobs = [];
     public array $dependencies = [];
     public ?int $workflowId = null;
-    public ?int $stepId = null;
+    public ?UuidInterface $stepId = null;
 
     public function withWorkflowId(int $workflowId): self
     {
@@ -37,5 +39,21 @@ trait WorkflowStep
         $this->dependencies = $jobNames;
 
         return $this;
+    }
+
+    public function withStepId(UuidInterface $uuid)
+    {
+        $this->stepId = $uuid;
+
+        return $this;
+    }
+
+    public function step(): ?WorkflowJob
+    {
+        if ($this->stepId === null) {
+            return null;
+        }
+
+        return WorkflowJob::where('uuid', $this->stepId)->first();
     }
 }

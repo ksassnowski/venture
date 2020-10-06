@@ -21,6 +21,8 @@ class Workflow extends Model
 
     protected $casts = [
         'finished_jobs' => 'json',
+        'job_count' => 'int',
+        'jobs_processed' => 'int',
     ];
 
     public function __construct($attributes = [])
@@ -50,11 +52,12 @@ class Workflow extends Model
     {
         collect($jobs)->map(fn ($job) => [
             'job' => serialize($job['job']),
-            'name' => $job['name']
+            'name' => $job['name'],
+            'uuid' => $job['job']->stepId,
         ])
-            ->pipe(function ($jobs) {
-                $this->jobs()->createMany($jobs);
-            });
+        ->pipe(function ($jobs) {
+            $this->jobs()->createMany($jobs);
+        });
     }
 
     public function onStepFinished($job): void
@@ -86,6 +89,8 @@ class Workflow extends Model
             $this->finished_jobs = array_merge($this->finished_jobs, [get_class($job)]);
             $this->jobs_processed++;
             $this->save();
+
+            optional($job->step())->update(['finished_at' => now()]);
         });
     }
 

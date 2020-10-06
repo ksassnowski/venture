@@ -2,6 +2,7 @@
 
 namespace Sassnowski\LaravelWorkflow;
 
+use function class_uses_recursive;
 use Illuminate\Queue\Events\JobProcessed;
 
 class WorkflowEventSubscriber
@@ -16,10 +17,9 @@ class WorkflowEventSubscriber
 
     public function handleJobProcessed(JobProcessed $event)
     {
-        // Can this break?
         $jobInstance = unserialize($event->job->payload()['data']['command']);
 
-        $uses = class_uses($jobInstance);
+        $uses = class_uses_recursive($jobInstance);
 
         if (!in_array(WorkflowStep::class, $uses)) {
             return;

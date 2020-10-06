@@ -23,11 +23,23 @@
             "Sassnowski\\LaravelWorkflow\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "": "tests"
+        }
+    },
     "extra": {
         "laravel": {
             "providers": [
                 "Sassnowski\\LaravelWorkflow\\WorkflowServiceProvider"
             ]
         }
+    },
+    "require-dev": {
+        "pestphp/pest": "^0.3.8",
+        "orchestra/testbench": "^6.0",
+        "phpunit/phpunit": "^9.4",
+        "spatie/phpunit-watcher": "^1.22",
+        "pestphp/pest-plugin-laravel": "^0.3.0"
     }
 }

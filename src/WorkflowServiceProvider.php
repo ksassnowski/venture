@@ -20,12 +20,5 @@ class WorkflowServiceProvider extends ServiceProvider
             __DIR__ . '/../config/workflow.php',
             'workflow'
         );
-
-        $this->app->bind(WorkflowRepository::class, function ($app) {
-            return new DatabaseWorkflowRepository(
-                $app->make('db')->connection(config('database.default')),
-                config('workflow.workflow_table')
-            );
-        });
     }
 }
