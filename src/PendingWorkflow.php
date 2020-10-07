@@ -34,7 +34,7 @@ class PendingWorkflow
         return $this;
     }
 
-    public function start(): void
+    public function start(): Workflow
     {
         $workflow = Workflow::create([
             'job_count' => $this->jobCount(),
@@ -52,8 +52,9 @@ class PendingWorkflow
         }
 
         $workflow->addJobs($this->jobs);
-
         $workflow->start($this->initialJobs);
+
+        return $workflow;
     }
 
     public function jobCount(): int

@@ -5,11 +5,17 @@ use Stubs\TestJob2;
 use Stubs\TestJob3;
 use Illuminate\Support\Facades\Bus;
 use Sassnowski\LaravelWorkflow\Workflow;
+use function PHPUnit\Framework\assertTrue;
 use function Pest\Laravel\assertDatabaseHas;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\LaravelWorkflow\PendingWorkflow;
+use function PHPUnit\Framework\assertInstanceOf;
 
 uses(TestCase::class);
+
+beforeEach(function () {
+    Bus::fake();
+});
 
 it('can be constructed with initial jobs', function () {
     $pendingWorkflow = new PendingWorkflow([new TestJob1(), new TestJob2()]);
@@ -26,8 +32,6 @@ it('counts both initial and subsequent jobs in its total job count', function ()
 });
 
 it('creates a workflow', function () {
-    Bus::fake();
-
     $pendingWorkflow = new PendingWorkflow([new TestJob1()]);
     $pendingWorkflow->addJob(new TestJob2(), [TestJob1::class]);
 
@@ -42,8 +46,6 @@ it('creates a workflow', function () {
 });
 
 it('sets a reference to the workflow on each job', function () {
-    Bus::fake();
-
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
     $pendingWorkflow = new PendingWorkflow([$testJob1]);
@@ -57,8 +59,6 @@ it('sets a reference to the workflow on each job', function () {
 });
 
 it('sets the job dependencies on the job instances', function () {
-    Bus::fake();
-
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
     $pendingWorkflow = new PendingWorkflow([$testJob1]);
@@ -85,8 +85,6 @@ it('sets the dependants of a job', function () {
 });
 
 it('saves the workflow steps to the database', function () {
-    Bus::fake();
-
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
     $pendingWorkflow = new PendingWorkflow([$testJob1]);
@@ -99,8 +97,6 @@ it('saves the workflow steps to the database', function () {
 });
 
 it('uses the class name as the jobs name if no name was provided', function () {
-    Bus::fake();
-
     $testJob1 = new TestJob1();
     $pendingWorkflow = new PendingWorkflow([$testJob1]);
 
@@ -110,8 +106,6 @@ it('uses the class name as the jobs name if no name was provided', function () {
 });
 
 it('uses the nice name if it was provided', function () {
-    Bus::fake();
-
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
     $pendingWorkflow = new PendingWorkflow([$testJob1]);
@@ -123,8 +117,6 @@ it('uses the nice name if it was provided', function () {
 });
 
 it('creates workflow step records that use the jobs uuid', function () {
-    Bus::fake();
-
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
     $pendingWorkflow = new PendingWorkflow([$testJob1]);
@@ -134,4 +126,14 @@ it('creates workflow step records that use the jobs uuid', function () {
 
     assertDatabaseHas('workflow_jobs', ['uuid' => $testJob1->stepId]);
     assertDatabaseHas('workflow_jobs', ['uuid' => $testJob2->stepId]);
+});
+
+it('returns the created workflow', function () {
+    $testJob1 = new TestJob1();
+    $pendingWorkflow = new PendingWorkflow([$testJob1]);
+
+    $workflow = $pendingWorkflow->start();
+
+    assertInstanceOf(Workflow::class, $workflow);
+    assertTrue($workflow->exists);
 });
