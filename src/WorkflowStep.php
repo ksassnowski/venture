@@ -9,7 +9,7 @@ trait WorkflowStep
     public array $dependantJobs = [];
     public array $dependencies = [];
     public ?int $workflowId = null;
-    public ?UuidInterface $stepId = null;
+    public ?string $stepId = null;
 
     public function withWorkflowId(int $workflowId): self
     {
@@ -43,7 +43,7 @@ trait WorkflowStep
 
     public function withStepId(UuidInterface $uuid)
     {
-        $this->stepId = $uuid;
+        $this->stepId = (string) $uuid;
 
         return $this;
     }
