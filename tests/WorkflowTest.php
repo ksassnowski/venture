@@ -3,6 +3,7 @@
 use Carbon\Carbon;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
+use Stubs\TestJob3;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Bus;
 use Sassnowski\LaravelWorkflow\Workflow;
@@ -76,4 +77,66 @@ it('marks the corresponding job step finished whenever a job finishes', function
     $workflow->onStepFinished($job);
 
     assertEquals(now(), $step->refresh()->finished_at);
+});
+
+it('runs a finished job\'s dependency if no other dependencies exist', function () {
+    Bus::fake();
+
+    $job1 = new TestJob1();
+    $job2 = new TestJob2();
+    $job1->withDependantJobs([$job2]);
+    $job2->withDependencies([TestJob1::class]);
+    $workflow = Workflow::create([
+        'job_count' => 2,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+    ]);
+
+    $workflow->onStepFinished($job1);
+
+    Bus::assertDispatched(TestJob2::class);
+});
+
+it('does not run a dependant job if some of its dependencies have not finished yet', function () {
+    Bus::fake();
+
+    $job1 = new TestJob1();
+    $job2 = new TestJob2();
+    $job3 = new TestJob3();
+    $job1->withDependantJobs([$job2]);
+    $job2->withDependencies([TestJob1::class, TestJob3::class]);
+    $job3->withDependantJobs([$job2]);
+    $workflow = Workflow::create([
+        'job_count' => 3,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+    ]);
+
+    $workflow->onStepFinished($job1);
+
+    Bus::assertNotDispatched(TestJob2::class);
+});
+
+it('runs a job if all of its dependencies have finished', function () {
+    Bus::fake();
+
+    $job1 = new TestJob1();
+    $job2 = new TestJob2();
+    $job3 = new TestJob3();
+    $job1->withDependantJobs([$job2]);
+    $job2->withDependencies([TestJob1::class, TestJob3::class]);
+    $job3->withDependantJobs([$job2]);
+    $workflow = Workflow::create([
+        'job_count' => 3,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+    ]);
+
+    $workflow->onStepFinished($job1);
+    $workflow->onStepFinished($job3);
+
+    Bus::assertDispatched(TestJob2::class);
 });
