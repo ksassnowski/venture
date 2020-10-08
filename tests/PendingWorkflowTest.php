@@ -17,25 +17,11 @@ beforeEach(function () {
     Bus::fake();
 });
 
-it('can be constructed with initial jobs', function () {
-    $pendingWorkflow = new PendingWorkflow([new TestJob1(), new TestJob2()]);
-
-    assertEquals(2, $pendingWorkflow->jobCount());
-});
-
-it('counts both initial and subsequent jobs in its total job count', function () {
-    $pendingWorkflow = new PendingWorkflow([new TestJob1(), new TestJob2()]);
-
-    $pendingWorkflow->addJob(new TestJob3(), []);
-
-    assertEquals(3, $pendingWorkflow->jobCount());
-});
-
 it('creates a workflow', function () {
-    $pendingWorkflow = new PendingWorkflow([new TestJob1()]);
-    $pendingWorkflow->addJob(new TestJob2(), [TestJob1::class]);
-
-    $pendingWorkflow->start();
+    (new PendingWorkflow())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2(), [TestJob1::class])
+        ->start();
 
     assertDatabaseHas('workflows', [
         'job_count' => 2,
@@ -48,10 +34,11 @@ it('creates a workflow', function () {
 it('sets a reference to the workflow on each job', function () {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
-    $pendingWorkflow = new PendingWorkflow([$testJob1]);
-    $pendingWorkflow->addJob($testJob2, [TestJob1::class]);
 
-    $pendingWorkflow->start();
+    (new PendingWorkflow())
+        ->addJob($testJob1)
+        ->addJob($testJob2, [TestJob1::class])
+        ->start();
 
     $workflowId = Workflow::first()->id;
     assertEquals($workflowId, $testJob1->workflowId);
@@ -61,10 +48,11 @@ it('sets a reference to the workflow on each job', function () {
 it('sets the job dependencies on the job instances', function () {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
-    $pendingWorkflow = new PendingWorkflow([$testJob1]);
-    $pendingWorkflow->addJob($testJob2, [TestJob1::class]);
 
-    $pendingWorkflow->start();
+    (new PendingWorkflow())
+        ->addJob($testJob1)
+        ->addJob($testJob2, [TestJob1::class])
+        ->start();
 
     assertEquals([TestJob1::class], $testJob2->dependencies);
     assertEquals([], $testJob1->dependencies);
@@ -72,13 +60,13 @@ it('sets the job dependencies on the job instances', function () {
 
 it('sets the dependants of a job', function () {
     Bus::fake();
-
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
-    $pendingWorkflow = new PendingWorkflow([$testJob1]);
-    $pendingWorkflow->addJob($testJob2, [TestJob1::class]);
 
-    $pendingWorkflow->start();
+    (new PendingWorkflow())
+        ->addJob($testJob1)
+        ->addJob($testJob2, [TestJob1::class])
+        ->start();
 
     assertEquals([$testJob2], $testJob1->dependantJobs);
     assertEquals([], $testJob2->dependantJobs);
@@ -87,31 +75,29 @@ it('sets the dependants of a job', function () {
 it('saves the workflow steps to the database', function () {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
-    $pendingWorkflow = new PendingWorkflow([$testJob1]);
-    $pendingWorkflow->addJob($testJob2, [TestJob1::class]);
 
-    $pendingWorkflow->start();
+    (new PendingWorkflow())
+        ->addJob($testJob1)
+        ->addJob($testJob2, [TestJob1::class])
+        ->start();
 
     assertDatabaseHas('workflow_jobs', ['job' => serialize($testJob1)]);
     assertDatabaseHas('workflow_jobs', ['job' => serialize($testJob2)]);
 });
 
 it('uses the class name as the jobs name if no name was provided', function () {
-    $testJob1 = new TestJob1();
-    $pendingWorkflow = new PendingWorkflow([$testJob1]);
-
-    $pendingWorkflow->start();
+    (new PendingWorkflow())
+        ->addJob(new TestJob1())
+        ->start();
 
     assertDatabaseHas('workflow_jobs', ['name' => TestJob1::class]);
 });
 
 it('uses the nice name if it was provided', function () {
-    $testJob1 = new TestJob1();
-    $testJob2 = new TestJob2();
-    $pendingWorkflow = new PendingWorkflow([$testJob1]);
-    $pendingWorkflow->addJob($testJob2, [TestJob1::class], '::job-name::');
-
-    $pendingWorkflow->start();
+    (new PendingWorkflow())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2(), [TestJob1::class], '::job-name::')
+        ->start();
 
     assertDatabaseHas('workflow_jobs', ['name' => '::job-name::']);
 });
@@ -119,21 +105,40 @@ it('uses the nice name if it was provided', function () {
 it('creates workflow step records that use the jobs uuid', function () {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
-    $pendingWorkflow = new PendingWorkflow([$testJob1]);
-    $pendingWorkflow->addJob($testJob2, [TestJob1::class], '::job-name::');
 
-    $pendingWorkflow->start();
+    (new PendingWorkflow())
+        ->addJob($testJob1)
+        ->addJob($testJob2, [TestJob1::class], '::job-name::')
+        ->start();
 
     assertDatabaseHas('workflow_jobs', ['uuid' => $testJob1->stepId]);
     assertDatabaseHas('workflow_jobs', ['uuid' => $testJob2->stepId]);
 });
 
 it('returns the created workflow', function () {
-    $testJob1 = new TestJob1();
-    $pendingWorkflow = new PendingWorkflow([$testJob1]);
-
-    $workflow = $pendingWorkflow->start();
+    $workflow = (new PendingWorkflow())
+        ->addJob(new TestJob1())
+        ->start();
 
     assertInstanceOf(Workflow::class, $workflow);
     assertTrue($workflow->exists);
+});
+
+test('jobs without dependencies should be part of the initial batch', function () {
+    (new PendingWorkflow())
+        ->addJob(new TestJob1(), [])
+        ->addJob(new TestJob2(), [])
+        ->addJob(new TestJob3(), [TestJob1::class])
+        ->start();
+
+    Bus::assertDispatched(TestJob1::class);
+    Bus::assertDispatched(TestJob2::class);
+});
+
+it('creates a workflow with the provided name', function () {
+    $workflow = Workflow::new('::workflow-name::')
+        ->addJob(new TestJob1())
+        ->start();
+
+    assertEquals('::workflow-name::', $workflow->name);
 });

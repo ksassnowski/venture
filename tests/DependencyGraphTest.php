@@ -36,3 +36,13 @@ it('returns the instances of all dependants of a job', function () {
 
     assertEquals([$job1, $job3], $this->graph->getDependantJobs($job2));
 });
+
+it('returns all jobs without dependencies', function () {
+    $job1 = new TestJob1();
+    $job2 = new TestJob2();
+
+    $this->graph->addDependantJob($job1, []);
+    $this->graph->addDependantJob($job2, [TestJob1::class]);
+
+    assertEquals([$job1], $this->graph->getJobsWithoutDependencies());
+});

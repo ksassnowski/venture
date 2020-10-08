@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @method Workflow create(array $attributes)
  * @property string $id
+ * @property string $name
  * @property array $finished_jobs
  * @property int $jobs_processed
  */
@@ -31,9 +32,9 @@ class Workflow extends Model
         parent::__construct($attributes);
     }
 
-    public static function withInitialJobs(array $initialJobs)
+    public static function new(string $workflowName)
     {
-        return new PendingWorkflow($initialJobs);
+        return new PendingWorkflow($workflowName);
     }
 
     public function jobs(): HasMany

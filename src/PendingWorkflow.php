@@ -7,24 +7,19 @@ use Sassnowski\LaravelWorkflow\Graph\DependencyGraph;
 
 class PendingWorkflow
 {
-    private array $initialJobs;
     private array $jobs = [];
     private DependencyGraph $graph;
+    private string $workflowName;
 
-    public function __construct(array $initialJobs)
+    public function __construct(string $workflowName = '')
     {
-        $this->initialJobs = $initialJobs;
-        collect($initialJobs)->each(function ($job) {
-            return $this->addJob($job, []);
-        });
         $this->graph = new DependencyGraph();
+        $this->workflowName = $workflowName;
     }
 
-    public function addJob($job, array $dependencies, ?string $name = null): self
+    public function addJob($job, array $dependencies = [], ?string $name = null): self
     {
-        if (count($dependencies) > 0) {
-            $this->graph->addDependantJob($job, $dependencies);
-        }
+        $this->graph->addDependantJob($job, $dependencies);
 
         $this->jobs[] = [
             'job' => $job,
@@ -37,6 +32,7 @@ class PendingWorkflow
     public function start(): Workflow
     {
         $workflow = Workflow::create([
+            'name' => $this->workflowName,
             'job_count' => $this->jobCount(),
             'jobs_processed' => 0,
             'jobs_failed' => 0,
@@ -52,7 +48,7 @@ class PendingWorkflow
         }
 
         $workflow->addJobs($this->jobs);
-        $workflow->start($this->initialJobs);
+        $workflow->start($this->graph->getJobsWithoutDependencies());
 
         return $workflow;
     }

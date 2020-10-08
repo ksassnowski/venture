@@ -10,6 +10,7 @@ class CreateWorkflowTable extends Migration
     {
         Schema::create(config('workflow.workflow_table'), function (Blueprint $table) {
             $table->id();
+            $table->string('name')->nullable();
             $table->integer('job_count');
             $table->integer('jobs_processed');
             $table->integer('jobs_failed');
