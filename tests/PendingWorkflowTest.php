@@ -4,6 +4,7 @@ use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
 use Illuminate\Support\Facades\Bus;
+use Opis\Closure\SerializableClosure;
 use Sassnowski\LaravelWorkflow\Workflow;
 use function PHPUnit\Framework\assertTrue;
 use function Pest\Laravel\assertDatabaseHas;
@@ -142,3 +143,32 @@ it('creates a workflow with the provided name', function () {
 
     assertEquals('::workflow-name::', $workflow->name);
 });
+
+it('allows configuration of a then callback', function () {
+    $callback = function (Workflow $wf) {
+        echo 'derp';
+    };
+    $workflow = Workflow::new('::name::')
+        ->then($callback)
+        ->start();
+
+    assertEquals($workflow->then_callback, serialize(SerializableClosure::from($callback)));
+});
+
+it('allows configuration of an invokable class as then callback', function () {
+    $callback = new DummyCallback();
+
+    $workflow = Workflow::new('::name::')
+        ->then($callback)
+        ->start();
+
+    assertEquals($workflow->then_callback, serialize($callback));
+});
+
+class DummyCallback
+{
+    public function __invokable()
+    {
+        echo 'herp';
+    }
+}

@@ -2,7 +2,9 @@
 
 namespace Sassnowski\LaravelWorkflow;
 
+use Closure;
 use Illuminate\Support\Str;
+use Opis\Closure\SerializableClosure;
 use Sassnowski\LaravelWorkflow\Graph\DependencyGraph;
 
 class PendingWorkflow
@@ -10,6 +12,7 @@ class PendingWorkflow
     private array $jobs = [];
     private DependencyGraph $graph;
     private string $workflowName;
+    private ?string $thenCallback = null;
 
     public function __construct(string $workflowName = '')
     {
@@ -29,6 +32,17 @@ class PendingWorkflow
         return $this;
     }
 
+    public function then($callback): self
+    {
+        if ($callback instanceof Closure) {
+            $callback = SerializableClosure::from($callback);
+        }
+
+        $this->thenCallback = serialize($callback);
+
+        return $this;
+    }
+
     public function start(): Workflow
     {
         $workflow = Workflow::create([
@@ -37,6 +51,7 @@ class PendingWorkflow
             'jobs_processed' => 0,
             'jobs_failed' => 0,
             'finished_jobs' => [],
+            'then_callback' => $this->thenCallback,
         ]);
 
         foreach ($this->jobs as $job) {

@@ -15,6 +15,7 @@ class CreateWorkflowTable extends Migration
             $table->integer('jobs_processed');
             $table->integer('jobs_failed');
             $table->json('finished_jobs');
+            $table->text('then_callback')->nullable();
             $table->timestamp('finished_at')->nullable();
             $table->timestamps();
         });

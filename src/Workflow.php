@@ -5,6 +5,7 @@ namespace Sassnowski\LaravelWorkflow;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Container\Container;
+use Opis\Closure\SerializableClosure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property array $finished_jobs
  * @property int $jobs_processed
+ * @property int $job_count
  */
 class Workflow extends Model
 {
@@ -67,6 +69,7 @@ class Workflow extends Model
 
         if ($this->isFinished()) {
             $this->update(['finished_at' => Carbon::now()]);
+            $this->runThenCallback();
             return;
         }
 
@@ -82,6 +85,11 @@ class Workflow extends Model
     public function isFinished(): bool
     {
         return $this->job_count === $this->jobs_processed;
+    }
+
+    public function remainingJobs(): int
+    {
+        return $this->job_count - $this->jobs_processed;
     }
 
     private function markJobAsFinished($job): void
@@ -102,8 +110,23 @@ class Workflow extends Model
         });
     }
 
-    private function dispatchJob($job)
+    private function dispatchJob($job): void
     {
         Container::getInstance()->get(Dispatcher::class)->dispatch($job);
+    }
+
+    private function runThenCallback(): void
+    {
+        if (($serializedCallback = $this->then_callback) === null) {
+            return;
+        }
+
+        $callback = unserialize($serializedCallback);
+
+        if ($callback instanceof SerializableClosure) {
+            $callback = $callback->getClosure();
+        }
+
+        call_user_func($callback, $this);
     }
 }

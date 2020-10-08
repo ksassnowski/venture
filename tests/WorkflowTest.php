@@ -6,12 +6,17 @@ use Stubs\TestJob2;
 use Stubs\TestJob3;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Bus;
+use Opis\Closure\SerializableClosure;
 use Sassnowski\LaravelWorkflow\Workflow;
 use function PHPUnit\Framework\assertNull;
 use Sassnowski\LaravelWorkflow\WorkflowJob;
 use function PHPUnit\Framework\assertEquals;
 
 uses(TestCase::class);
+
+beforeEach(function () {
+    $_SERVER['__then.count'] = 0;
+});
 
 test('starting a workflow dispatches the initial batch', function () {
     Bus::fake();
@@ -140,3 +145,79 @@ it('runs a job if all of its dependencies have finished', function () {
 
     Bus::assertDispatched(TestJob2::class);
 });
+
+it('calculates its remaining jobs', function () {
+    $workflow = Workflow::create([
+        'job_count' => 3,
+        'jobs_processed' => 2,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+    ]);
+
+    assertEquals(1, $workflow->remainingJobs());
+});
+
+it('runs the "then" callback after every job has been processed', function () {
+    $workflow = Workflow::create([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+        'then_callback' => serialize(SerializableClosure::from(function () {
+            $_SERVER['__then.count']++;
+        }))
+    ]);
+
+    $workflow->onStepFinished(new TestJob1());
+
+    assertEquals(1, $_SERVER['__then.count']);
+});
+
+it('supports invokable classes as then callbacks', function () {
+    $workflow = Workflow::create([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+        'then_callback' => serialize(new ThenCallback()),
+    ]);
+
+    $workflow->onStepFinished(new TestJob1());
+
+    assertEquals(1, $_SERVER['__then.count']);
+});
+
+it('does not call the then callback if there are still pending jobs', function () {
+    $workflow = Workflow::create([
+        'job_count' => 2,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+        'then_callback' => serialize(new ThenCallback()),
+    ]);
+
+    $workflow->onStepFinished(new TestJob1());
+
+    assertEquals(0, $_SERVER['__then.count']);
+});
+
+it('does not break a leg if no then callback is configured', function () {
+    $workflow = Workflow::create([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+        'then_callback' => null,
+    ]);
+
+    $workflow->onStepFinished(new TestJob1());
+    assertEquals(0, $_SERVER['__then.count']);
+});
+
+class ThenCallback
+{
+    public function __invoke()
+    {
+        $_SERVER['__then.count']++;
+    }
+}
