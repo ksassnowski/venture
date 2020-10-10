@@ -4,12 +4,12 @@ namespace Sassnowski\Venture;
 
 use Illuminate\Support\ServiceProvider;
 
-class WorkflowServiceProvider extends ServiceProvider
+class VentureServiceProvider extends ServiceProvider
 {
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../config/workflow.php' => config_path('workflow.php'),
+            __DIR__ . '/../config/workflow.php' => config_path('venture.php'),
         ]);
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }

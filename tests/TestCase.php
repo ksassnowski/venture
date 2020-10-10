@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Sassnowski\Venture\WorkflowServiceProvider;
+use Sassnowski\Venture\VentureServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
 class TestCase extends OrchestraTestCase
@@ -15,7 +15,7 @@ class TestCase extends OrchestraTestCase
     protected function getServiceProviders($app)
     {
         return [
-            WorkflowServiceProvider::class,
+            VentureServiceProvider::class,
         ];
     }
 

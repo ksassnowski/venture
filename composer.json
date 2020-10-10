@@ -31,7 +31,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Sassnowski\\Venture\\WorkflowServiceProvider"
+                "Sassnowski\\Venture\\VentureServiceProvider"
             ]
         }
     },

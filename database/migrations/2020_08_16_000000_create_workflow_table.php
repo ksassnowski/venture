@@ -8,7 +8,7 @@ class CreateWorkflowTable extends Migration
 {
     public function up()
     {
-        Schema::create(config('workflow.workflow_table'), function (Blueprint $table) {
+        Schema::create(config('venture.workflow_table'), function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
             $table->integer('job_count');
@@ -20,7 +20,7 @@ class CreateWorkflowTable extends Migration
             $table->timestamps();
         });
 
-        Schema::create(config('workflow.jobs_table'), function (Blueprint $table) {
+        Schema::create(config('venture.jobs_table'), function (Blueprint $table) {
             $table->id();
             $table->uuid('uuid');
             $table->string('name');

@@ -11,6 +11,12 @@ class WorkflowJob extends Model
 
     public $timestamps = false;
 
+    public function __construct($attributes = [])
+    {
+        $this->table = config('venture.jobs_table');
+        parent::__construct($attributes);
+    }
+
     public function workflow(): BelongsTo
     {
         return $this->belongsTo(Workflow::class);
