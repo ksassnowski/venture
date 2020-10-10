@@ -28,7 +28,7 @@ class CreateWorkflowTable extends Migration
             $table->unsignedBigInteger('workflow_id');
             $table->timestamp('finished_at')->nullable();
 
-            $table->foreign('workflow_id')->references('id')->on(config('workflow.workflow_table'))
+            $table->foreign('workflow_id')->references('id')->on(config('venture.workflow_table'))
                 ->onUpdate('cascade')->onDelete('cascade');
         });
     }
