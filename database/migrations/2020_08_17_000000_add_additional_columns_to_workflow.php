@@ -12,5 +12,9 @@ class AddAdditionalColumnsToWorkflow extends Migration
             $table->timestamp('cancelled_at')->nullable();
             $table->text('catch_callback')->nullable();
         });
+
+        Schema::table(config('venture.jobs_table'), function (Blueprint $table) {
+            $table->timestamp('failed_at')->nullable();
+        });
     }
 }

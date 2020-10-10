@@ -11,6 +11,7 @@ use Sassnowski\Venture\WorkflowJob;
 use Opis\Closure\SerializableClosure;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
+use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertFalse;
 use function PHPUnit\Framework\assertEquals;
 
@@ -32,6 +33,17 @@ function createWorkflow(array $attributes = []): Workflow
         'jobs_processed' => 0,
         'jobs_failed' => 0,
         'finished_jobs' => [],
+    ], $attributes));
+}
+
+function createWorkflowJob(Workflow $workflow, array $attributes = []): WorkflowJob
+{
+    return WorkflowJob::create(array_merge([
+        'uuid' => Str::orderedUuid(),
+        'name' => '::name::',
+        'job' => '::job::',
+        'workflow_id' => $workflow->id,
+        'failed_at' => null,
     ], $attributes));
 }
 
@@ -82,10 +94,8 @@ it('marks the corresponding job step finished whenever a job finishes', function
     $workflow = createWorkflow([
         'job_count' => 1,
     ]);
-    $step = WorkflowJob::create([
+    $step = createWorkflowJob($workflow, [
         'uuid' => $uuid,
-        'name' => '::name::',
-        'job' => '::job::',
         'workflow_id' => $workflow->id,
     ]);
 
@@ -266,6 +276,79 @@ it('will not run any further jobs if it has been cancelled', function () {
     $workflow->onStepFinished($job1);
 
     Bus::assertNotDispatched(TestJob2::class);
+});
+
+it('increments the failed job count', function () {
+    $workflow = createWorkflow([
+        'job_count' => 1,
+        'jobs_failed' => 0,
+    ]);
+
+    $workflow->onStepFailed(new TestJob1(), new Exception());
+
+    assertEquals(1, $workflow->jobs_failed);
+});
+
+it('marks a step as failed', function () {
+    Carbon::setTestNow(now());
+
+    $workflow = createWorkflow([
+        'job_count' => 1,
+    ]);
+    $job = new TestJob1();
+    $uuid = Str::orderedUuid();
+    $job->withStepId($uuid);
+    $step = createWorkflowJob($workflow, [
+        'uuid' => $uuid,
+        'failed_at' => null,
+    ]);
+
+    $workflow->onStepFailed($job, new Exception());
+
+    assertEquals(now(), $step->fresh()->failed_at);
+});
+
+it('can fetch all of its failed jobs', function () {
+    $workflow = createWorkflow();
+    $failedJob1 = createWorkflowJob($workflow, ['failed_at' => now()]);
+    $failedJob2 = createWorkflowJob($workflow, ['failed_at' => now()]);
+    $pendingJob = createWorkflowJob($workflow, ['failed_at' => null]);
+
+    $actual = $workflow->failedJobs();
+
+    assertCount(2, $actual);
+    assertTrue($actual->contains($failedJob1));
+    assertTrue($actual->contains($failedJob2));
+});
+
+it('can fetch all of its pending jobs', function () {
+    $workflow = createWorkflow();
+    $failedJob = createWorkflowJob($workflow, ['failed_at' => now()]);
+    $finishedJob = createWorkflowJob($workflow, ['finished_at' => now()]);
+    $pendingJob = createWorkflowJob($workflow, [
+        'failed_at' => null,
+        'finished_at' => null,
+    ]);
+
+    $actual = $workflow->pendingJobs();
+
+    assertCount(1, $actual);
+    assertTrue($actual[0]->is($pendingJob));
+});
+
+it('can fetch all of its finished jobs', function () {
+    $workflow = createWorkflow();
+    $failedJob = createWorkflowJob($workflow, ['failed_at' => now()]);
+    $finishedJob = createWorkflowJob($workflow, ['finished_at' => now()]);
+    $pendingJob = createWorkflowJob($workflow, [
+        'failed_at' => null,
+        'finished_at' => null,
+    ]);
+
+    $actual = $workflow->finishedJobs();
+
+    assertCount(1, $actual);
+    assertTrue($actual[0]->is($finishedJob));
 });
 
 class ThenCallback

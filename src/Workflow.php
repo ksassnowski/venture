@@ -9,6 +9,7 @@ use Illuminate\Container\Container;
 use Opis\Closure\SerializableClosure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Bus\Dispatcher;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -89,6 +90,13 @@ class Workflow extends Model
 
     public function onStepFailed($job, Throwable $e)
     {
+        DB::transaction(function () use ($job) {
+            $this->jobs_failed++;
+            $this->save();
+
+            optional($job->step())->update(['failed_at' => now()]);
+        });
+
         $this->runCallback($this->catch_callback, $this, $job, $e);
     }
 
@@ -110,6 +118,28 @@ class Workflow extends Model
     public function remainingJobs(): int
     {
         return $this->job_count - $this->jobs_processed;
+    }
+
+    public function failedJobs(): Collection
+    {
+        return $this->jobs()
+            ->whereNotNull('failed_at')
+            ->get();
+    }
+
+    public function pendingJobs(): Collection
+    {
+        return $this->jobs()
+            ->whereNull('finished_at')
+            ->whereNull('failed_at')
+            ->get();
+    }
+
+    public function finishedJobs(): Collection
+    {
+        return $this->jobs()
+            ->whereNotNull('finished_at')
+            ->get();
     }
 
     private function markJobAsFinished($job): void
