@@ -19,6 +19,16 @@ beforeEach(function () {
     $_SERVER['__catch.count'] = 0;
 });
 
+function createWorkflow(array $attributes = [])
+{
+    return Workflow::create(array_merge([
+        'job_count' => 0,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+    ], $attributes));
+}
+
 test('starting a workflow dispatches the initial batch', function () {
     Bus::fake();
 
@@ -30,11 +40,9 @@ test('starting a workflow dispatches the initial batch', function () {
 
 it('it increments the finished jobs count when a job finished', function () {
     $job1 = new TestJob1();
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 1,
         'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
     ]);
 
     $workflow->onStepFinished($job1);
@@ -47,11 +55,9 @@ it('marks itself as finished if the all jobs have been processed', function () {
 
     $job1 = new TestJob1();
     $job2 = new TestJob2();
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 2,
         'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
     ]);
 
     $workflow->onStepFinished($job1);
@@ -67,11 +73,8 @@ it('marks the corresponding job step finished whenever a job finishes', function
     $uuid = Str::orderedUuid();
     $job->withStepId($uuid);
 
-    $workflow = Workflow::create([
-        'job_count' => 2,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
+    $workflow = createWorkflow([
+        'job_count' => 1,
     ]);
     $step = WorkflowJob::create([
         'uuid' => $uuid,
@@ -92,11 +95,8 @@ it('runs a finished job\'s dependency if no other dependencies exist', function 
     $job2 = new TestJob2();
     $job1->withDependantJobs([$job2]);
     $job2->withDependencies([TestJob1::class]);
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 2,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
     ]);
 
     $workflow->onStepFinished($job1);
@@ -113,11 +113,8 @@ it('does not run a dependant job if some of its dependencies have not finished y
     $job1->withDependantJobs([$job2]);
     $job2->withDependencies([TestJob1::class, TestJob3::class]);
     $job3->withDependantJobs([$job2]);
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 3,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
     ]);
 
     $workflow->onStepFinished($job1);
@@ -134,11 +131,8 @@ it('runs a job if all of its dependencies have finished', function () {
     $job1->withDependantJobs([$job2]);
     $job2->withDependencies([TestJob1::class, TestJob3::class]);
     $job3->withDependantJobs([$job2]);
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 3,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
     ]);
 
     $workflow->onStepFinished($job1);
@@ -148,22 +142,17 @@ it('runs a job if all of its dependencies have finished', function () {
 });
 
 it('calculates its remaining jobs', function () {
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 3,
         'jobs_processed' => 2,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
     ]);
 
     assertEquals(1, $workflow->remainingJobs());
 });
 
 it('runs the "then" callback after every job has been processed', function () {
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 1,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
         'then_callback' => serialize(SerializableClosure::from(function () {
             $_SERVER['__then.count']++;
         }))
@@ -175,11 +164,8 @@ it('runs the "then" callback after every job has been processed', function () {
 });
 
 it('supports invokable classes as then callbacks', function () {
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 1,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
         'then_callback' => serialize(new ThenCallback()),
     ]);
 
@@ -189,11 +175,8 @@ it('supports invokable classes as then callbacks', function () {
 });
 
 it('does not call the then callback if there are still pending jobs', function () {
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 2,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
         'then_callback' => serialize(new ThenCallback()),
     ]);
 
@@ -203,11 +186,8 @@ it('does not call the then callback if there are still pending jobs', function (
 });
 
 it('does not break a leg if no then callback is configured', function () {
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 1,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
         'then_callback' => null,
     ]);
 
@@ -217,12 +197,8 @@ it('does not break a leg if no then callback is configured', function () {
 });
 
 it('can run the "catch" callback if it is configured', function () {
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 1,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
-        'then_callback' => null,
         'catch_callback' => serialize(SerializableClosure::from(function () {
             $_SERVER['__catch.count']++;
         }))
@@ -234,11 +210,8 @@ it('can run the "catch" callback if it is configured', function () {
 });
 
 it('supports invokable classes as catch callbacks', function () {
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 1,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
         'catch_callback' => serialize(new CatchCallback()),
     ]);
 
@@ -248,12 +221,9 @@ it('supports invokable classes as catch callbacks', function () {
 });
 
 it('does not break a leg if no catch callback is configured', function () {
-    $workflow = Workflow::create([
+    $workflow = createWorkflow([
         'job_count' => 1,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
-        'then_callback' => null,
+        'catch_callback' => null,
     ]);
 
     $workflow->onStepFailed(new TestJob1(), new Exception());
