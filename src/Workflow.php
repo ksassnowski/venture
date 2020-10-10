@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property array $finished_jobs
  * @property int $jobs_processed
  * @property int $job_count
+ * @property ?Carbon $cancelled_at
+ * @property ?Carbon $finished_at
  */
 class Workflow extends Model
 {
@@ -35,7 +37,7 @@ class Workflow extends Model
         parent::__construct($attributes);
     }
 
-    public static function new(string $workflowName)
+    public static function new(string $workflowName): PendingWorkflow
     {
         return new PendingWorkflow($workflowName);
     }
@@ -68,6 +70,10 @@ class Workflow extends Model
     {
         $this->markJobAsFinished($job);
 
+        if ($this->isCancelled()) {
+            return;
+        }
+
         if ($this->isFinished()) {
             $this->update(['finished_at' => Carbon::now()]);
             $this->runThenCallback();
@@ -75,9 +81,7 @@ class Workflow extends Model
         }
 
         collect($job->dependantJobs)
-            ->filter(function ($job) {
-                return $this->canJobRun($job);
-            })
+            ->filter(fn ($job) => $this->canJobRun($job))
             ->each(function ($job) {
                 $this->dispatchJob($job);
             });
@@ -91,6 +95,16 @@ class Workflow extends Model
     public function isFinished(): bool
     {
         return $this->job_count === $this->jobs_processed;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->cancelled_at !== null;
+    }
+
+    public function cancel(): void
+    {
+        $this->update(['cancelled_at' => now()]);
     }
 
     public function remainingJobs(): int

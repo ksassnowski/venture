@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Bus;
 use Sassnowski\Venture\WorkflowJob;
 use Opis\Closure\SerializableClosure;
 use function PHPUnit\Framework\assertNull;
+use function PHPUnit\Framework\assertTrue;
+use function PHPUnit\Framework\assertFalse;
 use function PHPUnit\Framework\assertEquals;
 
 uses(TestCase::class);
@@ -19,7 +21,11 @@ beforeEach(function () {
     $_SERVER['__catch.count'] = 0;
 });
 
-function createWorkflow(array $attributes = [])
+afterEach(function () {
+    Carbon::setTestNow();
+});
+
+function createWorkflow(array $attributes = []): Workflow
 {
     return Workflow::create(array_merge([
         'job_count' => 0,
@@ -229,6 +235,37 @@ it('does not break a leg if no catch callback is configured', function () {
     $workflow->onStepFailed(new TestJob1(), new Exception());
 
     assertEquals(0, $_SERVER['__catch.count']);
+});
+
+it('is not cancelled by default', function () {
+    assertFalse(createWorkflow()->isCancelled());
+});
+
+it('can be cancelled', function () {
+    Carbon::setTestNow(now());
+    $workflow = createWorkflow();
+
+    $workflow->cancel();
+
+    assertTrue($workflow->isCancelled());
+    assertEquals(now(), $workflow->cancelled_at);
+});
+
+it('will not run any further jobs if it has been cancelled', function () {
+    Bus::fake();
+
+    $job1 = new TestJob1();
+    $job2 = new TestJob2();
+    $job1->withDependantJobs([$job2]);
+    $job2->withDependencies([TestJob1::class]);
+    $workflow = createWorkflow([
+        'job_count' => 2,
+        'cancelled_at' => now(),
+    ]);
+
+    $workflow->onStepFinished($job1);
+
+    Bus::assertNotDispatched(TestJob2::class);
 });
 
 class ThenCallback
