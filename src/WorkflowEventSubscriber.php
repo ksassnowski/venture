@@ -21,6 +21,11 @@ class WorkflowEventSubscriber
             JobFailed::class,
             [WorkflowEventSubscriber::class, 'handleJobFailed'],
         );
+
+        $events->listen(
+            JobProcessing::class,
+            [WorkflowEventSubscriber::class, 'onJobProcessing']
+        );
     }
 
     public function handleJobProcessed(JobProcessed $event): void
