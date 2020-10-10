@@ -10,7 +10,7 @@ Venture is a package to help you build and manage complex workflows of interdepe
 composer require sassnowski/venture
 ```
 
-Make sure to read the [documentation](https://laravel-venture.netlify.app) for the full installation instructions.
+Make sure to read the [documentation](https://laravel-venture.netlify.app/installation) for the full installation instructions.
 
 ## Documentation
 
