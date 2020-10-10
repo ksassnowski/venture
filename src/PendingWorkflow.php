@@ -13,6 +13,7 @@ class PendingWorkflow
     private DependencyGraph $graph;
     private string $workflowName;
     private ?string $thenCallback = null;
+    private ?string $catchCallback = null;
 
     public function __construct(string $workflowName = '')
     {
@@ -34,11 +35,14 @@ class PendingWorkflow
 
     public function then($callback): self
     {
-        if ($callback instanceof Closure) {
-            $callback = SerializableClosure::from($callback);
-        }
+        $this->thenCallback = $this->serializeCallback($callback);
 
-        $this->thenCallback = serialize($callback);
+        return $this;
+    }
+
+    public function catch($callback): self
+    {
+        $this->catchCallback = $this->serializeCallback($callback);
 
         return $this;
     }
@@ -52,6 +56,7 @@ class PendingWorkflow
             'jobs_failed' => 0,
             'finished_jobs' => [],
             'then_callback' => $this->thenCallback,
+            'catch_callback' => $this->catchCallback,
         ]);
 
         foreach ($this->jobs as $job) {
@@ -71,5 +76,14 @@ class PendingWorkflow
     public function jobCount(): int
     {
         return count($this->jobs);
+    }
+
+    private function serializeCallback($callback): string
+    {
+        if ($callback instanceof Closure) {
+            $callback = SerializableClosure::from($callback);
+        }
+
+        return serialize($callback);
     }
 }

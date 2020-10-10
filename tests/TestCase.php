@@ -35,7 +35,9 @@ class TestCase extends OrchestraTestCase
     protected function setUpDatabase()
     {
         include_once __DIR__ . '/../database/migrations/2020_08_16_000000_create_workflow_table.php';
+        include_once __DIR__ . '/../database/migrations/2020_08_17_000000_add_catch_callback_column.php';
 
         (new CreateWorkflowTable())->up();
+        (new AddCatchCallbackColumn())->up();
     }
 }

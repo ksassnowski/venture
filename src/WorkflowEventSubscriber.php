@@ -3,6 +3,8 @@
 namespace Sassnowski\Venture;
 
 use function class_uses_recursive;
+use Illuminate\Contracts\Queue\Job;
+use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 
 class WorkflowEventSubscriber
@@ -13,18 +15,44 @@ class WorkflowEventSubscriber
             JobProcessed::class,
             [WorkflowEventSubscriber::class, 'handleJobProcessed'],
         );
+
+        $events->listen(
+            JobFailed::class,
+            [WorkflowEventSubscriber::class, 'handleJobFailed'],
+        );
     }
 
-    public function handleJobProcessed(JobProcessed $event)
+    public function handleJobProcessed(JobProcessed $event): void
     {
-        $jobInstance = unserialize($event->job->payload()['data']['command']);
+        $jobInstance = $this->getJobInstance($event->job);
 
-        $uses = class_uses_recursive($jobInstance);
+        if ($this->isWorkflowStep($jobInstance)) {
+            optional($jobInstance->workflow())->onStepFinished($jobInstance);
+        }
+    }
 
-        if (!in_array(WorkflowStep::class, $uses)) {
+    public function handleJobFailed(JobFailed $event): void
+    {
+        if (!$event->job->hasFailed()) {
             return;
         }
 
-        optional($jobInstance->workflow())->onStepFinished($jobInstance);
+        $jobInstance = $this->getJobInstance($event->job);
+
+        if ($this->isWorkflowStep($jobInstance)) {
+            optional($jobInstance->workflow())->onStepFailed($jobInstance, $event->exception);
+        }
+    }
+
+    private function isWorkflowStep($job): bool
+    {
+        $uses = class_uses_recursive($job);
+
+        return in_array(WorkflowStep::class, $uses);
+    }
+
+    private function getJobInstance(Job $job)
+    {
+        return unserialize($job->payload()['data']['command']);
     }
 }

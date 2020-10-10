@@ -165,6 +165,27 @@ it('allows configuration of an invokable class as then callback', function () {
     assertEquals($workflow->then_callback, serialize($callback));
 });
 
+it('allows configuration of a catch callback', function () {
+    $callback = function (Workflow $wf) {
+        echo 'derp';
+    };
+    $workflow = Workflow::new('::name::')
+        ->catch($callback)
+        ->start();
+
+    assertEquals($workflow->catch_callback, serialize(SerializableClosure::from($callback)));
+});
+
+it('allows configuration of an invokable class as catch callback', function () {
+    $callback = new DummyCallback();
+
+    $workflow = Workflow::new('::name::')
+        ->catch($callback)
+        ->start();
+
+    assertEquals($workflow->catch_callback, serialize($callback));
+});
+
 class DummyCallback
 {
     public function __invokable()

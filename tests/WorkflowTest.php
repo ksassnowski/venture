@@ -16,6 +16,7 @@ uses(TestCase::class);
 
 beforeEach(function () {
     $_SERVER['__then.count'] = 0;
+    $_SERVER['__catch.count'] = 0;
 });
 
 test('starting a workflow dispatches the initial batch', function () {
@@ -211,7 +212,53 @@ it('does not break a leg if no then callback is configured', function () {
     ]);
 
     $workflow->onStepFinished(new TestJob1());
+
     assertEquals(0, $_SERVER['__then.count']);
+});
+
+it('can run the "catch" callback if it is configured', function () {
+    $workflow = Workflow::create([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+        'then_callback' => null,
+        'catch_callback' => serialize(SerializableClosure::from(function () {
+            $_SERVER['__catch.count']++;
+        }))
+    ]);
+
+    $workflow->onStepFailed(new TestJob1(), new Exception());
+
+    assertEquals(1, $_SERVER['__catch.count']);
+});
+
+it('supports invokable classes as catch callbacks', function () {
+    $workflow = Workflow::create([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+        'catch_callback' => serialize(new CatchCallback()),
+    ]);
+
+    $workflow->onStepFailed(new TestJob1(), new Exception());
+
+    assertEquals(1, $_SERVER['__catch.count']);
+});
+
+it('does not break a leg if no catch callback is configured', function () {
+    $workflow = Workflow::create([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+        'then_callback' => null,
+    ]);
+
+    $workflow->onStepFailed(new TestJob1(), new Exception());
+
+    assertEquals(0, $_SERVER['__catch.count']);
 });
 
 class ThenCallback
@@ -219,5 +266,13 @@ class ThenCallback
     public function __invoke()
     {
         $_SERVER['__then.count']++;
+    }
+}
+
+class CatchCallback
+{
+    public function __invoke()
+    {
+        $_SERVER['__catch.count']++;
     }
 }

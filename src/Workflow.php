@@ -2,6 +2,7 @@
 
 namespace Sassnowski\Venture;
 
+use Throwable;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Container\Container;
@@ -82,6 +83,11 @@ class Workflow extends Model
             });
     }
 
+    public function onStepFailed($job, Throwable $e)
+    {
+        $this->runCallback($this->catch_callback, $this, $job, $e);
+    }
+
     public function isFinished(): bool
     {
         return $this->job_count === $this->jobs_processed;
@@ -117,7 +123,12 @@ class Workflow extends Model
 
     private function runThenCallback(): void
     {
-        if (($serializedCallback = $this->then_callback) === null) {
+        $this->runCallback($this->then_callback, $this);
+    }
+
+    private function runCallback(?string $serializedCallback, ...$args): void
+    {
+        if ($serializedCallback === null) {
             return;
         }
 
@@ -127,6 +138,6 @@ class Workflow extends Model
             $callback = $callback->getClosure();
         }
 
-        call_user_func($callback, $this);
+        call_user_func($callback, ...$args);
     }
 }
