@@ -6,6 +6,7 @@ use function class_uses_recursive;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
+use Illuminate\Queue\Events\JobProcessing;
 
 class WorkflowEventSubscriber
 {
@@ -41,6 +42,19 @@ class WorkflowEventSubscriber
 
         if ($this->isWorkflowStep($jobInstance)) {
             optional($jobInstance->workflow())->onStepFailed($jobInstance, $event->exception);
+        }
+    }
+
+    public function onJobProcessing(JobProcessing $event): void
+    {
+        $jobInstance = $this->getJobInstance($event->job);
+
+        if (!$this->isWorkflowStep($jobInstance)) {
+            return;
+        }
+
+        if (optional($jobInstance->workflow())->isCancelled()) {
+            $event->job->delete();
         }
     }
 

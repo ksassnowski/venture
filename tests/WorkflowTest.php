@@ -7,7 +7,6 @@ use Stubs\TestJob3;
 use Illuminate\Support\Str;
 use Sassnowski\Venture\Workflow;
 use Illuminate\Support\Facades\Bus;
-use Sassnowski\Venture\WorkflowJob;
 use Opis\Closure\SerializableClosure;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
@@ -25,27 +24,6 @@ beforeEach(function () {
 afterEach(function () {
     Carbon::setTestNow();
 });
-
-function createWorkflow(array $attributes = []): Workflow
-{
-    return Workflow::create(array_merge([
-        'job_count' => 0,
-        'jobs_processed' => 0,
-        'jobs_failed' => 0,
-        'finished_jobs' => [],
-    ], $attributes));
-}
-
-function createWorkflowJob(Workflow $workflow, array $attributes = []): WorkflowJob
-{
-    return WorkflowJob::create(array_merge([
-        'uuid' => Str::orderedUuid(),
-        'name' => '::name::',
-        'job' => '::job::',
-        'workflow_id' => $workflow->id,
-        'failed_at' => null,
-    ], $attributes));
-}
 
 test('starting a workflow dispatches the initial batch', function () {
     Bus::fake();

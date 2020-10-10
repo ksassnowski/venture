@@ -9,6 +9,7 @@ use Opis\Closure\SerializableClosure;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use function PHPUnit\Framework\assertTrue;
+use Illuminate\Queue\Events\JobProcessing;
 use function PHPUnit\Framework\assertFalse;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\WorkflowEventSubscriber;
@@ -28,6 +29,7 @@ function prepareFakeJob($workflowJob, bool $failed = false)
             ]
         ]);
         $job->allows('hasFailed')->andReturn($failed);
+        $job->allows('delete');
 
         return $job;
     });
@@ -118,4 +120,39 @@ it('passes the exception along to the workflow', function () {
     $eventSubscriber = new WorkflowEventSubscriber();
 
     $eventSubscriber->handleJobFailed($event);
+});
+
+it('will delete the job if the workflow it belongs to has been cancelled', function () {
+    $workflow = createWorkflow(['cancelled_at' => now()]);
+    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $laravelJob = prepareFakeJob($workflowJob);
+    $event = new JobProcessing('::connection::', $laravelJob);
+    $eventSubscriber = new WorkflowEventSubscriber();
+
+    $eventSubscriber->onJobProcessing($event);
+
+    $laravelJob->shouldHaveReceived('delete');
+});
+
+it('only cares about workflow jobs when checking for cancelled workflows', function () {
+    $workflowJob = new NonWorkflowJob();
+    $laravelJob = prepareFakeJob($workflowJob);
+    $event = new JobProcessing('::connection::', $laravelJob);
+    $eventSubscriber = new WorkflowEventSubscriber();
+
+    $eventSubscriber->onJobProcessing($event);
+
+    $laravelJob->shouldNotHaveReceived('delete');
+});
+
+it('does not delete a job if its workflow has not been cancelled', function () {
+    $workflow = createWorkflow(['cancelled_at' => null]);
+    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $laravelJob = prepareFakeJob($workflowJob);
+    $event = new JobProcessing('::connection::', $laravelJob);
+    $eventSubscriber = new WorkflowEventSubscriber();
+
+    $eventSubscriber->onJobProcessing($event);
+
+    $laravelJob->shouldNotHaveReceived('delete');
 });
