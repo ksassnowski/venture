@@ -261,6 +261,19 @@ it('can be cancelled', function () {
     assertEquals(now(), $workflow->cancelled_at);
 });
 
+it('cancelling an already cancelled job does not update timestamp', function () {
+    Carbon::setTestNow(now());
+    $workflow = createWorkflow();
+
+    $workflow->cancel();
+    $cancelledAt = $workflow->cancelled_at;
+
+    Carbon::setTestNow(now()->addHour());
+    $workflow->cancel();
+
+    assertEquals($cancelledAt, $workflow->fresh()->cancelled_at);
+});
+
 it('will not run any further jobs if it has been cancelled', function () {
     Bus::fake();
 

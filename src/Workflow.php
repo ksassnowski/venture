@@ -112,6 +112,10 @@ class Workflow extends Model
 
     public function cancel(): void
     {
+        if ($this->isCancelled()) {
+            return;
+        }
+
         $this->update(['cancelled_at' => now()]);
     }
 
