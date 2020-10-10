@@ -28,8 +28,8 @@ class TestCase extends OrchestraTestCase
             'prefix' => '',
         ]);
 
-        config()->set('workflow.workflow_table', 'workflows');
-        config()->set('workflow.jobs_table', 'workflow_jobs');
+        config()->set('venture.workflow_table', 'workflows');
+        config()->set('venture.jobs_table', 'workflow_jobs');
     }
 
     protected function setUpDatabase()

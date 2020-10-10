@@ -9,7 +9,7 @@ class VentureServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__ . '/../config/workflow.php' => config_path('venture.php'),
+            __DIR__ . '/../config/venture.php' => config_path('venture.php'),
         ]);
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
@@ -17,8 +17,8 @@ class VentureServiceProvider extends ServiceProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/workflow.php',
-            'workflow'
+            __DIR__ . '/../config/venture.php',
+            'venture'
         );
     }
 }
