@@ -3,5 +3,5 @@
 Not ready yet. Use at your own risk.
 
 ```
-composer require sassnowski/laravel-workflow
+composer require sassnowski/venture
 ```
