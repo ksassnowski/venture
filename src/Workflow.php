@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @method Workflow create(array $attributes)
- * @property string $id
+ * @property int $id
  * @property string $name
  * @property array $finished_jobs
  * @property int $jobs_processed
