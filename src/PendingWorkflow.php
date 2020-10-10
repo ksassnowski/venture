@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Sassnowski\LaravelWorkflow;
+namespace Sassnowski\Venture;
 
 use Closure;
 use Illuminate\Support\Str;
 use Opis\Closure\SerializableClosure;
-use Sassnowski\LaravelWorkflow\Graph\DependencyGraph;
+use Sassnowski\Venture\Graph\DependencyGraph;
 
 class PendingWorkflow
 {

@@ -1,6 +1,6 @@
 {
-    "name": "sassnowski/laravel-workflow",
-    "description": "",
+    "name": "sassnowski/venture",
+    "description": "A package to manage complex workflows built on top of Laravel's queue.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -20,7 +20,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Sassnowski\\LaravelWorkflow\\": "src/"
+            "Sassnowski\\Venture\\": "src/"
         }
     },
     "autoload-dev": {
@@ -31,7 +31,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Sassnowski\\LaravelWorkflow\\WorkflowServiceProvider"
+                "Sassnowski\\Venture\\WorkflowServiceProvider"
             ]
         }
     },

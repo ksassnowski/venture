@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sassnowski\LaravelWorkflow;
+namespace Sassnowski\Venture;
 
 use function class_uses_recursive;
 use Illuminate\Queue\Events\JobProcessed;

@@ -1,7 +1,7 @@
 <?php declare(strict_types=1);
 
+use Sassnowski\Venture\WorkflowServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
-use Sassnowski\LaravelWorkflow\WorkflowServiceProvider;
 
 class TestCase extends OrchestraTestCase
 {

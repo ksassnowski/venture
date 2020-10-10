@@ -2,7 +2,7 @@
 
 namespace Stubs;
 
-use Sassnowski\LaravelWorkflow\WorkflowStep;
+use Sassnowski\Venture\WorkflowStep;
 
 class TestJob1
 {

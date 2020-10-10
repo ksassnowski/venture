@@ -5,11 +5,11 @@ use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
 use Illuminate\Support\Str;
+use Sassnowski\Venture\Workflow;
 use Illuminate\Support\Facades\Bus;
+use Sassnowski\Venture\WorkflowJob;
 use Opis\Closure\SerializableClosure;
-use Sassnowski\LaravelWorkflow\Workflow;
 use function PHPUnit\Framework\assertNull;
-use Sassnowski\LaravelWorkflow\WorkflowJob;
 use function PHPUnit\Framework\assertEquals;
 
 uses(TestCase::class);

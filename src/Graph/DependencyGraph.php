@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sassnowski\LaravelWorkflow\Graph;
+namespace Sassnowski\Venture\Graph;
 
 use Illuminate\Support\Collection;
 

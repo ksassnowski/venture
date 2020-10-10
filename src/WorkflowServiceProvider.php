@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sassnowski\LaravelWorkflow;
+namespace Sassnowski\Venture;
 
 use Illuminate\Support\ServiceProvider;
 

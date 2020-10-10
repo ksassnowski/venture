@@ -4,7 +4,7 @@ use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
 use function PHPUnit\Framework\assertEquals;
-use Sassnowski\LaravelWorkflow\Graph\DependencyGraph;
+use Sassnowski\Venture\Graph\DependencyGraph;
 
 beforeEach(function () {
     $this->graph = new DependencyGraph();

@@ -3,13 +3,13 @@
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
+use Sassnowski\Venture\Workflow;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
-use Sassnowski\LaravelWorkflow\Workflow;
+use Sassnowski\Venture\PendingWorkflow;
 use function PHPUnit\Framework\assertTrue;
 use function Pest\Laravel\assertDatabaseHas;
 use function PHPUnit\Framework\assertEquals;
-use Sassnowski\LaravelWorkflow\PendingWorkflow;
 use function PHPUnit\Framework\assertInstanceOf;
 
 uses(TestCase::class);
