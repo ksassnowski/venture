@@ -12,7 +12,7 @@ class TestCase extends OrchestraTestCase
         $this->setUpDatabase();
     }
 
-    protected function getServiceProviders($app)
+    protected function getPackageProviders($app)
     {
         return [
             VentureServiceProvider::class,

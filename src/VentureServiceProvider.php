@@ -20,5 +20,6 @@ class VentureServiceProvider extends ServiceProvider
             __DIR__ . '/../config/venture.php',
             'venture'
         );
+        $this->app['events']->subscribe(WorkflowEventSubscriber::class);
     }
 }

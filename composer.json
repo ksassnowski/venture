@@ -17,7 +17,8 @@
         "illuminate/bus": "^7.0|^8.0",
         "illuminate/queue": "^7.0|^8.0",
         "ramsey/uuid": "^4.0",
-        "opis/closure": "^3.5"
+        "opis/closure": "^3.5",
+        "illuminate/events": "^7.0|^8.0"
     },
     "autoload": {
         "psr-4": {
