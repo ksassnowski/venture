@@ -1,6 +1,4 @@
-# Venture
-
-<p style="text-align: center">
+<p align="center">
     <img src="logo.svg" />
 </p>
 
