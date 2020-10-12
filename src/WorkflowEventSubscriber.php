@@ -14,17 +14,17 @@ class WorkflowEventSubscriber
     {
         $events->listen(
             JobProcessed::class,
-            [WorkflowEventSubscriber::class, 'handleJobProcessed'],
+            'Sassnowski\Venture\WorkflowEventSubscriber@handleJobProcessed',
         );
 
         $events->listen(
             JobFailed::class,
-            [WorkflowEventSubscriber::class, 'handleJobFailed'],
+            'Sassnowski\Venture\WorkflowEventSubscriber@handleJobFailed',
         );
 
         $events->listen(
             JobProcessing::class,
-            [WorkflowEventSubscriber::class, 'onJobProcessing']
+            'Sassnowski\Venture\WorkflowEventSubscriber@onJobProcessing',
         );
     }
 
