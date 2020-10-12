@@ -1,5 +1,9 @@
 # Venture
 
+<p style="text-align: center">
+    ![](logo.svg)
+</p>
+
 Venture is a package to help you build and manage complex workflows of interdependent jobs using Laravel's queueing system.
 
 ## Installation
@@ -15,6 +19,13 @@ Make sure to read the [documentation](https://laravel-venture.netlify.app/instal
 ## Documentation
 
 You can find the full documentation [here](https://laravel-venture.netlify.app).
+
+## Credits
+
+- [Kai Sassnowski](https://github.com/ksassnowski)
+- [All contributors](https://github.com/ksassnowski/venture/contributors)
+
+Special thanks to [@Caneco](https://twitter.com/@caneco) for the logo.
 
 ## License
 
