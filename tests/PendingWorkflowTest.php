@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Carbon\Carbon;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
@@ -185,6 +186,22 @@ it('allows configuration of an invokable class as catch callback', function () {
 
     assertEquals($workflow->catch_callback, serialize($callback));
 });
+
+it('can add a job with a delay', function ($delay) {
+    Carbon::setTestNow(now());
+
+    Workflow::new('::name::')
+        ->addJob(new TestJob1(), [], '::name::', $delay)
+        ->start();
+
+    Bus::assertDispatched(TestJob1::class, function (TestJob1 $job) use ($delay) {
+        return $job->delay === $delay;
+    });
+})->with([
+    'carbon date' => [now()->addHour()],
+    'integer' => [2000],
+    'date interval' => [new DateInterval('P14D')],
+]);
 
 class DummyCallback
 {

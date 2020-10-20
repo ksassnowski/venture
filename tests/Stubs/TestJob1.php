@@ -2,9 +2,10 @@
 
 namespace Stubs;
 
+use Illuminate\Bus\Queueable;
 use Sassnowski\Venture\WorkflowStep;
 
 class TestJob1
 {
-    use WorkflowStep;
+    use Queueable, WorkflowStep;
 }

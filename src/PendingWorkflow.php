@@ -3,6 +3,8 @@
 namespace Sassnowski\Venture;
 
 use Closure;
+use DateInterval;
+use DateTimeInterface;
 use Illuminate\Support\Str;
 use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Graph\DependencyGraph;
@@ -21,9 +23,18 @@ class PendingWorkflow
         $this->workflowName = $workflowName;
     }
 
-    public function addJob($job, array $dependencies = [], ?string $name = null): self
+    /**
+     * @param  object                                  $job
+     * @param  array                                   $dependencies
+     * @param  string|null                             $name
+     * @param  DateTimeInterface|DateInterval|int|null $delay
+     * @return $this
+     */
+    public function addJob($job, array $dependencies = [], ?string $name = null, $delay = null): self
     {
         $this->graph->addDependantJob($job, $dependencies);
+
+        $job->delay($delay);
 
         $this->jobs[] = [
             'job' => $job,
