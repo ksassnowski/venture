@@ -9,7 +9,7 @@ abstract class WorkflowDefinition
 {
     public static function start()
     {
-        (new static(func_get_args()))->run();
+        (new static(...func_get_args()))->run();
     }
 
     private function run(): Workflow
