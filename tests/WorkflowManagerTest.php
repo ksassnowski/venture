@@ -21,7 +21,7 @@ it('starts a workflow by dispatching all jobs without dependencies', function ()
     $definition = new class extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
-            return Workflow::run('::name::')
+            return Workflow::define('::name::')
                 ->addJob(new TestJob1())
                 ->addJob(new TestJob2())
                 ->addJob(new TestJob3(), [TestJob1::class]);
@@ -40,7 +40,7 @@ it('returns the created workflow', function () {
     $definition = new class extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
-            return Workflow::run('::name::')
+            return Workflow::define('::name::')
                 ->addJob(new TestJob1());
         }
     };

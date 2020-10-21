@@ -144,7 +144,7 @@ it('creates workflow step records that use the jobs uuid', function () {
 });
 
 it('creates a workflow with the provided name', function () {
-    [$workflow, $initialBatch] = Workflow::run('::workflow-name::')
+    [$workflow, $initialBatch] = Workflow::define('::workflow-name::')
         ->addJob(new TestJob1())
         ->build();
 
@@ -155,7 +155,7 @@ it('allows configuration of a then callback', function () {
     $callback = function (Workflow $wf) {
         echo 'derp';
     };
-    [$workflow, $initialBatch] = Workflow::run('::name::')
+    [$workflow, $initialBatch] = Workflow::define('::name::')
         ->then($callback)
         ->build();
 
@@ -165,7 +165,7 @@ it('allows configuration of a then callback', function () {
 it('allows configuration of an invokable class as then callback', function () {
     $callback = new DummyCallback();
 
-    [$workflow, $initialBatch] = Workflow::run('::name::')
+    [$workflow, $initialBatch] = Workflow::define('::name::')
         ->then($callback)
         ->build();
 
@@ -176,7 +176,7 @@ it('allows configuration of a catch callback', function () {
     $callback = function (Workflow $wf) {
         echo 'derp';
     };
-    [$workflow, $initialBatch] = Workflow::run('::name::')
+    [$workflow, $initialBatch] = Workflow::define('::name::')
         ->catch($callback)
         ->build();
 
@@ -186,7 +186,7 @@ it('allows configuration of a catch callback', function () {
 it('allows configuration of an invokable class as catch callback', function () {
     $callback = new DummyCallback();
 
-    [$workflow, $initialBatch] = Workflow::run('::name::')
+    [$workflow, $initialBatch] = Workflow::define('::name::')
         ->catch($callback)
         ->build();
 
@@ -196,7 +196,7 @@ it('allows configuration of an invokable class as catch callback', function () {
 it('can add a job with a delay', function ($delay) {
     Carbon::setTestNow(now());
 
-    [$workflow, $initialBatch] = Workflow::run('::name::')
+    [$workflow, $initialBatch] = Workflow::define('::name::')
         ->addJob(new TestJob1(), [], '::name::', $delay)
         ->build();
 

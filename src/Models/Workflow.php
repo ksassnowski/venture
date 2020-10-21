@@ -39,7 +39,7 @@ class Workflow extends Model
         parent::__construct($attributes);
     }
 
-    public static function run(string $workflowName): WorkflowDefinition
+    public static function define(string $workflowName): WorkflowDefinition
     {
         return new WorkflowDefinition($workflowName);
     }
