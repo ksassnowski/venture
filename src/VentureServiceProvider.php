@@ -3,6 +3,7 @@
 namespace Sassnowski\Venture;
 
 use Illuminate\Support\ServiceProvider;
+use Sassnowski\Venture\Manager\WorkflowManager;
 
 class VentureServiceProvider extends ServiceProvider
 {
@@ -21,5 +22,6 @@ class VentureServiceProvider extends ServiceProvider
             'venture'
         );
         $this->app['events']->subscribe(WorkflowEventSubscriber::class);
+        $this->app->bind('venture.manager', WorkflowManager::class);
     }
 }

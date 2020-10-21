@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
 use Illuminate\Support\Str;
-use Sassnowski\Venture\Workflow;
-use Sassnowski\Venture\WorkflowJob;
+use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Models\WorkflowJob;
 
 function createWorkflow(array $attributes = []): Workflow
 {

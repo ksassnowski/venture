@@ -5,7 +5,6 @@ use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
 use Illuminate\Support\Str;
-use Sassnowski\Venture\Workflow;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
 use function PHPUnit\Framework\assertNull;
@@ -23,15 +22,6 @@ beforeEach(function () {
 
 afterEach(function () {
     Carbon::setTestNow();
-});
-
-test('starting a workflow dispatches the initial batch', function () {
-    Bus::fake();
-
-    (new Workflow())->start([new TestJob1(), new TestJob2()]);
-
-    Bus::assertDispatched(TestJob1::class);
-    Bus::assertDispatched(TestJob2::class);
 });
 
 it('it increments the finished jobs count when a job finished', function () {

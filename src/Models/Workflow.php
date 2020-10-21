@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sassnowski\Venture;
+namespace Sassnowski\Venture\Models;
 
 use Throwable;
 use Carbon\Carbon;
@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Container\Container;
 use Opis\Closure\SerializableClosure;
 use Illuminate\Database\Eloquent\Model;
+use Sassnowski\Venture\PendingWorkflow;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -46,13 +47,6 @@ class Workflow extends Model
     public function jobs(): HasMany
     {
         return $this->hasMany(WorkflowJob::class);
-    }
-
-    public function start(array $initialBatch): void
-    {
-        collect($initialBatch)->each(function ($job) {
-            $this->dispatchJob($job);
-        });
     }
 
     public function addJobs(array $jobs): void

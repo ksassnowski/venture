@@ -3,10 +3,10 @@
 use Mockery as m;
 use Stubs\TestJob1;
 use Stubs\NonWorkflowJob;
-use Sassnowski\Venture\Workflow;
 use Illuminate\Contracts\Queue\Job;
 use Opis\Closure\SerializableClosure;
 use Illuminate\Queue\Events\JobFailed;
+use Sassnowski\Venture\Models\Workflow;
 use Illuminate\Queue\Events\JobProcessed;
 use function PHPUnit\Framework\assertTrue;
 use Illuminate\Queue\Events\JobProcessing;

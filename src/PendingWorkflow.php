@@ -7,6 +7,7 @@ use DateInterval;
 use DateTimeInterface;
 use Illuminate\Support\Str;
 use Opis\Closure\SerializableClosure;
+use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Graph\DependencyGraph;
 
 class PendingWorkflow
@@ -58,11 +59,11 @@ class PendingWorkflow
         return $this;
     }
 
-    public function start(): Workflow
+    public function build(): array
     {
         $workflow = Workflow::create([
             'name' => $this->workflowName,
-            'job_count' => $this->jobCount(),
+            'job_count' => count($this->jobs),
             'jobs_processed' => 0,
             'jobs_failed' => 0,
             'finished_jobs' => [],
@@ -79,14 +80,8 @@ class PendingWorkflow
         }
 
         $workflow->addJobs($this->jobs);
-        $workflow->start($this->graph->getJobsWithoutDependencies());
 
-        return $workflow;
-    }
-
-    public function jobCount(): int
-    {
-        return count($this->jobs);
+        return [$workflow, $this->graph->getJobsWithoutDependencies()];
     }
 
     private function serializeCallback($callback): string

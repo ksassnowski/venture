@@ -3,6 +3,8 @@
 namespace Sassnowski\Venture;
 
 use Ramsey\Uuid\UuidInterface;
+use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Models\WorkflowJob;
 
 trait WorkflowStep
 {
