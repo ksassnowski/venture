@@ -35,7 +35,9 @@ class PendingWorkflow
     {
         $this->graph->addDependantJob($job, $dependencies);
 
-        $job->delay($delay);
+        if ($delay !== null) {
+            $job->delay($delay);
+        }
 
         $this->jobs[] = [
             'job' => $job,
