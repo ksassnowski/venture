@@ -4,19 +4,19 @@ namespace Sassnowski\Venture\Manager;
 
 use Sassnowski\Venture\Models\Workflow;
 use PHPUnit\Framework\Assert as PHPUnit;
-use Sassnowski\Venture\WorkflowDefinition;
+use Sassnowski\Venture\AbstractWorkflow;
 
 class WorkflowManagerFake implements WorkflowManagerInterface
 {
     private array $started = [];
 
-    public function startWorkflow(WorkflowDefinition $definition): Workflow
+    public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow
     {
-        $pendingWorkflow = $definition->definition();
+        $pendingWorkflow = $abstractWorkflow->definition();
 
         [$workflow, $initialBatch] = $pendingWorkflow->build();
 
-        $this->started[] = get_class($definition);
+        $this->started[] = get_class($abstractWorkflow);
 
         return $workflow;
     }

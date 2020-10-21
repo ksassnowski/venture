@@ -7,8 +7,8 @@ use Stubs\TestJob3;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
-use Sassnowski\Venture\PendingWorkflow;
 use function PHPUnit\Framework\assertTrue;
+use Sassnowski\Venture\WorkflowDefinition;
 use function Pest\Laravel\assertDatabaseHas;
 use function PHPUnit\Framework\assertEquals;
 
@@ -19,7 +19,7 @@ beforeEach(function () {
 });
 
 it('creates a workflow', function () {
-    (new PendingWorkflow())
+    (new WorkflowDefinition())
         ->addJob(new TestJob1())
         ->addJob(new TestJob2(), [TestJob1::class])
         ->build();
@@ -36,7 +36,7 @@ it('returns the workflow\'s initial batch of jobs', function () {
     $job1 = new TestJob1();
     $job2 = new TestJob2();
 
-    [$workflow, $initialBatch] = (new PendingWorkflow())
+    [$workflow, $initialBatch] = (new WorkflowDefinition())
         ->addJob($job1)
         ->addJob($job2)
         ->addJob(new TestJob3(), [TestJob1::class])
@@ -49,7 +49,7 @@ it('returns the workflow', function () {
     $job1 = new TestJob1();
     $job2 = new TestJob2();
 
-    [$workflow, $initialBatch] = (new PendingWorkflow())
+    [$workflow, $initialBatch] = (new WorkflowDefinition())
         ->addJob($job1)
         ->addJob($job2)
         ->addJob(new TestJob3(), [TestJob1::class])
@@ -63,7 +63,7 @@ it('sets a reference to the workflow on each job', function () {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 
-    (new PendingWorkflow())
+    (new WorkflowDefinition())
         ->addJob($testJob1)
         ->addJob($testJob2, [TestJob1::class])
         ->build();
@@ -77,7 +77,7 @@ it('sets the job dependencies on the job instances', function () {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 
-    (new PendingWorkflow())
+    (new WorkflowDefinition())
         ->addJob($testJob1)
         ->addJob($testJob2, [TestJob1::class])
         ->build();
@@ -91,7 +91,7 @@ it('sets the dependants of a job', function () {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 
-    (new PendingWorkflow())
+    (new WorkflowDefinition())
         ->addJob($testJob1)
         ->addJob($testJob2, [TestJob1::class])
         ->build();
@@ -104,7 +104,7 @@ it('saves the workflow steps to the database', function () {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 
-    (new PendingWorkflow())
+    (new WorkflowDefinition())
         ->addJob($testJob1)
         ->addJob($testJob2, [TestJob1::class])
         ->build();
@@ -114,7 +114,7 @@ it('saves the workflow steps to the database', function () {
 });
 
 it('uses the class name as the jobs name if no name was provided', function () {
-    (new PendingWorkflow())
+    (new WorkflowDefinition())
         ->addJob(new TestJob1())
         ->build();
 
@@ -122,7 +122,7 @@ it('uses the class name as the jobs name if no name was provided', function () {
 });
 
 it('uses the nice name if it was provided', function () {
-    (new PendingWorkflow())
+    (new WorkflowDefinition())
         ->addJob(new TestJob1())
         ->addJob(new TestJob2(), [TestJob1::class], '::job-name::')
         ->build();
@@ -134,7 +134,7 @@ it('creates workflow step records that use the jobs uuid', function () {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 
-    (new PendingWorkflow())
+    (new WorkflowDefinition())
         ->addJob($testJob1)
         ->addJob($testJob2, [TestJob1::class], '::job-name::')
         ->build();
@@ -144,7 +144,7 @@ it('creates workflow step records that use the jobs uuid', function () {
 });
 
 it('creates a workflow with the provided name', function () {
-    [$workflow, $initialBatch] = Workflow::new('::workflow-name::')
+    [$workflow, $initialBatch] = Workflow::run('::workflow-name::')
         ->addJob(new TestJob1())
         ->build();
 
@@ -155,7 +155,7 @@ it('allows configuration of a then callback', function () {
     $callback = function (Workflow $wf) {
         echo 'derp';
     };
-    [$workflow, $initialBatch] = Workflow::new('::name::')
+    [$workflow, $initialBatch] = Workflow::run('::name::')
         ->then($callback)
         ->build();
 
@@ -165,7 +165,7 @@ it('allows configuration of a then callback', function () {
 it('allows configuration of an invokable class as then callback', function () {
     $callback = new DummyCallback();
 
-    [$workflow, $initialBatch] = Workflow::new('::name::')
+    [$workflow, $initialBatch] = Workflow::run('::name::')
         ->then($callback)
         ->build();
 
@@ -176,7 +176,7 @@ it('allows configuration of a catch callback', function () {
     $callback = function (Workflow $wf) {
         echo 'derp';
     };
-    [$workflow, $initialBatch] = Workflow::new('::name::')
+    [$workflow, $initialBatch] = Workflow::run('::name::')
         ->catch($callback)
         ->build();
 
@@ -186,7 +186,7 @@ it('allows configuration of a catch callback', function () {
 it('allows configuration of an invokable class as catch callback', function () {
     $callback = new DummyCallback();
 
-    [$workflow, $initialBatch] = Workflow::new('::name::')
+    [$workflow, $initialBatch] = Workflow::run('::name::')
         ->catch($callback)
         ->build();
 
@@ -196,7 +196,7 @@ it('allows configuration of an invokable class as catch callback', function () {
 it('can add a job with a delay', function ($delay) {
     Carbon::setTestNow(now());
 
-    [$workflow, $initialBatch] = Workflow::new('::name::')
+    [$workflow, $initialBatch] = Workflow::run('::name::')
         ->addJob(new TestJob1(), [], '::name::', $delay)
         ->build();
 

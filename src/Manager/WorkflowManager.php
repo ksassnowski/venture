@@ -4,7 +4,7 @@ namespace Sassnowski\Venture\Manager;
 
 use Sassnowski\Venture\Models\Workflow;
 use Illuminate\Contracts\Bus\Dispatcher;
-use Sassnowski\Venture\WorkflowDefinition;
+use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Manager\WorkflowManagerInterface as WorkflowManagerContract;
 
 class WorkflowManager implements WorkflowManagerContract
@@ -16,11 +16,11 @@ class WorkflowManager implements WorkflowManagerContract
         $this->dispatcher = $dispatcher;
     }
 
-    public function startWorkflow(WorkflowDefinition $definition): Workflow
+    public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow
     {
-        $pendingWorkflow = $definition->definition();
+        $definition = $abstractWorkflow->definition();
 
-        [$workflow, $initialJobs] = $pendingWorkflow->build();
+        [$workflow, $initialJobs] = $definition->build();
 
         collect($initialJobs)->each(function ($job) {
             $this->dispatcher->dispatch($job);

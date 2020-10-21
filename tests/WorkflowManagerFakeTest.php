@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-use Stubs\TestWorkflow;
+use Stubs\TestAbstractWorkflow;
 use function PHPUnit\Framework\assertTrue;
 use function PHPUnit\Framework\assertFalse;
 use PHPUnit\Framework\AssertionFailedError;
@@ -17,16 +17,16 @@ it('implements the correct interface', function () {
 it('records all started workflows', function () {
     $managerFake = new WorkflowManagerFake();
 
-    assertFalse($managerFake->hasStarted(TestWorkflow::class));
-    $managerFake->startWorkflow(new TestWorkflow());
+    assertFalse($managerFake->hasStarted(TestAbstractWorkflow::class));
+    $managerFake->startWorkflow(new TestAbstractWorkflow());
 
-    assertTrue($managerFake->hasStarted(TestWorkflow::class));
+    assertTrue($managerFake->hasStarted(TestAbstractWorkflow::class));
 });
 
 it('stores the workflow to the database', function () {
     $managerFake = new WorkflowManagerFake();
 
-    $workflow = $managerFake->startWorkflow(new TestWorkflow());
+    $workflow = $managerFake->startWorkflow(new TestAbstractWorkflow());
 
     assertTrue($workflow->exists);
     assertTrue($workflow->wasRecentlyCreated);
@@ -35,14 +35,14 @@ it('stores the workflow to the database', function () {
 it('passes if a workflow was started', function () {
     $managerFake = new WorkflowManagerFake();
 
-    $managerFake->startWorkflow(new TestWorkflow());
+    $managerFake->startWorkflow(new TestAbstractWorkflow());
 
-    $managerFake->assertStarted(TestWorkflow::class);
+    $managerFake->assertStarted(TestAbstractWorkflow::class);
 });
 
 it('fails if the expected workflow was not started', function () {
     $managerFake = new WorkflowManagerFake();
-    $expectedWorkflow = TestWorkflow::class;
+    $expectedWorkflow = TestAbstractWorkflow::class;
 
     test()->expectException(AssertionFailedError::class);
     test()->expectExceptionMessage("The expected workflow [{$expectedWorkflow}] was not started");

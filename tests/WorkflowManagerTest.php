@@ -5,7 +5,7 @@ use Stubs\TestJob2;
 use Stubs\TestJob3;
 use Illuminate\Support\Facades\Bus;
 use Sassnowski\Venture\Models\Workflow;
-use Sassnowski\Venture\PendingWorkflow;
+use Sassnowski\Venture\AbstractWorkflow;
 use function PHPUnit\Framework\assertTrue;
 use Sassnowski\Venture\WorkflowDefinition;
 use Sassnowski\Venture\Manager\WorkflowManager;
@@ -18,10 +18,10 @@ beforeEach(function () {
 });
 
 it('starts a workflow by dispatching all jobs without dependencies', function () {
-    $definition = new class extends WorkflowDefinition {
-        public function definition(): PendingWorkflow
+    $definition = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
         {
-            return Workflow::new('::name::')
+            return Workflow::run('::name::')
                 ->addJob(new TestJob1())
                 ->addJob(new TestJob2())
                 ->addJob(new TestJob3(), [TestJob1::class]);
@@ -37,10 +37,10 @@ it('starts a workflow by dispatching all jobs without dependencies', function ()
 });
 
 it('returns the created workflow', function () {
-    $definition = new class extends WorkflowDefinition {
-        public function definition(): PendingWorkflow
+    $definition = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
         {
-            return Workflow::new('::name::')
+            return Workflow::run('::name::')
                 ->addJob(new TestJob1());
         }
     };

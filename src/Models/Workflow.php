@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Container\Container;
 use Opis\Closure\SerializableClosure;
 use Illuminate\Database\Eloquent\Model;
-use Sassnowski\Venture\PendingWorkflow;
 use Illuminate\Contracts\Bus\Dispatcher;
+use Sassnowski\Venture\WorkflowDefinition;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -39,9 +39,9 @@ class Workflow extends Model
         parent::__construct($attributes);
     }
 
-    public static function new(string $workflowName): PendingWorkflow
+    public static function run(string $workflowName): WorkflowDefinition
     {
-        return new PendingWorkflow($workflowName);
+        return new WorkflowDefinition($workflowName);
     }
 
     public function jobs(): HasMany

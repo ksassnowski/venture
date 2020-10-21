@@ -3,14 +3,14 @@
 namespace Stubs;
 
 use Sassnowski\Venture\Models\Workflow;
-use Sassnowski\Venture\PendingWorkflow;
+use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\WorkflowDefinition;
 
-class TestWorkflow extends WorkflowDefinition
+class TestAbstractWorkflow extends AbstractWorkflow
 {
-    public function definition(): PendingWorkflow
+    public function definition(): WorkflowDefinition
     {
-        return Workflow::new('::name::')
+        return Workflow::run('::name::')
             ->addJob(new TestJob1())
             ->addJob(new TestJob2())
             ->addJob(new TestJob3(), [TestJob1::class]);

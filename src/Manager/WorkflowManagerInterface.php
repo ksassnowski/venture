@@ -3,9 +3,9 @@
 namespace Sassnowski\Venture\Manager;
 
 use Sassnowski\Venture\Models\Workflow;
-use Sassnowski\Venture\WorkflowDefinition;
+use Sassnowski\Venture\AbstractWorkflow;
 
 interface WorkflowManagerInterface
 {
-    public function startWorkflow(WorkflowDefinition $definition): Workflow;
+    public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow;
 }
