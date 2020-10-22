@@ -4,7 +4,9 @@ namespace Sassnowski\Venture;
 
 use Closure;
 use DateInterval;
+use function count;
 use DateTimeInterface;
+use function array_diff;
 use Illuminate\Support\Str;
 use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
@@ -98,5 +100,43 @@ class WorkflowDefinition
         }
 
         return serialize($callback);
+    }
+
+    public function hasJob(string $jobClassName, ?array $dependencies = null, $delay = null): bool
+    {
+        if ($dependencies === null && $delay === null) {
+            return $this->getJobByClassName($jobClassName) !== null;
+        }
+
+        if ($dependencies !== null && !$this->hasJobWithDependencies($jobClassName, $dependencies)) {
+            return false;
+        }
+
+        if ($delay !== null && !$this->hasJobWithDelay($jobClassName, $delay)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function hasJobWithDependencies(string $jobClassName, array $dependencies): bool
+    {
+        return count(array_diff($dependencies, $this->graph->getDependencies($jobClassName))) === 0;
+    }
+
+    public function hasJobWithDelay(string $jobClassName, $delay): bool
+    {
+        if (($job = $this->getJobByClassName($jobClassName)) === null) {
+            return false;
+        }
+
+        return $job['job']->delay == $delay;
+    }
+
+    private function getJobByClassName(string $className): ?array
+    {
+        return collect($this->jobs)->first(function (array $job) use ($className) {
+            return get_class($job['job']) === $className;
+        });
     }
 }

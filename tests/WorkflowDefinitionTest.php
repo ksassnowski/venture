@@ -9,6 +9,7 @@ use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
 use function PHPUnit\Framework\assertTrue;
 use Sassnowski\Venture\WorkflowDefinition;
+use function PHPUnit\Framework\assertFalse;
 use function Pest\Laravel\assertDatabaseHas;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
@@ -202,7 +203,58 @@ it('can add a job with a delay', function ($delay) {
         ->build();
 
     assertEquals($delay, $initialBatch[0]->delay);
-})->with([
+})->with('delay provider');
+
+it('returns true if job is part of the workflow', function () {
+    $definition = WorkflowFacade::define('::name::')
+        ->addJob(new TestJob1());
+
+    assertTrue($definition->hasJob(TestJob1::class));
+});
+
+it('returns false if job is not part of the workflow', function () {
+    $definition = WorkflowFacade::define('::name::')
+        ->addJob(new TestJob2());
+
+    assertFalse($definition->hasJob(TestJob1::class));
+});
+
+it('returns true if job exists with the correct dependencies', function () {
+    $definition = WorkflowFacade::define('::name::')
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2(), [TestJob1::class]);
+
+    assertTrue($definition->hasJob(TestJob2::class, [TestJob1::class]));
+});
+
+it('returns false if job exists, but with incorrect dependencies', function () {
+    $definition = WorkflowFacade::define('::name::')
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2())
+        ->addJob(new TestJob3(), [TestJob2::class]);
+
+    assertFalse($definition->hasJob(TestJob3::class, [TestJob1::class]));
+});
+
+it('returns false if job exists without delay', function () {
+    Carbon::setTestNow(now());
+
+    $definition = WorkflowFacade::define('::name::')
+        ->addJob(new TestJob1());
+
+    assertFalse($definition->hasJob(TestJob1::class, [], now()->addDay()));
+});
+
+it('returns true if job exists with correct delay', function ($delay) {
+    Carbon::setTestNow(now());
+
+    $definition = WorkflowFacade::define('::name::')
+        ->addJob(new TestJob1(), [], '', $delay);
+
+    assertTrue($definition->hasJob(TestJob1::class, [], $delay));
+})->with('delay provider');
+
+dataset('delay provider', [
     'carbon date' => [now()->addHour()],
     'integer' => [2000],
     'date interval' => [new DateInterval('P14D')],

@@ -2,6 +2,7 @@
 
 namespace Sassnowski\Venture\Graph;
 
+use function is_object;
 use Illuminate\Support\Collection;
 
 class DependencyGraph
@@ -28,7 +29,9 @@ class DependencyGraph
 
     public function getDependencies($job): array
     {
-        return $this->dependencies[get_class($job)] ?? [];
+        $key = is_object($job) ? get_class($job) : $job;
+
+        return $this->dependencies[$key] ?? [];
     }
 
     public function getJobsWithoutDependencies(): array
