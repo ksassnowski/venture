@@ -70,3 +70,30 @@ it('passes if the workflow was started and the callback returns true', function 
         return $workflow->something === '::input::';
     });
 });
+
+it('passes if the workflow was not started', function () {
+    $expectedWorkflow = TestAbstractWorkflow::class;
+
+    $this->managerFake->assertNotStarted($expectedWorkflow);
+});
+
+it('fails if the workflow was started', function () {
+    $workflow = TestAbstractWorkflow::class;
+
+    $this->managerFake->startWorkflow(new TestAbstractWorkflow());
+
+    test()->expectException(AssertionFailedError::class);
+    test()->expectExceptionMessage("The unexpected [{$workflow}] workflow was started");
+
+    $this->managerFake->assertNotStarted($workflow);
+});
+
+it('passes if a workflow was started, but the callback returns false', function () {
+    $workflow = WorkflowWithParameter::class;
+
+    $this->managerFake->startWorkflow(new WorkflowWithParameter('::some-parameter::'));
+
+    $this->managerFake->assertNotStarted($workflow, function (WorkflowWithParameter $workflow) {
+        return $workflow->something === '::other-parameter::';
+    });
+});
