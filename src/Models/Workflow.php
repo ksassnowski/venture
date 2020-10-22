@@ -9,7 +9,6 @@ use Illuminate\Container\Container;
 use Opis\Closure\SerializableClosure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Bus\Dispatcher;
-use Sassnowski\Venture\WorkflowDefinition;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -37,11 +36,6 @@ class Workflow extends Model
     {
         $this->table = config('venture.workflow_table');
         parent::__construct($attributes);
-    }
-
-    public static function define(string $workflowName): WorkflowDefinition
-    {
-        return new WorkflowDefinition($workflowName);
     }
 
     public function jobs(): HasMany

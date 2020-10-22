@@ -11,6 +11,7 @@ use function PHPUnit\Framework\assertTrue;
 use Sassnowski\Venture\WorkflowDefinition;
 use function Pest\Laravel\assertDatabaseHas;
 use function PHPUnit\Framework\assertEquals;
+use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
 
 uses(TestCase::class);
 
@@ -144,7 +145,7 @@ it('creates workflow step records that use the jobs uuid', function () {
 });
 
 it('creates a workflow with the provided name', function () {
-    [$workflow, $initialBatch] = Workflow::define('::workflow-name::')
+    [$workflow, $initialBatch] = WorkflowFacade::define('::workflow-name::')
         ->addJob(new TestJob1())
         ->build();
 
@@ -155,7 +156,7 @@ it('allows configuration of a then callback', function () {
     $callback = function (Workflow $wf) {
         echo 'derp';
     };
-    [$workflow, $initialBatch] = Workflow::define('::name::')
+    [$workflow, $initialBatch] = WorkflowFacade::define('::name::')
         ->then($callback)
         ->build();
 
@@ -165,7 +166,7 @@ it('allows configuration of a then callback', function () {
 it('allows configuration of an invokable class as then callback', function () {
     $callback = new DummyCallback();
 
-    [$workflow, $initialBatch] = Workflow::define('::name::')
+    [$workflow, $initialBatch] = WorkflowFacade::define('::name::')
         ->then($callback)
         ->build();
 
@@ -176,7 +177,7 @@ it('allows configuration of a catch callback', function () {
     $callback = function (Workflow $wf) {
         echo 'derp';
     };
-    [$workflow, $initialBatch] = Workflow::define('::name::')
+    [$workflow, $initialBatch] = WorkflowFacade::define('::name::')
         ->catch($callback)
         ->build();
 
@@ -186,7 +187,7 @@ it('allows configuration of a catch callback', function () {
 it('allows configuration of an invokable class as catch callback', function () {
     $callback = new DummyCallback();
 
-    [$workflow, $initialBatch] = Workflow::define('::name::')
+    [$workflow, $initialBatch] = WorkflowFacade::define('::name::')
         ->catch($callback)
         ->build();
 
@@ -196,7 +197,7 @@ it('allows configuration of an invokable class as catch callback', function () {
 it('can add a job with a delay', function ($delay) {
     Carbon::setTestNow(now());
 
-    [$workflow, $initialBatch] = Workflow::define('::name::')
+    [$workflow, $initialBatch] = WorkflowFacade::define('::name::')
         ->addJob(new TestJob1(), [], '::name::', $delay)
         ->build();
 

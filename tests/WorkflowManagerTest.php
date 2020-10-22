@@ -8,20 +8,30 @@ use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\AbstractWorkflow;
 use function PHPUnit\Framework\assertTrue;
 use Sassnowski\Venture\WorkflowDefinition;
+use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\Manager\WorkflowManager;
 use function PHPUnit\Framework\assertInstanceOf;
+use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
 
 uses(TestCase::class);
 
 beforeEach(function () {
     $this->dispatcherSpy = Bus::fake();
+    $this->manager = new WorkflowManager($this->dispatcherSpy);
+});
+
+it('creates a new workflow definition with the provided name', function () {
+    $definition = $this->manager->define('::name::');
+
+    assertInstanceOf(WorkflowDefinition::class, $definition);
+    assertEquals('::name::', $definition->name());
 });
 
 it('starts a workflow by dispatching all jobs without dependencies', function () {
     $definition = new class extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
-            return Workflow::define('::name::')
+            return WorkflowFacade::define('::name::')
                 ->addJob(new TestJob1())
                 ->addJob(new TestJob2())
                 ->addJob(new TestJob3(), [TestJob1::class]);
@@ -40,7 +50,7 @@ it('returns the created workflow', function () {
     $definition = new class extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
-            return Workflow::define('::name::')
+            return WorkflowFacade::define('::name::')
                 ->addJob(new TestJob1());
         }
     };

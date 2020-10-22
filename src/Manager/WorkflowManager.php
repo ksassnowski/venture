@@ -5,6 +5,7 @@ namespace Sassnowski\Venture\Manager;
 use Sassnowski\Venture\Models\Workflow;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\WorkflowDefinition;
 use Sassnowski\Venture\Manager\WorkflowManagerInterface as WorkflowManagerContract;
 
 class WorkflowManager implements WorkflowManagerContract
@@ -14,6 +15,11 @@ class WorkflowManager implements WorkflowManagerContract
     public function __construct(Dispatcher $dispatcher)
     {
         $this->dispatcher = $dispatcher;
+    }
+
+    public function define(string $workflowName): WorkflowDefinition
+    {
+        return new WorkflowDefinition($workflowName);
     }
 
     public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow

@@ -2,8 +2,8 @@
 
 namespace Stubs;
 
-use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\Facades\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class TestAbstractWorkflow extends AbstractWorkflow

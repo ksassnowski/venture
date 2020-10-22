@@ -86,6 +86,11 @@ class WorkflowDefinition
         return [$workflow, $this->graph->getJobsWithoutDependencies()];
     }
 
+    public function name(): string
+    {
+        return $this->workflowName;
+    }
+
     private function serializeCallback($callback): string
     {
         if ($callback instanceof Closure) {
