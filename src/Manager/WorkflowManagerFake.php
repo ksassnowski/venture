@@ -16,20 +16,28 @@ class WorkflowManagerFake implements WorkflowManagerInterface
 
         [$workflow, $initialBatch] = $pendingWorkflow->build();
 
-        $this->started[] = get_class($abstractWorkflow);
+        $this->started[get_class($abstractWorkflow)] = $abstractWorkflow;
 
         return $workflow;
     }
 
-    public function hasStarted(string $workflowClass): bool
+    public function hasStarted(string $workflowClass, ?callable $callback = null): bool
     {
-        return in_array($workflowClass, $this->started);
+        if (!array_key_exists($workflowClass, $this->started)) {
+            return false;
+        }
+
+        if ($callback === null) {
+            return true;
+        }
+
+        return $callback($this->started[$workflowClass]);
     }
 
-    public function assertStarted(string $workflowDefinition): void
+    public function assertStarted(string $workflowDefinition, ?callable $callback = null): void
     {
         PHPUnit::assertTrue(
-            $this->hasStarted($workflowDefinition),
+            $this->hasStarted($workflowDefinition, $callback),
             "The expected workflow [{$workflowDefinition}] was not started."
         );
     }

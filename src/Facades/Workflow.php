@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Facade;
 use Sassnowski\Venture\Manager\WorkflowManagerFake;
 
 /**
- * @method static void assertStarted(string $workflowDefinition)
+ * @method static void assertStarted(string $workflowDefinition, ?callable $callback)
  */
 class Workflow extends Facade
 {
