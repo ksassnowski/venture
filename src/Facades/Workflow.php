@@ -8,7 +8,8 @@ use Sassnowski\Venture\Manager\WorkflowManagerFake;
 
 /**
  * @method static WorkflowDefinition define(string $workflowName)
- * @method static void assertStarted(string $workflowDefinition, ?callable $callback)
+ * @method static void assertStarted(string $workflowDefinition, ?callable $callback = null)
+ * @method static void assertNotStarted(string $workflowDefinition, ?callable $callback = null)
  */
 class Workflow extends Facade
 {
