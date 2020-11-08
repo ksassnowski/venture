@@ -219,6 +219,28 @@ it('returns false if job is not part of the workflow', function () {
     assertFalse($definition->hasJob(TestJob1::class));
 });
 
+it('can conditionally add a job to the workflow with a callback', function () {
+    $definition = WorkflowFacade::define('::name::')
+        ->when(true, 
+            fn($workflow) => $workflow->addJob(new TestJob1()),
+            fn($workflow) => $workflow->addJob(new TestJob2())
+        );
+
+    assertTrue($definition->hasJob(TestJob1::class));
+    assertFalse($definition->hasJob(TestJob2::class));
+});
+
+it('doesnt add a job if the conditional is false', function () {
+    $definition = WorkflowFacade::define('::name::')
+        ->when(false, 
+            fn($workflow) => $workflow->addJob(new TestJob1()),
+            fn($workflow) => $workflow->addJob(new TestJob2())
+        );
+
+    assertFalse($definition->hasJob(TestJob1::class));
+    assertTrue($definition->hasJob(TestJob2::class));
+});
+
 it('returns true if job exists with the correct dependencies', function () {
     $definition = WorkflowFacade::define('::name::')
         ->addJob(new TestJob1())

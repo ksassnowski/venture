@@ -49,6 +49,23 @@ class WorkflowDefinition
         return $this;
     }
 
+    /**
+     * @param  bool          $value
+     * @param  callable      $callback
+     * @param  callable|null $default
+     * @return $this
+     */
+    public function when(bool $value, callable $callback, $default = null)
+    {
+        if ($value) {
+            return $callback($this, $value) ?: $this;
+        } elseif ($default) {
+            return $default($this, $value) ?: $this;
+        }
+
+        return $this;
+    }
+
     public function then($callback): self
     {
         $this->thenCallback = $this->serializeCallback($callback);
