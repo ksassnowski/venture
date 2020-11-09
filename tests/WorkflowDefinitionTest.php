@@ -262,7 +262,7 @@ dataset('delay provider', [
 
 class DummyCallback
 {
-    public function __invokable()
+    public function __invoke()
     {
         echo 'herp';
     }
