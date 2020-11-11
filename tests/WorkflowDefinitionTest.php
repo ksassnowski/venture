@@ -198,11 +198,13 @@ it('allows configuration of an invokable class as catch callback', function () {
 it('can add a job with a delay', function ($delay) {
     Carbon::setTestNow(now());
 
-    [$workflow, $initialBatch] = WorkflowFacade::define('::name::')
-        ->addJob(new TestJob1(), [], '::name::', $delay)
-        ->build();
+    $workflow1 = WorkflowFacade::define('::name-1::')
+        ->addJobWithDelay(new TestJob1(), $delay);
+    $workflow2 = WorkflowFacade::define('::name-2::')
+        ->addJobWithDelay(new TestJob2(), $delay);
 
-    assertEquals($delay, $initialBatch[0]->delay);
+    assertTrue($workflow1->hasJobWithDelay(TestJob1::class, $delay));
+    assertTrue($workflow2->hasJobWithDelay(TestJob2::class, $delay));
 })->with('delay provider');
 
 it('returns true if job is part of the workflow', function () {
