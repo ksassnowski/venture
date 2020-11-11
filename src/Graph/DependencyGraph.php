@@ -6,19 +6,30 @@ use Illuminate\Support\Collection;
 
 class DependencyGraph
 {
+    private array $unresolvableDependencies = [];
     private array $dependencies = [];
     private array $dependants = [];
     private array $instances = [];
 
     public function addDependantJob($job, array $dependencies): void
     {
-        $this->dependencies[get_class($job)] = $dependencies;
+        $jobClassName = get_class($job);
+
+        $this->dependencies[$jobClassName] = $dependencies;
 
         foreach ($dependencies as $dependency) {
+            if (!array_key_exists($dependency, $this->instances)) {
+                $this->unresolvableDependencies[$dependency][] = $jobClassName;
+            }
+
             $this->dependants[$dependency][] = $job;
         }
 
-        $this->instances[get_class($job)] = $job;
+        if (array_key_exists($jobClassName, $this->unresolvableDependencies)) {
+            unset($this->unresolvableDependencies[$jobClassName]);
+        }
+
+        $this->instances[$jobClassName] = $job;
     }
 
     public function getDependantJobs($job): array
@@ -46,5 +57,10 @@ class DependencyGraph
                     ->values()
                     ->toArray();
             });
+    }
+
+    public function getUnresolvableDependencies(): array
+    {
+        return $this->unresolvableDependencies;
     }
 }

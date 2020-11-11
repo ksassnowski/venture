@@ -46,3 +46,25 @@ it('returns all jobs without dependencies', function () {
 
     assertEquals([$job1], $this->graph->getJobsWithoutDependencies());
 });
+
+it('returns an empty array if there are no jobs with unresolvable dependencies', function () {
+    $this->graph->addDependantJob(new TestJob1(), []);
+    $this->graph->addDependantJob(new TestJob2(), []);
+
+    assertEquals([], $this->graph->getUnresolvableDependencies());
+});
+
+it('returns a list of unresolvable dependencies and their dependants', function () {
+    $this->graph->addDependantJob(new TestJob2(), [TestJob1::class]);
+
+    assertEquals([
+        TestJob1::class => [TestJob2::class],
+    ], $this->graph->getUnresolvableDependencies());
+});
+
+it('can register jobs with dependencies before their dependencies are registered', function () {
+    $this->graph->addDependantJob(new TestJob2(), [TestJob1::class]);
+    $this->graph->addDependantJob(new TestJob1(), []);
+
+    assertEquals([], $this->graph->getUnresolvableDependencies());
+});

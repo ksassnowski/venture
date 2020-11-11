@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Graph\DependencyGraph;
+use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
 
 class WorkflowDefinition
 {
@@ -76,8 +77,13 @@ class WorkflowDefinition
         return $this;
     }
 
+    /**
+     * @throws UnresolvableDependenciesException
+     */
     public function build(): array
     {
+        $this->guardAgainstUnresolvableDependencies();
+
         $workflow = Workflow::create([
             'name' => $this->workflowName,
             'job_count' => count($this->jobs),
@@ -151,5 +157,23 @@ class WorkflowDefinition
         return collect($this->jobs)->first(function (array $job) use ($className) {
             return get_class($job['job']) === $className;
         });
+    }
+
+    private function guardAgainstUnresolvableDependencies()
+    {
+        $unresolvableDependencies = $this->graph->getUnresolvableDependencies();
+
+        if (count($unresolvableDependencies) === 0) {
+            return;
+        }
+
+        $dependency = array_key_first($unresolvableDependencies);
+        $dependants = implode(', ', $unresolvableDependencies[$dependency]);
+
+        throw new UnresolvableDependenciesException(sprintf(
+            'Workflow contains unresolvable dependency "%s", depended on by [%s]',
+            $dependency,
+            $dependants
+        ));
     }
 }
