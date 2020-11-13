@@ -7,7 +7,7 @@ use Sassnowski\Venture\Models\Workflow;
 
 abstract class AbstractWorkflow
 {
-    public static function start()
+    public static function start(): void
     {
         (new static(...func_get_args()))->run();
     }
