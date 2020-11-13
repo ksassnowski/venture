@@ -62,3 +62,23 @@ it('returns the created workflow', function () {
     assertTrue($workflow->exists);
     assertTrue($workflow->wasRecentlyCreated);
 });
+
+it('applies the before create hook if it exists', function () {
+    $definition = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::old-name::')
+                ->addJob(new TestJob1());
+        }
+
+        public function beforeCreate(Workflow $workflow): void
+        {
+            $workflow->name = '::new-name::';
+        }
+    };
+    $manager = new WorkflowManager($this->dispatcherSpy);
+
+    $workflow = $manager->startWorkflow($definition);
+
+    assertEquals($workflow->name, '::new-name::');
+});

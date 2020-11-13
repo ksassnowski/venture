@@ -2,6 +2,7 @@
 
 namespace Sassnowski\Venture\Manager;
 
+use Closure;
 use Sassnowski\Venture\Models\Workflow;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Sassnowski\Venture\AbstractWorkflow;
@@ -25,7 +26,9 @@ class WorkflowManager implements WorkflowManagerInterface
     {
         $definition = $abstractWorkflow->definition();
 
-        [$workflow, $initialJobs] = $definition->build();
+        [$workflow, $initialJobs] = $definition->build(
+            Closure::fromCallable([$abstractWorkflow, 'beforeCreate'])
+        );
 
         collect($initialJobs)->each(function ($job) {
             $this->dispatcher->dispatch($job);

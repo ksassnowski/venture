@@ -20,4 +20,8 @@ abstract class AbstractWorkflow
     }
 
     abstract public function definition(): WorkflowDefinition;
+
+    public function beforeCreate(Workflow $workflow): void
+    {
+    }
 }

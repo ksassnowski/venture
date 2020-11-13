@@ -80,11 +80,11 @@ class WorkflowDefinition
     /**
      * @throws UnresolvableDependenciesException
      */
-    public function build(): array
+    public function build(?Closure $beforeCreate = null): array
     {
         $this->guardAgainstUnresolvableDependencies();
 
-        $workflow = Workflow::create([
+        $workflow = new Workflow([
             'name' => $this->workflowName,
             'job_count' => count($this->jobs),
             'jobs_processed' => 0,
@@ -93,6 +93,12 @@ class WorkflowDefinition
             'then_callback' => $this->thenCallback,
             'catch_callback' => $this->catchCallback,
         ]);
+
+        if ($beforeCreate !== null) {
+            $beforeCreate($workflow);
+        }
+
+        $workflow->save();
 
         foreach ($this->jobs as $job) {
             $job['job']

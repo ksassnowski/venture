@@ -278,6 +278,18 @@ it('throws an exception when trying to build a workflow with unresolvable depend
         ->build();
 });
 
+it('calls the before create hook before saving the workflow if provided', function () {
+    $callback = function (Workflow $workflow) {
+        $workflow->name = '::new-name::';
+    };
+
+    [$workflow, $initialBatch] = WorkflowFacade::define('::old-name::')
+        ->addJob(new TestJob1(), [])
+        ->build($callback);
+
+    assertEquals('::new-name::', $workflow->name);
+});
+
 class DummyCallback
 {
     public function __invoke()
