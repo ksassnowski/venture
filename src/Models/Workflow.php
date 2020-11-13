@@ -32,6 +32,11 @@ class Workflow extends Model
         'jobs_processed' => 'int',
     ];
 
+    protected $dates = [
+        'finished_at',
+        'cancelled_at',
+    ];
+
     public function __construct($attributes = [])
     {
         $this->table = config('venture.workflow_table');

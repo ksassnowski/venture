@@ -50,7 +50,7 @@ it('marks itself as finished if the all jobs have been processed', function () {
     assertNull($workflow->refresh()->finished_at);
 
     $workflow->onStepFinished($job2);
-    assertEquals(now(), $workflow->refresh()->finished_at);
+    assertEquals(now()->timestamp, $workflow->refresh()->finished_at->timestamp);
 });
 
 it('marks the corresponding job step finished whenever a job finishes', function () {
@@ -226,7 +226,7 @@ it('can be cancelled', function () {
     $workflow->cancel();
 
     assertTrue($workflow->isCancelled());
-    assertEquals(now(), $workflow->cancelled_at);
+    assertEquals(now()->timestamp, $workflow->cancelled_at->timestamp);
 });
 
 it('cancelling an already cancelled job does not update timestamp', function () {
