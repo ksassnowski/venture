@@ -116,6 +116,26 @@ it('saves the workflow steps to the database', function () {
     assertDatabaseHas('workflow_jobs', ['job' => serialize($testJob2)]);
 });
 
+it('saves the list of edges for each job', function () {
+    $testJob1 = new TestJob1();
+    $testJob2 = new TestJob2();
+
+    [$workflow, $initialBatch] = (new WorkflowDefinition())
+        ->addJob($testJob1)
+        ->addJob($testJob2, [TestJob1::class])
+        ->build();
+
+    $jobs = $workflow->jobs;
+    assertEquals(
+        [$testJob2->stepId],
+        $jobs->firstWhere('uuid', $testJob1->stepId)->edges
+    );
+    assertEquals(
+        [],
+        $jobs->firstWhere('uuid', $testJob2->stepId)->edges
+    );
+});
+
 it('uses the class name as the jobs name if no name was provided', function () {
     (new WorkflowDefinition())
         ->addJob(new TestJob1())

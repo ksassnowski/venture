@@ -49,6 +49,7 @@ class Workflow extends Model
             'job' => serialize($job['job']),
             'name' => $job['name'],
             'uuid' => $job['job']->stepId,
+            'edges' => collect($job['job']->dependantJobs)->pluck('stepId')->all()
         ])
         ->pipe(function ($jobs) {
             $this->jobs()->createMany($jobs);
@@ -132,6 +133,13 @@ class Workflow extends Model
         return $this->jobs()
             ->whereNotNull('finished_at')
             ->get();
+    }
+
+    public function asAdjacencyList(): array
+    {
+        return $this->jobs->mapWithKeys(fn (WorkflowJob $job) => [
+            $job->uuid => $job->only('name', 'finished_at', 'failed_at', 'edges')
+        ])->all();
     }
 
     private function markJobAsFinished($job): void

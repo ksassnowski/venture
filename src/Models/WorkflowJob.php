@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $name
  * @property ?Carbon $finished_at
  * @property ?Carbon $failed_at
+ * @property string[] $edges
  */
 class WorkflowJob extends Model
 {
@@ -20,6 +21,10 @@ class WorkflowJob extends Model
     protected $dates = [
         'failed_at',
         'finished_at',
+    ];
+
+    protected $casts = [
+        'edges' => 'array',
     ];
 
     public function __construct($attributes = [])

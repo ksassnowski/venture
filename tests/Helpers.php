@@ -17,10 +17,11 @@ function createWorkflow(array $attributes = []): Workflow
 function createWorkflowJob(Workflow $workflow, array $attributes = []): WorkflowJob
 {
     return WorkflowJob::create(array_merge([
-        'uuid' => Str::orderedUuid(),
+        'uuid' => (string) Str::orderedUuid(),
         'name' => '::name::',
         'job' => '::job::',
         'workflow_id' => $workflow->id,
         'failed_at' => null,
+        'finished_at' => null,
     ], $attributes));
 }

@@ -332,6 +332,52 @@ it('can fetch all of its finished jobs', function () {
     assertTrue($actual[0]->is($finishedJob));
 });
 
+it('returns the dependency graph as an adjacency list', function () {
+    $workflow = createWorkflow();
+    $job3 = createWorkflowJob($workflow, [
+        'name' => '::job-3-name::',
+    ]);
+    $job2 = createWorkflowJob($workflow, [
+        'name' => '::job-2-name::',
+        'edges' => [$job3->uuid]
+    ]);
+    $job1 = createWorkflowJob($workflow, [
+        'name' => '::job-1-name::',
+        'edges' => [
+            $job2->uuid,
+            $job3->uuid
+        ]
+    ]);
+
+    $adjacencyList = $workflow->asAdjacencyList();
+
+    assertEquals([
+        $job1->uuid => [
+            'name' => '::job-1-name::',
+            'finished_at' => null,
+            'failed_at' => null,
+            'edges' => [
+                $job2->uuid,
+                $job3->uuid,
+            ],
+        ],
+        $job2->uuid => [
+            'name' => '::job-2-name::',
+            'finished_at' => null,
+            'failed_at' => null,
+            'edges' => [
+                $job3->uuid,
+            ],
+        ],
+        $job3->uuid => [
+            'name' => '::job-3-name::',
+            'finished_at' => null,
+            'failed_at' => null,
+            'edges' => [],
+        ]
+    ], $adjacencyList);
+});
+
 class ThenCallback
 {
     public function __invoke()
