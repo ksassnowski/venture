@@ -69,7 +69,7 @@ it('marks the corresponding job step finished whenever a job finishes', function
 
     $workflow->onStepFinished($job);
 
-    assertEquals(now(), $step->refresh()->finished_at);
+    assertEquals(now()->timestamp, $step->refresh()->finished_at->timestamp);
 });
 
 it('runs a finished job\'s dependency if no other dependencies exist', function () {
@@ -286,7 +286,7 @@ it('marks a step as failed', function () {
 
     $workflow->onStepFailed($job, new Exception());
 
-    assertEquals(now(), $step->fresh()->failed_at);
+    assertEquals(now()->timestamp, $step->fresh()->failed_at->timestamp);
 });
 
 it('can fetch all of its failed jobs', function () {
