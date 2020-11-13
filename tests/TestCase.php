@@ -36,10 +36,10 @@ class TestCase extends OrchestraTestCase
     {
         include_once __DIR__ . '/../database/migrations/2020_08_16_000000_create_workflow_table.php';
         include_once __DIR__ . '/../database/migrations/2020_08_17_000000_add_additional_columns_to_workflow.php';
-        include_once __DIR__ . '/../database/migrations/2020_11_13_000000_add_edges_column_to_workflow_jobs_table.php';
+        include_once __DIR__ . '/../database/migrations/2020_11_13_000000_add_edges_column_and_exception_column_to_workflow_jobs_table.php';
 
         (new CreateWorkflowTable())->up();
         (new AddAdditionalColumnsToWorkflow())->up();
-        (new AddEdgesColumnToWorkflowJobsTable())->up();
+        (new AddEdgesColumnAndExceptionColumnToWorkflowJobsTable())->up();
     }
 }

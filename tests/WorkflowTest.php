@@ -283,10 +283,13 @@ it('marks a step as failed', function () {
         'uuid' => $uuid,
         'failed_at' => null,
     ]);
+    $exception = new Exception();
 
-    $workflow->onStepFailed($job, new Exception());
+    $workflow->onStepFailed($job, $exception);
 
-    assertEquals(now()->timestamp, $step->fresh()->failed_at->timestamp);
+    $step->refresh();
+    assertEquals(now()->timestamp, $step->failed_at->timestamp);
+    assertEquals((string) $exception, $step->exception);
 });
 
 it('can fetch all of its failed jobs', function () {

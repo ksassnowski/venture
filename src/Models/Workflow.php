@@ -84,11 +84,14 @@ class Workflow extends Model
 
     public function onStepFailed($job, Throwable $e)
     {
-        DB::transaction(function () use ($job) {
+        DB::transaction(function () use ($job, $e) {
             $this->jobs_failed++;
             $this->save();
 
-            optional($job->step())->update(['failed_at' => now()]);
+            optional($job->step())->update([
+                'failed_at' => now(),
+                'exception' => (string) $e,
+            ]);
         });
 
         $this->runCallback($this->catch_callback, $this, $job, $e);
