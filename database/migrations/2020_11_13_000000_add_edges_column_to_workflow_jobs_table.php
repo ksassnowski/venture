@@ -9,7 +9,7 @@ class AddEdgesColumnToWorkflowJobsTable extends Migration
     public function up(): void
     {
         Schema::table(config('venture.jobs_table'), function (Blueprint $table) {
-            $table->json('edges')->default('[]');
+            $table->json('edges')->nullable();
         });
     }
 }

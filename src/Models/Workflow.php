@@ -138,7 +138,12 @@ class Workflow extends Model
     public function asAdjacencyList(): array
     {
         return $this->jobs->mapWithKeys(fn (WorkflowJob $job) => [
-            $job->uuid => $job->only('name', 'finished_at', 'failed_at', 'edges')
+            $job->uuid => [
+                'name' => $job->name,
+                'failed_at' => $job->failed_at,
+                'finished_at' => $job->finished_at,
+                'edges' => $job->edges ?: [],
+            ],
         ])->all();
     }
 
