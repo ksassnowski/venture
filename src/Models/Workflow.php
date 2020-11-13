@@ -150,6 +150,7 @@ class Workflow extends Model
                 'name' => $job->name,
                 'failed_at' => $job->failed_at,
                 'finished_at' => $job->finished_at,
+                'exception' => $job->exception,
                 'edges' => $job->edges ?: [],
             ],
         ])->all();

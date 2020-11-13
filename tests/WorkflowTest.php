@@ -336,12 +336,17 @@ it('can fetch all of its finished jobs', function () {
 });
 
 it('returns the dependency graph as an adjacency list', function () {
+    Carbon::setTestNow('2020-11-11 11:11:00');
+    $exception = new Exception();
+
     $workflow = createWorkflow();
     $job3 = createWorkflowJob($workflow, [
         'name' => '::job-3-name::',
     ]);
     $job2 = createWorkflowJob($workflow, [
         'name' => '::job-2-name::',
+        'failed_at' => now()->timestamp,
+        'exception' => (string) $exception,
         'edges' => [$job3->uuid]
     ]);
     $job1 = createWorkflowJob($workflow, [
@@ -359,6 +364,7 @@ it('returns the dependency graph as an adjacency list', function () {
             'name' => '::job-1-name::',
             'finished_at' => null,
             'failed_at' => null,
+            'exception' => null,
             'edges' => [
                 $job2->uuid,
                 $job3->uuid,
@@ -367,7 +373,8 @@ it('returns the dependency graph as an adjacency list', function () {
         $job2->uuid => [
             'name' => '::job-2-name::',
             'finished_at' => null,
-            'failed_at' => null,
+            'failed_at' => now(),
+            'exception' => (string) $exception,
             'edges' => [
                 $job3->uuid,
             ],
@@ -375,6 +382,7 @@ it('returns the dependency graph as an adjacency list', function () {
         $job3->uuid => [
             'name' => '::job-3-name::',
             'finished_at' => null,
+            'exception' => null,
             'failed_at' => null,
             'edges' => [],
         ]
