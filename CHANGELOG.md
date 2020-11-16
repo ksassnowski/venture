@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] – 2020-11-16
+### Added
+
+- Added a `beforeCreate` hook to the `WorkflowDefinition` class to
+  manipulate a workflow before it gets saved to the database for the
+  first time.
+
+### Changed
+
+- Added missing `date` casts to the `finished_at` and `failed_at`
+  columns on the `Workflow` model.
+
 ## [1.0.0] – 2020-11-12
 
 Please see the documentation's [upgrade guide](https://laravel-venture.netlify.app/upgrade-guide.html) to migrate from 0.x to 1.0.0.
