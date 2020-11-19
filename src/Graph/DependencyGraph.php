@@ -2,61 +2,57 @@
 
 namespace Sassnowski\Venture\Graph;
 
-use Illuminate\Support\Collection;
-
 class DependencyGraph
 {
     private array $unresolvableDependencies = [];
-    private array $dependencies = [];
-    private array $dependants = [];
-    private array $instances = [];
+    public array $graph = [];
 
     public function addDependantJob($job, array $dependencies): void
     {
         $jobClassName = get_class($job);
 
-        $this->dependencies[$jobClassName] = $dependencies;
+        $this->graph[$jobClassName]['instance'] = $job;
+        $this->graph[$jobClassName]['in_edges'] = $dependencies;
+        $this->graph[$jobClassName]['out_edges'] ??= [];
 
         foreach ($dependencies as $dependency) {
-            if (!array_key_exists($dependency, $this->instances)) {
+            $this->graph[$dependency]['out_edges'][] = $jobClassName;
+
+            if (!isset($this->graph[$dependency]['instance'])) {
                 $this->unresolvableDependencies[$dependency][] = $jobClassName;
             }
-
-            $this->dependants[$dependency][] = $job;
         }
 
         if (array_key_exists($jobClassName, $this->unresolvableDependencies)) {
             unset($this->unresolvableDependencies[$jobClassName]);
         }
-
-        $this->instances[$jobClassName] = $job;
     }
 
     public function getDependantJobs($job): array
     {
         $key = is_object($job) ? get_class($job) : $job;
 
-        return $this->dependants[$key] ?? [];
+        return collect($this->graph[$key]['out_edges'])
+            ->map(function (string $dependantJob) {
+                return $this->graph[$dependantJob]['instance'];
+            })
+            ->toArray();
     }
 
     public function getDependencies($job): array
     {
         $key = is_object($job) ? get_class($job) : $job;
 
-        return $this->dependencies[$key] ?? [];
+        return $this->graph[$key]['in_edges'];
     }
 
     public function getJobsWithoutDependencies(): array
     {
-        return collect($this->dependencies)
-            ->filter(fn (array $deps) => count($deps) === 0)
-            ->keys()
-            ->pipe(function (Collection $jobNames) {
-                return collect($this->instances)
-                    ->only($jobNames)
-                    ->values()
-                    ->toArray();
-            });
+        return collect($this->graph)
+            ->filter(fn (array $node) => count($node['in_edges']) === 0)
+            ->map(fn (array $node) => $node['instance'])
+            ->values()
+            ->toArray();
     }
 
     public function getUnresolvableDependencies(): array
