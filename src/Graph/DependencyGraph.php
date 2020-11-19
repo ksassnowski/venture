@@ -5,7 +5,7 @@ namespace Sassnowski\Venture\Graph;
 class DependencyGraph
 {
     private array $unresolvableDependencies = [];
-    public array $graph = [];
+    private array $graph = [];
 
     public function addDependantJob($job, array $dependencies): void
     {
