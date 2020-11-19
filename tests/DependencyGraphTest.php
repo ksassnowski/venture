@@ -3,6 +3,9 @@
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
+use Stubs\TestJob4;
+use Stubs\TestJob5;
+use Stubs\TestJob6;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\Graph\DependencyGraph;
 
@@ -67,4 +70,125 @@ it('can register jobs with dependencies before their dependencies are registered
     $this->graph->addDependantJob(new TestJob1(), []);
 
     assertEquals([], $this->graph->getUnresolvableDependencies());
+});
+
+it('can connect another graph to a single dependency in the current graph', function () {
+    $graph1 = new DependencyGraph([
+        TestJob1::class => [
+            'instance' => new TestJob1(),
+            'in_edges' => [],
+            'out_edges' => [TestJob2::class],
+        ],
+        TestJob2::class => [
+            'instance' => $job2 = new TestJob2(),
+            'in_edges' => [TestJob1::class],
+            'out_edges' => [],
+        ],
+        TestJob3::class => [
+            'instance' => new TestJob3(),
+            'in_edges' => [],
+            'out_edges' => [],
+        ],
+    ]);
+    $graph2 = new DependencyGraph([
+        TestJob4::class => [
+            'instance' => $job4 = new TestJob4(),
+            'in_edges' => [],
+            'out_edges' => [TestJob5::class],
+        ],
+        TestJob5::class => [
+            'instance' => new TestJob5(),
+            'in_edges' => [TestJob4::class],
+            'out_edges' => [],
+        ],
+        TestJob6::class => [
+            'instance' => $job6 = new TestJob6(),
+            'in_edges' => [],
+            'out_edges' => [],
+        ],
+    ]);
+
+    $graph1->connectGraph($graph2, [TestJob1::class]);
+
+    assertEquals([TestJob1::class], $graph1->getDependencies(TestJob4::class));
+    assertEquals([TestJob4::class], $graph1->getDependencies(TestJob5::class));
+    assertEquals([TestJob1::class], $graph1->getDependencies(TestJob6::class));
+    assertEquals([$job2, $job4, $job6], $graph1->getDependantJobs(TestJob1::class));
+});
+
+it('can connect another graph before the connection point was added', function () {
+    $graph1 = new DependencyGraph();
+    $graph2 = new DependencyGraph([
+        TestJob4::class => [
+            'instance' => new TestJob4(),
+            'in_edges' => [],
+            'out_edges' => [],
+        ],
+    ]);
+
+    $graph1->connectGraph($graph2, [TestJob1::class]);
+    assertEquals([TestJob1::class], array_keys($graph1->getUnresolvableDependencies()));
+});
+
+it('can connect a graph to multiple dependencies in the current graph', function () {
+    $graph1 = new DependencyGraph([
+        TestJob1::class => [
+            'instance' => new TestJob1(),
+            'in_edges' => [],
+            'out_edges' => [TestJob2::class],
+        ],
+        TestJob2::class => [
+            'instance' => $job2 = new TestJob2(),
+            'in_edges' => [TestJob1::class],
+            'out_edges' => [],
+        ],
+        TestJob3::class => [
+            'instance' => new TestJob3(),
+            'in_edges' => [],
+            'out_edges' => [],
+        ],
+    ]);
+    $graph2 = new DependencyGraph([
+        TestJob4::class => [
+            'instance' => $job4 = new TestJob4(),
+            'in_edges' => [],
+            'out_edges' => [TestJob5::class],
+        ],
+        TestJob5::class => [
+            'instance' => new TestJob5(),
+            'in_edges' => [TestJob4::class],
+            'out_edges' => [],
+        ],
+        TestJob6::class => [
+            'instance' => $job6 = new TestJob6(),
+            'in_edges' => [],
+            'out_edges' => [],
+        ],
+    ]);
+
+    $graph1->connectGraph($graph2, [TestJob2::class, TestJob3::class]);
+
+    assertEquals([TestJob2::class, TestJob3::class], $graph1->getDependencies(TestJob4::class));
+    assertEquals([TestJob2::class, TestJob3::class], $graph1->getDependencies(TestJob6::class));
+});
+
+it('can add a different graph without dependencies', function () {
+    $graph1 = new DependencyGraph([
+        TestJob1::class => [
+            'instance' => $job1 = new TestJob1(),
+            'in_edges' => [],
+            'out_edges' => [],
+        ],
+    ]);
+    $graph2 = new DependencyGraph([
+        TestJob2::class => [
+            'instance' => $job2 = new TestJob2(),
+            'in_edges' => [],
+            'out_edges' => [],
+        ],
+    ]);
+
+    $graph1->connectGraph($graph2, []);
+
+    assertEquals([$job1, $job2], $graph1->getJobsWithoutDependencies());
 });
