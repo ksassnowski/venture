@@ -5,7 +5,12 @@ namespace Sassnowski\Venture\Graph;
 class DependencyGraph
 {
     private array $unresolvableDependencies = [];
-    private array $graph = [];
+    private array $graph;
+
+    public function __construct(array $graph = [])
+    {
+        $this->graph = $graph;
+    }
 
     public function addDependantJob($job, array $dependencies): void
     {
@@ -58,5 +63,16 @@ class DependencyGraph
     public function getUnresolvableDependencies(): array
     {
         return $this->unresolvableDependencies;
+    }
+
+    public function connectGraph(DependencyGraph $otherGraph, array $dependencies): void
+    {
+        foreach ($otherGraph->graph as $node) {
+            if (count($node['in_edges']) === 0) {
+                $node['in_edges'] = $dependencies;
+            }
+
+            $this->addDependantJob($node['instance'], $node['in_edges']);
+        }
     }
 }
