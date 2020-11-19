@@ -4,9 +4,13 @@ use Carbon\Carbon;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
+use Stubs\TestJob4;
+use Stubs\TestJob5;
+use Stubs\TestJob6;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\AbstractWorkflow;
 use function PHPUnit\Framework\assertTrue;
 use Sassnowski\Venture\WorkflowDefinition;
 use function PHPUnit\Framework\assertFalse;
@@ -288,6 +292,27 @@ it('calls the before create hook before saving the workflow if provided', functi
         ->build($callback);
 
     assertEquals('::new-name::', $workflow->name);
+});
+
+it('can add another workflow', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::name::')
+                ->addJob(new TestJob4())
+                ->addJob(new TestJob5())
+                ->addJob(new TestJob6(), [TestJob4::class]);
+        }
+    };
+    $definition = (new WorkflowDefinition())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2())
+        ->addJob(new TestJob3(), [TestJob1::class])
+        ->addWorkflow($workflow, [TestJob1::class]);
+
+    assertTrue($definition->hasJobWithDependencies(TestJob4::class, [TestJob1::class]));
+    assertTrue($definition->hasJobWithDependencies(TestJob5::class, [TestJob1::class]));
+    assertTrue($definition->hasJobWithDependencies(TestJob6::class, [TestJob4::class]));
 });
 
 class DummyCallback

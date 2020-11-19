@@ -63,6 +63,19 @@ class WorkflowDefinition
         return $this->addJob($job, $dependencies, $name, $delay);
     }
 
+    public function addWorkflow(AbstractWorkflow $workflow, array $dependencies): self
+    {
+        $definition = $workflow->definition();
+
+        $this->graph->connectGraph($definition->graph, $dependencies);
+
+        foreach ($definition->jobs as $job) {
+            $this->jobs[] = $job;
+        }
+
+        return $this;
+    }
+
     public function then($callback): self
     {
         $this->thenCallback = $this->serializeCallback($callback);
