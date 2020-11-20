@@ -2,10 +2,12 @@
 
 namespace Sassnowski\Venture\Graph;
 
+use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
+
 class DependencyGraph
 {
-    private array $unresolvableDependencies = [];
     private array $graph;
+    private array $nestedGraphs = [];
 
     public function __construct(array $graph = [])
     {
@@ -15,21 +17,14 @@ class DependencyGraph
     public function addDependantJob($job, array $dependencies): void
     {
         $jobClassName = get_class($job);
+        $resolvedDependencies = $this->resolveDependencies($dependencies);
 
         $this->graph[$jobClassName]['instance'] = $job;
-        $this->graph[$jobClassName]['in_edges'] = $dependencies;
+        $this->graph[$jobClassName]['in_edges'] = $resolvedDependencies;
         $this->graph[$jobClassName]['out_edges'] ??= [];
 
-        foreach ($dependencies as $dependency) {
+        foreach ($resolvedDependencies as $dependency) {
             $this->graph[$dependency]['out_edges'][] = $jobClassName;
-
-            if (!isset($this->graph[$dependency]['instance'])) {
-                $this->unresolvableDependencies[$dependency][] = $jobClassName;
-            }
-        }
-
-        if (array_key_exists($jobClassName, $this->unresolvableDependencies)) {
-            unset($this->unresolvableDependencies[$jobClassName]);
         }
     }
 
@@ -60,13 +55,10 @@ class DependencyGraph
             ->toArray();
     }
 
-    public function getUnresolvableDependencies(): array
+    public function connectGraph(DependencyGraph $otherGraph, string $id, array $dependencies): void
     {
-        return $this->unresolvableDependencies;
-    }
+        $this->nestedGraphs[$id] = $otherGraph->graph;
 
-    public function connectGraph(DependencyGraph $otherGraph, array $dependencies): void
-    {
         foreach ($otherGraph->graph as $node) {
             if (count($node['in_edges']) === 0) {
                 $node['in_edges'] = $dependencies;
@@ -74,5 +66,31 @@ class DependencyGraph
 
             $this->addDependantJob($node['instance'], $node['in_edges']);
         }
+    }
+
+    private function resolveDependencies(array $dependencies): array
+    {
+        return collect($dependencies)->flatMap(function (string $dependency) {
+            return $this->resolveDependency($dependency);
+        })->all();
+    }
+
+    private function resolveDependency(string $dependency): array
+    {
+        if (array_key_exists($dependency, $this->graph)) {
+            return [$dependency];
+        }
+
+        if (array_key_exists($dependency, $this->nestedGraphs)) {
+            return collect($this->nestedGraphs[$dependency])
+                ->filter(fn (array $node) => count($node['out_edges']) === 0)
+                ->keys()
+                ->all();
+        }
+
+        throw new UnresolvableDependenciesException(sprintf(
+            'Unable to resolve dependency [%s]. Make sure it was added before declaring it as a dependency.',
+            $dependency
+        ));
     }
 }

@@ -17,7 +17,6 @@ use function PHPUnit\Framework\assertFalse;
 use function Pest\Laravel\assertDatabaseHas;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
-use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
 
 uses(TestCase::class);
 
@@ -286,21 +285,6 @@ dataset('delay provider', [
     'integer' => [2000],
     'date interval' => [new DateInterval('P14D')],
 ]);
-
-it('throws an exception when trying to build a workflow with unresolvable dependencies', function () {
-    test()->expectException(UnresolvableDependenciesException::class);
-    test()->expectExceptionMessage(sprintf(
-        'Workflow contains unresolvable dependency "%s", depended on by [%s, %s]',
-        TestJob1::class,
-        TestJob2::class,
-        TestJob3::class
-    ));
-
-    WorkflowFacade::define('Invalid Workflow')
-        ->addJob(new TestJob2(), [TestJob1::class])
-        ->addJob(new TestJob3(), [TestJob1::class])
-        ->build();
-});
 
 it('calls the before create hook before saving the workflow if provided', function () {
     $callback = function (Workflow $workflow) {
