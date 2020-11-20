@@ -11,7 +11,12 @@ class VentureServiceProvider extends ServiceProvider
     {
         $this->publishes([
             __DIR__ . '/../config/venture.php' => config_path('venture.php'),
-        ]);
+        ], ['config', 'venture-config']);
+
+        $this->publishes([
+            __DIR__ . '/../database/migrations/' => database_path('migrations'),
+        ], ['migrations', 'venture-migrations']);
+
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 
