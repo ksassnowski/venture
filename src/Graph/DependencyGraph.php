@@ -60,6 +60,9 @@ class DependencyGraph
         $this->nestedGraphs[$id] = $otherGraph->graph;
 
         foreach ($otherGraph->graph as $node) {
+            // The root nodes of the nested graph should be connected to
+            // the provided dependencies. If the dependency happens to be
+            // another graph, it will be resolved inside `addDependantJob`.
             if (count($node['in_edges']) === 0) {
                 $node['in_edges'] = $dependencies;
             }
