@@ -81,6 +81,8 @@ class DependencyGraph
             return [$dependency];
         }
 
+        // Depending on a nested graph means depending on each of the graph's
+        // leaf nodes, i.e. nodes with an out-degree of 0.
         if (array_key_exists($dependency, $this->nestedGraphs)) {
             return collect($this->nestedGraphs[$dependency])
                 ->filter(fn (array $node) => count($node['out_edges']) === 0)
