@@ -204,3 +204,48 @@ it('can add a job with a dependency on a nested workflow', function () {
 
     assertEquals([TestJob3::class, TestJob4::class], $graph1->getDependencies(TestJob5::class));
 });
+
+it('can add a nested workflow with a dependency on another nested workflow', function () {
+    $graph1 = new DependencyGraph([]);
+    $graph2 = new DependencyGraph([
+        TestJob1::class => [
+            'instance' => new TestJob1(),
+            'in_edges' => [],
+            'out_edges' => [TestJob3::class],
+        ],
+        TestJob2::class => [
+            'instance' => new TestJob2(),
+            'in_edges' => [],
+            'out_edges' => [],
+        ],
+        TestJob3::class => [
+            'instance' => new TestJob3(),
+            'in_edges' => [TestJob1::class],
+            'out_edges' => [],
+        ],
+    ]);
+    $graph3 = new DependencyGraph([
+        TestJob4::class => [
+            'instance' => new TestJob4(),
+            'in_edges' => [],
+            'out_edges' => [TestJob5::class],
+        ],
+        TestJob5::class => [
+            'instance' => new TestJob5(),
+            'in_edges' => [TestJob4::class],
+            'out_edges' => [],
+        ],
+        TestJob6::class => [
+            'instance' => new TestJob6(),
+            'in_edges' => [],
+            'out_edges' => [],
+        ]
+    ]);
+    $graph1->connectGraph($graph2, '::graph-2-id::', []);
+
+    $graph1->connectGraph($graph3, '::graph-3-id::', ['::graph-2-id::']);
+
+    assertEquals([TestJob2::class, TestJob3::class], $graph1->getDependencies(TestJob4::class));
+    assertEquals([TestJob4::class], $graph1->getDependencies(TestJob5::class));
+    assertEquals([TestJob2::class, TestJob3::class], $graph1->getDependencies(TestJob6::class));
+});
