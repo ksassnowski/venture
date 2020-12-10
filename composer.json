@@ -42,6 +42,7 @@
         "orchestra/testbench": "^6.0",
         "phpunit/phpunit": "^9.4",
         "spatie/phpunit-watcher": "^1.22",
-        "pestphp/pest-plugin-laravel": "^0.3.0"
+        "pestphp/pest-plugin-laravel": "^0.3.0",
+        "mockery/mockery": "^1.3.3"
     }
 }
