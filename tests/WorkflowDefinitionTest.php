@@ -7,6 +7,7 @@ use Stubs\TestJob3;
 use Stubs\TestJob4;
 use Stubs\TestJob5;
 use Stubs\TestJob6;
+use Stubs\NonQueueableJob;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
@@ -17,6 +18,7 @@ use function PHPUnit\Framework\assertFalse;
 use function Pest\Laravel\assertDatabaseHas;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
+use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
 
 uses(TestCase::class);
 
@@ -318,6 +320,10 @@ it('can add another workflow', function () {
     assertTrue($definition->hasJobWithDependencies(TestJob5::class, [TestJob1::class]));
     assertTrue($definition->hasJobWithDependencies(TestJob6::class, [TestJob4::class]));
 });
+
+it('throws an exception when trying to add a job without the ShouldQueue interface', function () {
+    (new WorkflowDefinition())->addJob(new NonQueueableJob());
+})->expectException(NonQueueableWorkflowStepException::class);
 
 class DummyCallback
 {

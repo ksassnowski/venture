@@ -10,7 +10,9 @@ use function array_diff;
 use Illuminate\Support\Str;
 use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Sassnowski\Venture\Graph\DependencyGraph;
+use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
 
 class WorkflowDefinition
 {
@@ -32,9 +34,15 @@ class WorkflowDefinition
      * @param  string|null                             $name
      * @param  DateTimeInterface|DateInterval|int|null $delay
      * @return $this
+     *
+     * @throws NonQueueableWorkflowStepException
      */
     public function addJob($job, array $dependencies = [], ?string $name = null, $delay = null): self
     {
+        if (!($job instanceof ShouldQueue)) {
+            throw new NonQueueableWorkflowStepException();
+        }
+
         $this->graph->addDependantJob($job, $dependencies);
 
         if ($delay !== null) {
