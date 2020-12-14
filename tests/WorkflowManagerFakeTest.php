@@ -2,10 +2,13 @@
 
 use Stubs\TestAbstractWorkflow;
 use Stubs\WorkflowWithParameter;
+use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Facades\Workflow;
 use function PHPUnit\Framework\assertTrue;
+use Sassnowski\Venture\WorkflowDefinition;
 use function PHPUnit\Framework\assertFalse;
 use PHPUnit\Framework\AssertionFailedError;
+use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertInstanceOf;
 use Sassnowski\Venture\Manager\WorkflowManagerInterface;
 
@@ -96,4 +99,22 @@ it('passes if a workflow was started, but the callback returns false', function 
     $this->managerFake->assertNotStarted($workflow, function (WorkflowWithParameter $workflow) {
         return $workflow->something === '::other-parameter::';
     });
+});
+
+it('runs the beforeCreate hook', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return Workflow::define('::name::');
+        }
+
+        public function beforeCreate(\Sassnowski\Venture\Models\Workflow $workflow): void
+        {
+            $workflow->name = '::new-name::';
+        }
+    };
+
+    $workflow = $this->managerFake->startWorkflow($workflow);
+
+    assertEquals('::new-name::', $workflow->name);
 });
