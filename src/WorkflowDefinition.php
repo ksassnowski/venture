@@ -4,6 +4,7 @@ namespace Sassnowski\Venture;
 
 use Closure;
 use DateInterval;
+use Illuminate\Support\Arr;
 use function count;
 use DateTimeInterface;
 use function array_diff;
@@ -204,6 +205,18 @@ class WorkflowDefinition
         }
 
         return count(array_diff($resolvedDependencies, $workflowDependencies['dependencies'])) === 0;
+    }
+
+    public function getWorkflow($workflow): ?AbstractWorkflow
+    {
+        $className = is_object($workflow) ? get_class($workflow) : $workflow;
+        $workflows = collect($this->workflows[$className] ?? []);
+
+        if (is_string($workflow)) {
+            return $workflows->last()['instance'] ?? null;
+        }
+
+        return $workflows->firstWhere('instance', '===', $workflow)['instance'] ?? null;
     }
 
     private function getJobByClassName(string $className): ?array

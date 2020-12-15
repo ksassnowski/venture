@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Carbon\Carbon;
+use Stubs\TestAbstractWorkflow;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
@@ -489,6 +490,32 @@ it('returns true if workflow contains workflow with the correct dependency insta
 
     assertTrue($definition->hasWorkflow($workflow, [$job1]));
     assertTrue($definition->hasWorkflow($workflow2, [$job2]));
+});
+
+it('returns the added workflow by instance', function () {
+    $workflow = new TestAbstractWorkflow();
+    $definition = (new WorkflowDefinition())
+        ->addWorkflow($workflow, []);
+
+    assertEquals($workflow, $definition->getWorkflow($workflow));
+});
+
+it('returns the added workflow by class', function () {
+    $workflow = new TestAbstractWorkflow();
+    $definition = (new WorkflowDefinition())
+        ->addWorkflow($workflow, []);
+
+    assertEquals($workflow, $definition->getWorkflow(TestAbstractWorkflow::class));
+});
+
+it('returns the last added workflow when getting workflow by class', function () {
+    $workflow1 = new TestAbstractWorkflow();
+    $workflow2 = new TestAbstractWorkflow();
+    $definition = (new WorkflowDefinition())
+        ->addWorkflow($workflow1, [])
+        ->addWorkflow($workflow2, []);
+
+    assertEquals($workflow2, $definition->getWorkflow(TestAbstractWorkflow::class));
 });
 
 it('throws an exception when trying to add a job without the ShouldQueue interface', function () {
