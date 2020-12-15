@@ -130,9 +130,12 @@ class DependencyGraph
     private function resolveStepId($job): ?string
     {
         // dependency can be a class object, class name or stepId
-        $className = is_object($job) ? get_class($job) : $job;
-        if (array_key_exists($className, $this->classMap)) {
-            return Arr::last($this->classMap[$className] ?? []);
+        if (is_object($job)) {
+            return $job->stepId;
+        }
+
+        if (array_key_exists($job, $this->classMap)) {
+            return Arr::last($this->classMap[$job] ?? []);
         }
 
         // we're dealing with a stepId
