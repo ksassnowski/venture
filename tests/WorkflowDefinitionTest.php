@@ -376,53 +376,26 @@ it('can add another workflow', function () {
 });
 
 it('returns true if workflow contains workflow instance with the correct dependencies', function () {
-    $workflow = new class extends AbstractWorkflow {
-        public function definition(): WorkflowDefinition
-        {
-            return WorkflowFacade::define('::name::')
-                ->addJob(new TestJob4())
-                ->addJob(new TestJob5())
-                ->addJob(new TestJob6(), [TestJob4::class]);
-        }
-    };
+    $workflow = new TestAbstractWorkflow();
     $definition = (new WorkflowDefinition())
         ->addJob(new TestJob1())
-        ->addJob(new TestJob2())
-        ->addJob(new TestJob3(), [TestJob1::class])
         ->addWorkflow($workflow, [TestJob1::class]);
 
     assertTrue($definition->hasWorkflow($workflow, [TestJob1::class]));
 });
 
 it('returns false if workflow contains workflow instance, but with incorrect dependencies', function () {
-    $workflow = new class extends AbstractWorkflow {
-        public function definition(): WorkflowDefinition
-        {
-            return WorkflowFacade::define('::name::')
-                ->addJob(new TestJob4())
-                ->addJob(new TestJob5())
-                ->addJob(new TestJob6(), [TestJob4::class]);
-        }
-    };
+    $workflow = new TestAbstractWorkflow();
     $definition = (new WorkflowDefinition())
         ->addJob(new TestJob1())
         ->addJob(new TestJob2())
-        ->addJob(new TestJob3(), [TestJob1::class])
         ->addWorkflow($workflow, [TestJob1::class]);
 
     assertFalse($definition->hasWorkflow($workflow, [TestJob2::class]));
 });
 
 it('returns true if workflow contains workflow instance with the correct dependency instances', function () {
-    $workflow = new class extends AbstractWorkflow {
-        public function definition(): WorkflowDefinition
-        {
-            return WorkflowFacade::define('::name::')
-                ->addJob(new TestJob4())
-                ->addJob(new TestJob5())
-                ->addJob(new TestJob6(), [TestJob4::class]);
-        }
-    };
+    $workflow = new TestAbstractWorkflow();
     $definition = (new WorkflowDefinition())
         ->addJob($job1 = new TestJob1())
         ->addJob(new TestJob2())
@@ -433,15 +406,7 @@ it('returns true if workflow contains workflow instance with the correct depende
 });
 
 it('returns true if workflow contains workflow class with the correct dependency instances', function () {
-    $workflow = new class extends AbstractWorkflow {
-        public function definition(): WorkflowDefinition
-        {
-            return WorkflowFacade::define('::name::')
-                ->addJob(new TestJob4())
-                ->addJob(new TestJob5())
-                ->addJob(new TestJob6(), [TestJob4::class]);
-        }
-    };
+    $workflow = new TestAbstractWorkflow();
     $definition = (new WorkflowDefinition())
         ->addJob($job1 = new TestJob1())
         ->addJob(new TestJob2())
@@ -452,15 +417,7 @@ it('returns true if workflow contains workflow class with the correct dependency
 });
 
 it('returns false if workflow contains workflow instance, but with incorrect dependency instances', function () {
-    $workflow = new class extends AbstractWorkflow {
-        public function definition(): WorkflowDefinition
-        {
-            return WorkflowFacade::define('::name::')
-                ->addJob(new TestJob4())
-                ->addJob(new TestJob5())
-                ->addJob(new TestJob6(), [TestJob4::class]);
-        }
-    };
+    $workflow = new TestAbstractWorkflow();
     $definition = (new WorkflowDefinition())
         ->addJob($job1 = new TestJob1())
         ->addJob($job2 = new TestJob1())
@@ -471,16 +428,8 @@ it('returns false if workflow contains workflow instance, but with incorrect dep
 });
 
 it('returns true if workflow contains workflow with the correct dependency instances when adding workflow multiple times', function () {
-    $workflow = new class extends AbstractWorkflow {
-        public function definition(): WorkflowDefinition
-        {
-            return WorkflowFacade::define('::name::')
-                ->addJob(new TestJob4())
-                ->addJob(new TestJob5())
-                ->addJob(new TestJob6(), [TestJob4::class]);
-        }
-    };
-    $workflow2 = clone $workflow;
+    $workflow = new TestAbstractWorkflow();
+    $workflow2 = new TestAbstractWorkflow();
     $definition = (new WorkflowDefinition())
         ->addJob($job1 = new TestJob1())
         ->addJob($job2 = new TestJob2())
