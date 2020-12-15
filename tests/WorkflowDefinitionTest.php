@@ -40,6 +40,51 @@ it('creates a workflow', function () {
     ]);
 });
 
+it('creates a workflow with identical job classes', function () {
+    (new WorkflowDefinition())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2(), [TestJob1::class])
+        ->build();
+
+    assertDatabaseHas('workflows', [
+        'job_count' => 3,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => json_encode([]),
+    ]);
+});
+
+it('creates a workflow with identical job classes as dependencies', function () {
+    (new WorkflowDefinition())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2(), [TestJob1::class])
+        ->addJob(new TestJob2(), [TestJob1::class])
+        ->build();
+
+    assertDatabaseHas('workflows', [
+        'job_count' => 4,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => json_encode([]),
+    ]);
+});
+
+it('creates a workflow with job class dependant on itself', function () {
+    (new WorkflowDefinition())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob1(), [TestJob1::class])
+        ->build();
+
+    assertDatabaseHas('workflows', [
+        'job_count' => 2,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => json_encode([]),
+    ]);
+});
+
 it('returns the workflow\'s initial batch of jobs', function () {
     $job1 = new TestJob1();
     $job2 = new TestJob2();
@@ -253,6 +298,14 @@ it('returns true if job exists with the correct dependencies', function () {
         ->addJob(new TestJob2(), [TestJob1::class]);
 
     assertTrue($definition->hasJob(TestJob2::class, [TestJob1::class]));
+});
+
+it('returns true if job exists with the correct instance dependencies', function () {
+    $definition = WorkflowFacade::define('::name::')
+        ->addJob($job1 = new TestJob1())
+        ->addJob(new TestJob2(), [$job1]);
+
+    assertTrue($definition->hasJob(TestJob2::class, [$job1]));
 });
 
 it('returns false if job exists, but with incorrect dependencies', function () {

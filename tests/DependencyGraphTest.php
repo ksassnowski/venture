@@ -9,6 +9,7 @@ use Stubs\TestJob6;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\Graph\DependencyGraph;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
+use function PHPUnit\Framework\assertNotEquals;
 
 beforeEach(function () {
     $this->graph = new DependencyGraph();
@@ -46,6 +47,47 @@ it('returns the instances of all dependants of a job', function () {
     assertEquals([$job1, $job3], $this->graph->getDependantJobs($job2));
 });
 
+it('returns the last added instance of a job class if added multiple times', function () {
+    $job1 = new TestJob1();
+    $job1Other = new TestJob1();
+    $job2 = new TestJob2();
+
+    $this->graph->addDependantJob($job1, []);
+    $this->graph->addDependantJob($job1Other, []);
+    $this->graph->addDependantJob($job2, [TestJob1::class]);
+
+    assertEquals([$job1Other], $this->graph->getDependenciesAsJobs($job2));
+});
+
+it('does not return the first instance of a job class if added multiple times', function () {
+    $job1 = new TestJob1();
+    $job1Other = new TestJob1();
+    $job2 = new TestJob2();
+
+    $this->graph->addDependantJob($job1, []);
+    $this->graph->addDependantJob($job1Other, []);
+    $this->graph->addDependantJob($job2, [TestJob1::class]);
+
+    assertNotEquals([$job1], $this->graph->getDependenciesAsJobs($job2));
+});
+
+it('returns the last added instance of a job class if added multiple times, out of sequence', function () {
+    $job1 = new TestJob1();
+    $job1Other = new TestJob1();
+    $job2 = new TestJob2();
+    $job1Another = new TestJob1();
+    $job3 = new TestJob3();
+
+
+    $this->graph->addDependantJob($job1, []);
+    $this->graph->addDependantJob($job1Other, []);
+    $this->graph->addDependantJob($job2, [TestJob1::class]);
+    $this->graph->addDependantJob($job1Another, []);
+    $this->graph->addDependantJob($job3, [TestJob1::class]);
+
+    assertEquals([$job1Another], $this->graph->getDependenciesAsJobs($job3));
+});
+
 it('returns all jobs without dependencies', function () {
     $job1 = new TestJob1();
     $job2 = new TestJob2();
@@ -67,40 +109,15 @@ it('throws an exception when trying to add a job with a dependency that does not
 });
 
 it('can connect another graph to a single dependency in the current graph', function () {
-    $graph1 = new DependencyGraph([
-        TestJob1::class => [
-            'instance' => new TestJob1(),
-            'in_edges' => [],
-            'out_edges' => [TestJob2::class],
-        ],
-        TestJob2::class => [
-            'instance' => $job2 = new TestJob2(),
-            'in_edges' => [TestJob1::class],
-            'out_edges' => [],
-        ],
-        TestJob3::class => [
-            'instance' => new TestJob3(),
-            'in_edges' => [],
-            'out_edges' => [],
-        ],
-    ]);
-    $graph2 = new DependencyGraph([
-        TestJob4::class => [
-            'instance' => $job4 = new TestJob4(),
-            'in_edges' => [],
-            'out_edges' => [TestJob5::class],
-        ],
-        TestJob5::class => [
-            'instance' => new TestJob5(),
-            'in_edges' => [TestJob4::class],
-            'out_edges' => [],
-        ],
-        TestJob6::class => [
-            'instance' => $job6 = new TestJob6(),
-            'in_edges' => [],
-            'out_edges' => [],
-        ],
-    ]);
+    $graph1 = new DependencyGraph();
+    $graph1->addDependantJob(new TestJob1(), []);
+    $graph1->addDependantJob($job2 = new TestJob2(), [TestJob1::class]);
+    $graph1->addDependantJob(new TestJob3(), []);
+
+    $graph2 = new DependencyGraph();
+    $graph2->addDependantJob($job4 = new TestJob4(), []);
+    $graph2->addDependantJob(new TestJob5(), [TestJob4::class]);
+    $graph2->addDependantJob($job6 = new TestJob6(), []);
 
     $graph1->connectGraph($graph2, '::id::', [TestJob1::class]);
 
@@ -123,7 +140,7 @@ it('can connect a graph to multiple dependencies in the current graph', function
             'out_edges' => [],
         ],
         TestJob3::class => [
-            'instance' => new TestJob3(),
+            'instance' => $job3 = new TestJob3(),
             'in_edges' => [],
             'out_edges' => [],
         ],
@@ -150,6 +167,8 @@ it('can connect a graph to multiple dependencies in the current graph', function
 
     assertEquals([TestJob2::class, TestJob3::class], $graph1->getDependencies(TestJob4::class));
     assertEquals([TestJob2::class, TestJob3::class], $graph1->getDependencies(TestJob6::class));
+    assertEquals([$job2, $job3], $graph1->getDependenciesAsJobs(TestJob4::class));
+    assertEquals([$job2, $job3], $graph1->getDependenciesAsJobs(TestJob6::class));
 });
 
 it('can add a different graph without dependencies', function () {

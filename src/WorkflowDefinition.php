@@ -118,7 +118,6 @@ class WorkflowDefinition
         foreach ($this->jobs as $job) {
             $job['job']
                 ->withWorkflowId($workflow->id)
-                ->withStepId(Str::orderedUuid())
                 ->withDependantJobs($this->graph->getDependantJobs($job['job']))
                 ->withDependencies($this->graph->getDependencies($job['job']));
         }
@@ -142,13 +141,15 @@ class WorkflowDefinition
         return serialize($callback);
     }
 
-    public function hasJob(string $jobClassName, ?array $dependencies = null, $delay = null): bool
+    public function hasJob($job, ?array $dependencies = null, $delay = null): bool
     {
+        $jobClassName = is_object($job) ? get_class($job) : $job;
+
         if ($dependencies === null && $delay === null) {
             return $this->getJobByClassName($jobClassName) !== null;
         }
 
-        if ($dependencies !== null && !$this->hasJobWithDependencies($jobClassName, $dependencies)) {
+        if ($dependencies !== null && !$this->hasJobWithDependencies($job, $dependencies)) {
             return false;
         }
 
@@ -159,9 +160,14 @@ class WorkflowDefinition
         return true;
     }
 
-    public function hasJobWithDependencies(string $jobClassName, array $dependencies): bool
+    public function hasJobWithDependencies($job, array $dependencies): bool
     {
-        return count(array_diff($dependencies, $this->graph->getDependencies($jobClassName))) === 0;
+        $jobDependencies = collect($this->graph->getDependenciesAsJobs($job))
+            ->map(fn ($job) => $job->stepId)
+            ->toArray();
+        $resolvedDependencies = $this->graph->resolveDependencies($dependencies);
+
+        return count(array_diff($resolvedDependencies, $jobDependencies)) === 0;
     }
 
     public function hasJobWithDelay(string $jobClassName, $delay): bool
