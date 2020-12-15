@@ -17,6 +17,7 @@ use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
 class WorkflowDefinition
 {
     private array $jobs = [];
+    private array $workflows = [];
     private DependencyGraph $graph;
     private string $workflowName;
     private ?string $thenCallback = null;
@@ -75,6 +76,10 @@ class WorkflowDefinition
         $definition = $workflow->definition();
 
         $this->graph->connectGraph($definition->graph, get_class($workflow), $dependencies);
+        $this->workflows[get_class($workflow)][] = [
+            'instance' => $workflow,
+            'dependencies' => $this->graph->resolveDependencies($dependencies),
+        ];
 
         foreach ($definition->jobs as $job) {
             $this->jobs[] = $job;
@@ -177,6 +182,28 @@ class WorkflowDefinition
         }
 
         return $job['job']->delay == $delay;
+    }
+
+    public function hasWorkflow($workflow, array $dependencies)
+    {
+        $className = is_object($workflow) ? get_class($workflow) : $workflow;
+
+        $resolvedDependencies = $this->graph->resolveDependencies($dependencies);
+        $workflowDependencies = collect($this->workflows[$className] ?? []);
+
+        if (is_string($workflow)) {
+            return $workflowDependencies->first(function ($candidate) use ($resolvedDependencies) {
+                return count(array_diff($resolvedDependencies, $candidate['dependencies'])) === 0;
+            }) !== null;
+        }
+
+        $workflowDependencies = $workflowDependencies->firstWhere('instance', '===', $workflow);
+
+        if (!$workflowDependencies) {
+            return false;
+        }
+
+        return count(array_diff($resolvedDependencies, $workflowDependencies['dependencies'])) === 0;
     }
 
     private function getJobByClassName(string $className): ?array

@@ -374,6 +374,123 @@ it('can add another workflow', function () {
     assertTrue($definition->hasJobWithDependencies(TestJob6::class, [TestJob4::class]));
 });
 
+it('returns true if workflow contains workflow instance with the correct dependencies', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::name::')
+                ->addJob(new TestJob4())
+                ->addJob(new TestJob5())
+                ->addJob(new TestJob6(), [TestJob4::class]);
+        }
+    };
+    $definition = (new WorkflowDefinition())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2())
+        ->addJob(new TestJob3(), [TestJob1::class])
+        ->addWorkflow($workflow, [TestJob1::class]);
+
+    assertTrue($definition->hasWorkflow($workflow, [TestJob1::class]));
+});
+
+it('returns false if workflow contains workflow instance, but with incorrect dependencies', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::name::')
+                ->addJob(new TestJob4())
+                ->addJob(new TestJob5())
+                ->addJob(new TestJob6(), [TestJob4::class]);
+        }
+    };
+    $definition = (new WorkflowDefinition())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2())
+        ->addJob(new TestJob3(), [TestJob1::class])
+        ->addWorkflow($workflow, [TestJob1::class]);
+
+    assertFalse($definition->hasWorkflow($workflow, [TestJob2::class]));
+});
+
+it('returns true if workflow contains workflow instance with the correct dependency instances', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::name::')
+                ->addJob(new TestJob4())
+                ->addJob(new TestJob5())
+                ->addJob(new TestJob6(), [TestJob4::class]);
+        }
+    };
+    $definition = (new WorkflowDefinition())
+        ->addJob($job1 = new TestJob1())
+        ->addJob(new TestJob2())
+        ->addJob(new TestJob3(), [TestJob1::class])
+        ->addWorkflow($workflow, [$job1]);
+
+    assertTrue($definition->hasWorkflow($workflow, [$job1]));
+});
+
+it('returns true if workflow contains workflow class with the correct dependency instances', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::name::')
+                ->addJob(new TestJob4())
+                ->addJob(new TestJob5())
+                ->addJob(new TestJob6(), [TestJob4::class]);
+        }
+    };
+    $definition = (new WorkflowDefinition())
+        ->addJob($job1 = new TestJob1())
+        ->addJob(new TestJob2())
+        ->addJob(new TestJob3(), [TestJob1::class])
+        ->addWorkflow($workflow, [$job1]);
+
+    assertTrue($definition->hasWorkflow(get_class($workflow), [$job1]));
+});
+
+it('returns false if workflow contains workflow instance, but with incorrect dependency instances', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::name::')
+                ->addJob(new TestJob4())
+                ->addJob(new TestJob5())
+                ->addJob(new TestJob6(), [TestJob4::class]);
+        }
+    };
+    $definition = (new WorkflowDefinition())
+        ->addJob($job1 = new TestJob1())
+        ->addJob($job2 = new TestJob1())
+        ->addJob(new TestJob3(), [TestJob1::class])
+        ->addWorkflow($workflow, [$job2]);
+
+    assertFalse($definition->hasWorkflow($workflow, [$job1]));
+});
+
+it('returns true if workflow contains workflow with the correct dependency instances when adding workflow multiple times', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::name::')
+                ->addJob(new TestJob4())
+                ->addJob(new TestJob5())
+                ->addJob(new TestJob6(), [TestJob4::class]);
+        }
+    };
+    $workflow2 = clone $workflow;
+    $definition = (new WorkflowDefinition())
+        ->addJob($job1 = new TestJob1())
+        ->addJob($job2 = new TestJob2())
+        ->addJob(new TestJob3(), [TestJob1::class])
+        ->addWorkflow($workflow, [$job1])
+        ->addWorkflow($workflow2, [$job2]);
+
+    assertTrue($definition->hasWorkflow($workflow, [$job1]));
+    assertTrue($definition->hasWorkflow($workflow2, [$job2]));
+});
+
 it('throws an exception when trying to add a job without the ShouldQueue interface', function () {
     (new WorkflowDefinition())->addJob(new NonQueueableJob());
 })->expectException(NonQueueableWorkflowStepException::class);
