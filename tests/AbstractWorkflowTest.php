@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-use Sassnowski\Venture\Models\Workflow as WorkflowModel;
 use Stubs\TestAbstractWorkflow;
 use Stubs\WorkflowWithParameter;
 use Sassnowski\Venture\Facades\Workflow;
+use Sassnowski\Venture\Models\Workflow as WorkflowModel;
 use function PHPUnit\Framework\assertInstanceOf;
 
 uses(TestCase::class);
@@ -13,8 +13,8 @@ it('can be started', function () {
 
     $workflow = TestAbstractWorkflow::start();
 
-    Workflow::assertStarted(TestAbstractWorkflow::class);
     assertInstanceOf(WorkflowModel::class, $workflow);
+    Workflow::assertStarted(TestAbstractWorkflow::class);
 });
 
 it('passes the parameters to the constructor of the workflow', function () {
