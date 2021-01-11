@@ -3,14 +3,17 @@
 use Stubs\TestAbstractWorkflow;
 use Stubs\WorkflowWithParameter;
 use Sassnowski\Venture\Facades\Workflow;
+use Sassnowski\Venture\Models\Workflow as WorkflowModel;
+use function PHPUnit\Framework\assertInstanceOf;
 
 uses(TestCase::class);
 
 it('can be started', function () {
     Workflow::fake();
 
-    TestAbstractWorkflow::start();
+    $workflow = TestAbstractWorkflow::start();
 
+    assertInstanceOf(WorkflowModel::class, $workflow);
     Workflow::assertStarted(TestAbstractWorkflow::class);
 });
 
