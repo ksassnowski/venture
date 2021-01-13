@@ -30,6 +30,10 @@ class WorkflowEventSubscriber
 
     public function handleJobProcessed(JobProcessed $event): void
     {
+        if ($event->job->isReleased()) {
+            return;
+        }
+        
         $jobInstance = $this->getJobInstance($event->job);
 
         if ($this->isWorkflowStep($jobInstance)) {
