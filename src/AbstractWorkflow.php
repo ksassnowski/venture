@@ -24,4 +24,8 @@ abstract class AbstractWorkflow
     public function beforeCreate(Workflow $workflow): void
     {
     }
+
+    public function beforeNesting(array $jobs): void
+    {
+    }
 }
