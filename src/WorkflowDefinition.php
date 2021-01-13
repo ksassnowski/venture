@@ -74,6 +74,8 @@ class WorkflowDefinition
     {
         $definition = $workflow->definition();
 
+        $workflow->beforeNesting($definition->getJobInstances());
+
         $this->graph->connectGraph($definition->graph, get_class($workflow), $dependencies);
 
         foreach ($definition->jobs as $job) {
@@ -178,5 +180,12 @@ class WorkflowDefinition
         return collect($this->jobs)->first(function (array $job) use ($className) {
             return get_class($job['job']) === $className;
         });
+    }
+
+    private function getJobInstances(): array
+    {
+        return collect($this->jobs)
+            ->map(fn (array $job) => $job['job'])
+            ->all();
     }
 }

@@ -24,6 +24,7 @@ uses(TestCase::class);
 
 beforeEach(function () {
     Bus::fake();
+    $_SERVER['__before_connect_callback'] = 0;
 });
 
 it('creates a workflow', function () {
@@ -298,6 +299,26 @@ it('calls the before create hook before saving the workflow if provided', functi
         ->build($callback);
 
     assertEquals('::new-name::', $workflow->name);
+});
+
+it('calls the before connecting hook before adding a nested workflow', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::name::')
+                ->addJob(new TestJob2());
+        }
+
+        public function beforeNesting(array $jobs): void
+        {
+            $_SERVER['__before_connect_callback']++;
+        }
+    };
+
+    WorkflowFacade::define('::name::')
+        ->addWorkflow(new $workflow(), []);
+
+    assertEquals(1, $_SERVER['__before_connect_callback']);
 });
 
 it('can add another workflow', function () {
