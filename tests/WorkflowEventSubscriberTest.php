@@ -20,15 +20,16 @@ beforeEach(function () {
     $_SERVER['__catch.called'] = false;
 });
 
-function prepareFakeJob($workflowJob, bool $failed = false)
+function prepareFakeJob($workflowJob, bool $failed = false, bool $released = false)
 {
-    return with(m::mock(Job::class), function (m\MockInterface $job) use ($workflowJob, $failed) {
+    return with(m::mock(Job::class), function (m\MockInterface $job) use ($workflowJob, $failed, $released) {
         $job->allows('payload')->andReturns([
             'data' => [
                 'command' => serialize($workflowJob),
             ]
         ]);
         $job->allows('hasFailed')->andReturn($failed);
+        $job->allows('isReleased')->andReturn($released);
         $job->allows('delete');
 
         return $job;
@@ -50,6 +51,24 @@ it('notifies the workflow if a workflow step has finished', function () {
     $eventSubscriber->handleJobProcessed($event);
 
     assertTrue($workflow->fresh()->isFinished());
+});
+
+it('does not notify the workflow has finished when job is released back into the queue', function () {
+    $workflow = Workflow::create([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+    ]);
+    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $event = new JobProcessed('::connection::', prepareFakeJob($workflowJob, false, true));
+    $eventSubscriber = new WorkflowEventSubscriber();
+
+    assertTrue($event->job->isReleased());
+    assertFalse($workflow->isFinished());
+    $eventSubscriber->handleJobProcessed($event);
+
+    assertFalse($workflow->fresh()->isFinished());
 });
 
 it('only cares about jobs that use the WorkflowStep trait', function () {
