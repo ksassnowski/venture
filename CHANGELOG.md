@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [UNRELEASED] — 2021-01-13
+## [2.1.0] — 2021-01-14
 ### Added
 
 - Added `beforeNesting` hook to that gets called before a workflow gets added as a nested workflow. (#13)
@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Made `$dependencies` parameter optional in `addWorkflow` method of `WorkflowDefinition`. It now
   works the same as the `addJob` methods. (#20) 
+  
+### Fixed
+
+- Don't call `onStepFinished` method when a job was released back onto the queue (#21)
 
 ## [2.0.0] — 2021-01-12
 ### Added
