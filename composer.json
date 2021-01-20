@@ -12,13 +12,13 @@
     "require": {
         "php": "^7.4|^8.0",
         "ext-json": "*",
-        "illuminate/support": "^7.0|^8.0",
-        "illuminate/container": "^7.0|^8.0",
-        "illuminate/bus": "^7.0|^8.0",
-        "illuminate/queue": "^7.0|^8.0",
+        "illuminate/support": "^7.30.3|^8.22.1",
+        "illuminate/container": "^7.30.3|^8.22.1",
+        "illuminate/bus": "^7.30.3|^8.22.1",
+        "illuminate/queue": "^7.30.3|^8.22.1",
         "ramsey/uuid": "^4.0",
         "opis/closure": "^3.5",
-        "illuminate/events": "^7.0|^8.0"
+        "illuminate/events": "^7.30.3|^8.22.1"
     },
     "autoload": {
         "psr-4": {
