@@ -25,3 +25,12 @@ function createWorkflowJob(Workflow $workflow, array $attributes = []): Workflow
         'finished_at' => null,
     ], $attributes));
 }
+
+function getPropertyValue($object, $property)
+{
+    $reflection = new \ReflectionClass($object);
+    $property = $reflection->getProperty($property);
+    $property->setAccessible(true);
+
+    return $property->getValue($object);
+}

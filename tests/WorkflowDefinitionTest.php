@@ -467,6 +467,57 @@ it('returns the last added workflow when getting workflow by class', function ()
     assertEquals($workflow2, $definition->getWorkflow(TestAbstractWorkflow::class));
 });
 
+it('nesting workflows with dependency on duplicated job depend on the original workflows instance of duplicated job', function () {
+    $w1t1 = new TestJob1();
+    $w1t2 = new TestJob2();
+    $workflow1 = new class ($w1t1, $w1t2) extends AbstractWorkflow {
+        public function __construct($w1t1, $w1t2)
+        {
+            $this->w1t1 = $w1t1;
+            $this->w1t2 = $w1t2;
+        }
+
+        public function definition(): WorkflowDefinition
+        {
+            return \Sassnowski\Venture\Facades\Workflow::define('::name::')
+                ->addJob($this->w1t1)
+                ->addJob($this->w1t2, [TestJob1::class]);
+        }
+    };
+
+    $w2t1 = new TestJob1();
+    $w2t2 = new TestJob2();
+    $workflow2 = new class ($w2t1, $w2t2) extends AbstractWorkflow {
+        public function __construct($w2t1, $w2t2)
+        {
+            $this->w2t1 = $w2t1;
+            $this->w2t2 = $w2t2;
+        }
+
+        public function definition(): WorkflowDefinition
+        {
+            return \Sassnowski\Venture\Facades\Workflow::define('::name::')
+                ->addJob($this->w2t1)
+                ->addJob($this->w2t2, [TestJob1::class]);
+        }
+    };
+    $definition = (new WorkflowDefinition())
+        ->addWorkflow($workflow1, [])
+        ->addWorkflow($workflow2, []);
+
+    assertTrue($definition->hasJob($w1t2));
+    assertTrue($definition->hasJobWithDependencies($w1t2, [$w1t1]));
+
+    assertTrue($definition->hasJob($w2t2));
+    assertTrue($definition->hasJobWithDependencies($w2t2, [$w2t1]));
+
+    assertFalse($definition->hasJobWithDependencies($w1t2, [$w2t1]));
+    assertFalse($definition->hasJobWithDependencies($w2t2, [$w1t1]));
+
+    assertEquals(2, count(getPropertyValue($definition, 'workflows')));
+    assertEquals(4, count(getPropertyValue($definition, 'jobs')));
+});
+
 it('throws an exception when trying to add a job without the ShouldQueue interface', function () {
     (new WorkflowDefinition())->addJob(new NonQueueableJob());
 })->expectException(NonQueueableWorkflowStepException::class);
