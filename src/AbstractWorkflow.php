@@ -12,7 +12,7 @@ abstract class AbstractWorkflow
         return (new static(...func_get_args()))->run();
     }
 
-    private function run(): Workflow
+    protected function run(): Workflow
     {
         return Container::getInstance()
             ->make('venture.manager')
