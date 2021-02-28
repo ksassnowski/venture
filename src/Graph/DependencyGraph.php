@@ -14,36 +14,38 @@ class DependencyGraph
         $this->graph = $graph;
     }
 
-    public function addDependantJob($job, array $dependencies): void
+    public function addDependantJob($job, array $dependencies, string $id): void
     {
-        $jobClassName = get_class($job);
+        if (isset($this->graph[$id])) {
+            throw new DuplicateJobException(sprintf(
+                'A job with id "%s" already exists in this workflow. If you are trying to add multiple instances of the same job, make sure to provide explicit ids for them',
+                $id
+            ));
+        }
+
         $resolvedDependencies = $this->resolveDependencies($dependencies);
 
-        $this->graph[$jobClassName]['instance'] = $job;
-        $this->graph[$jobClassName]['in_edges'] = $resolvedDependencies;
-        $this->graph[$jobClassName]['out_edges'] ??= [];
+        $this->graph[$id]['instance'] = $job;
+        $this->graph[$id]['in_edges'] = $resolvedDependencies;
+        $this->graph[$id]['out_edges'] ??= [];
 
         foreach ($resolvedDependencies as $dependency) {
-            $this->graph[$dependency]['out_edges'][] = $jobClassName;
+            $this->graph[$dependency]['out_edges'][] = $id;
         }
     }
 
-    public function getDependantJobs($job): array
+    public function getDependantJobs(string $jobId): array
     {
-        $key = is_object($job) ? get_class($job) : $job;
-
-        return collect($this->graph[$key]['out_edges'])
+        return collect($this->graph[$jobId]['out_edges'])
             ->map(function (string $dependantJob) {
                 return $this->graph[$dependantJob]['instance'];
             })
             ->toArray();
     }
 
-    public function getDependencies($job): array
+    public function getDependencies(string $jobId): array
     {
-        $key = is_object($job) ? get_class($job) : $job;
-
-        return $this->graph[$key]['in_edges'];
+        return $this->graph[$jobId]['in_edges'];
     }
 
     public function getJobsWithoutDependencies(): array
@@ -59,7 +61,7 @@ class DependencyGraph
     {
         $this->nestedGraphs[$id] = $otherGraph->graph;
 
-        foreach ($otherGraph->graph as $node) {
+        foreach ($otherGraph->graph as $nodeId => $node) {
             // The root nodes of the nested graph should be connected to
             // the provided dependencies. If the dependency happens to be
             // another graph, it will be resolved inside `addDependantJob`.
@@ -67,7 +69,7 @@ class DependencyGraph
                 $node['in_edges'] = $dependencies;
             }
 
-            $this->addDependantJob($node['instance'], $node['in_edges']);
+            $this->addDependantJob($node['instance'], $node['in_edges'], $nodeId);
         }
     }
 

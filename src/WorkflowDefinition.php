@@ -33,23 +33,26 @@ class WorkflowDefinition
      * @param  array                                   $dependencies
      * @param  string|null                             $name
      * @param  DateTimeInterface|DateInterval|int|null $delay
+     * @param  string|null                             $id
      * @return $this
      *
      * @throws NonQueueableWorkflowStepException
      */
-    public function addJob($job, array $dependencies = [], ?string $name = null, $delay = null): self
+    public function addJob($job, array $dependencies = [], ?string $name = null, $delay = null, ?string $id = null): self
     {
         if (!($job instanceof ShouldQueue)) {
             throw NonQueueableWorkflowStepException::fromJob($job);
         }
 
-        $this->graph->addDependantJob($job, $dependencies);
+        $id = $id ?: get_class($job);
+
+        $this->graph->addDependantJob($job, $dependencies, $id);
 
         if ($delay !== null) {
             $job->delay($delay);
         }
 
-        $this->jobs[] = [
+        $this->jobs[$id] = [
             'job' => $job,
             'name' => $name ?: get_class($job),
         ];
@@ -104,12 +107,12 @@ class WorkflowDefinition
 
         $workflow->save();
 
-        foreach ($this->jobs as $job) {
+        foreach ($this->jobs as $id => $job) {
             $job['job']
                 ->withWorkflowId($workflow->id)
                 ->withStepId(Str::orderedUuid())
-                ->withDependantJobs($this->graph->getDependantJobs($job['job']))
-                ->withDependencies($this->graph->getDependencies($job['job']));
+                ->withDependantJobs($this->graph->getDependantJobs($id))
+                ->withDependencies($this->graph->getDependencies($id));
         }
 
         $workflow->addJobs($this->jobs);
@@ -131,42 +134,40 @@ class WorkflowDefinition
         return serialize($callback);
     }
 
-    public function hasJob(string $jobClassName, ?array $dependencies = null, $delay = null): bool
+    public function hasJob(string $id, ?array $dependencies = null, $delay = null): bool
     {
         if ($dependencies === null && $delay === null) {
-            return $this->getJobByClassName($jobClassName) !== null;
+            return $this->getJobById($id) !== null;
         }
 
-        if ($dependencies !== null && !$this->hasJobWithDependencies($jobClassName, $dependencies)) {
+        if ($dependencies !== null && !$this->hasJobWithDependencies($id, $dependencies)) {
             return false;
         }
 
-        if ($delay !== null && !$this->hasJobWithDelay($jobClassName, $delay)) {
+        if ($delay !== null && !$this->hasJobWithDelay($id, $delay)) {
             return false;
         }
 
         return true;
     }
 
-    public function hasJobWithDependencies(string $jobClassName, array $dependencies): bool
+    public function hasJobWithDependencies(string $jobId, array $dependencies): bool
     {
-        return count(array_diff($dependencies, $this->graph->getDependencies($jobClassName))) === 0;
+        return count(array_diff($dependencies, $this->graph->getDependencies($jobId))) === 0;
     }
 
     public function hasJobWithDelay(string $jobClassName, $delay): bool
     {
-        if (($job = $this->getJobByClassName($jobClassName)) === null) {
+        if (($job = $this->getJobById($jobClassName)) === null) {
             return false;
         }
 
         return $job['job']->delay == $delay;
     }
 
-    private function getJobByClassName(string $className): ?array
+    private function getJobById(string $className): ?array
     {
-        return collect($this->jobs)->first(function (array $job) use ($className) {
-            return get_class($job['job']) === $className;
-        });
+        return $this->jobs[$className] ?? null;
     }
 
     private function getJobInstances(): array

@@ -346,6 +346,26 @@ it('throws an exception when trying to add a job without the ShouldQueue interfa
     (new WorkflowDefinition())->addJob(new NonQueueableJob());
 })->expectException(NonQueueableWorkflowStepException::class);
 
+it('allows multiple instances of the same job with explicit ids', function () {
+    $definition = (new WorkflowDefinition())
+        ->addJob(new TestJob1(), id: '::id-1::')
+        ->addJob(new TestJob1(), id: '::id-2::');
+
+    assertTrue($definition->hasJob('::id-1::'));
+    assertTrue($definition->hasJob('::id-2::'));
+});
+
+it('can allows FQCN and explicit id when declaring dependencies', function () {
+    $definition = (new WorkflowDefinition())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob1(), id: '::id::')
+        ->addJob(new TestJob2(), dependencies: [TestJob1::class])
+        ->addJob(new TestJob3(), dependencies: ['::id::']);
+
+    assertTrue($definition->hasJobWithDependencies(TestJob2::class, [TestJob1::class]));
+    assertTrue($definition->hasJobWithDependencies(TestJob3::class, ['::id::']));
+});
+
 class DummyCallback
 {
     public function __invoke()
