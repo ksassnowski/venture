@@ -85,14 +85,30 @@ it('sets a reference to the workflow on each job', function () {
 it('sets the job dependencies on the job instances', function () {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
+    $testJob3 = new TestJob2();
 
     (new WorkflowDefinition())
         ->addJob($testJob1)
-        ->addJob($testJob2, dependencies: [TestJob1::class])
+        ->addJob($testJob2, dependencies: [TestJob1::class], id: '::job-2-id::')
+        ->addJob($testJob3, dependencies: ['::job-2-id::'])
         ->build();
 
     assertEquals([TestJob1::class], $testJob2->dependencies);
     assertEquals([], $testJob1->dependencies);
+    assertEquals(['::job-2-id::'], $testJob3->dependencies);
+});
+
+it('sets the jobId on the job instance', function () {
+    $testJob1 = new TestJob1();
+    $testJob2 = new TestJob2();
+
+    (new WorkflowDefinition())
+        ->addJob($testJob1)
+        ->addJob($testJob2, id: '::job-2-id::')
+        ->build();
+
+    assertEquals(TestJob1::class, $testJob1->jobId);
+    assertEquals('::job-2-id::', $testJob2->jobId);
 });
 
 it('sets the dependants of a job', function () {

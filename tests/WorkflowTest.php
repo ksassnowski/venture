@@ -111,9 +111,9 @@ it('runs a job if all of its dependencies have finished', function () {
 
     $job1 = new TestJob1();
     $job2 = new TestJob2();
-    $job3 = new TestJob3();
+    $job3 = (new TestJob3())->withJobId('::job-3-id::');
     $job1->withDependantJobs([$job2]);
-    $job2->withDependencies([TestJob1::class, TestJob3::class]);
+    $job2->withDependencies([TestJob1::class, '::job-3-id::']);
     $job3->withDependantJobs([$job2]);
     $workflow = createWorkflow([
         'job_count' => 3,

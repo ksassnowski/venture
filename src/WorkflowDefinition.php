@@ -111,6 +111,7 @@ class WorkflowDefinition
             $job['job']
                 ->withWorkflowId($workflow->id)
                 ->withStepId(Str::orderedUuid())
+                ->withJobId($id)
                 ->withDependantJobs($this->graph->getDependantJobs($id))
                 ->withDependencies($this->graph->getDependencies($id));
         }

@@ -159,7 +159,7 @@ class Workflow extends Model
     private function markJobAsFinished($job): void
     {
         DB::transaction(function () use ($job) {
-            $this->finished_jobs = array_merge($this->finished_jobs, [get_class($job)]);
+            $this->finished_jobs = array_merge($this->finished_jobs, [$job->jobId ?: get_class($job)]);
             $this->jobs_processed++;
             $this->save();
 
