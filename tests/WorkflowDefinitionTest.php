@@ -30,7 +30,7 @@ beforeEach(function () {
 it('creates a workflow', function () {
     (new WorkflowDefinition())
         ->addJob(new TestJob1())
-        ->addJob(new TestJob2(), [TestJob1::class])
+        ->addJob(new TestJob2(), dependencies: [TestJob1::class])
         ->build();
 
     assertDatabaseHas('workflows', [
@@ -48,7 +48,7 @@ it('returns the workflow\'s initial batch of jobs', function () {
     [$workflow, $initialBatch] = (new WorkflowDefinition())
         ->addJob($job1)
         ->addJob($job2)
-        ->addJob(new TestJob3(), [TestJob1::class])
+        ->addJob(new TestJob3(), dependencies: [TestJob1::class])
         ->build();
 
     assertEquals([$job1, $job2], $initialBatch);
@@ -61,7 +61,7 @@ it('returns the workflow', function () {
     [$workflow, $initialBatch] = (new WorkflowDefinition())
         ->addJob($job1)
         ->addJob($job2)
-        ->addJob(new TestJob3(), [TestJob1::class])
+        ->addJob(new TestJob3(), dependencies: [TestJob1::class])
         ->build();
 
     assertTrue($workflow->exists);
@@ -74,7 +74,7 @@ it('sets a reference to the workflow on each job', function () {
 
     (new WorkflowDefinition())
         ->addJob($testJob1)
-        ->addJob($testJob2, [TestJob1::class])
+        ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
 
     $workflowId = Workflow::first()->id;
@@ -88,7 +88,7 @@ it('sets the job dependencies on the job instances', function () {
 
     (new WorkflowDefinition())
         ->addJob($testJob1)
-        ->addJob($testJob2, [TestJob1::class])
+        ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
 
     assertEquals([TestJob1::class], $testJob2->dependencies);
@@ -102,7 +102,7 @@ it('sets the dependants of a job', function () {
 
     (new WorkflowDefinition())
         ->addJob($testJob1)
-        ->addJob($testJob2, [TestJob1::class])
+        ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
 
     assertEquals([$testJob2], $testJob1->dependantJobs);
@@ -115,7 +115,7 @@ it('saves the workflow steps to the database', function () {
 
     (new WorkflowDefinition())
         ->addJob($testJob1)
-        ->addJob($testJob2, [TestJob1::class])
+        ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
 
     assertDatabaseHas('workflow_jobs', ['job' => serialize($testJob1)]);
@@ -128,7 +128,7 @@ it('saves the list of edges for each job', function () {
 
     [$workflow, $initialBatch] = (new WorkflowDefinition())
         ->addJob($testJob1)
-        ->addJob($testJob2, [TestJob1::class])
+        ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
 
     $jobs = $workflow->jobs;
@@ -153,7 +153,7 @@ it('uses the class name as the jobs name if no name was provided', function () {
 it('uses the nice name if it was provided', function () {
     (new WorkflowDefinition())
         ->addJob(new TestJob1())
-        ->addJob(new TestJob2(), [TestJob1::class], '::job-name::')
+        ->addJob(new TestJob2(), dependencies: [TestJob1::class], name: '::job-name::')
         ->build();
 
     assertDatabaseHas('workflow_jobs', ['name' => '::job-name::']);
@@ -165,7 +165,7 @@ it('creates workflow step records that use the jobs uuid', function () {
 
     (new WorkflowDefinition())
         ->addJob($testJob1)
-        ->addJob($testJob2, [TestJob1::class], '::job-name::')
+        ->addJob($testJob2, dependencies: [TestJob1::class], name: '::job-name::')
         ->build();
 
     assertDatabaseHas('workflow_jobs', ['uuid' => $testJob1->stepId]);
@@ -226,9 +226,9 @@ it('can add a job with a delay', function ($delay) {
     Carbon::setTestNow(now());
 
     $workflow1 = WorkflowFacade::define('::name-1::')
-        ->addJobWithDelay(new TestJob1(), $delay);
+        ->addJob(new TestJob1(), delay: $delay);
     $workflow2 = WorkflowFacade::define('::name-2::')
-        ->addJobWithDelay(new TestJob2(), $delay);
+        ->addJob(new TestJob2(), delay: $delay);
 
     assertTrue($workflow1->hasJobWithDelay(TestJob1::class, $delay));
     assertTrue($workflow2->hasJobWithDelay(TestJob2::class, $delay));
@@ -251,7 +251,7 @@ it('returns false if job is not part of the workflow', function () {
 it('returns true if job exists with the correct dependencies', function () {
     $definition = WorkflowFacade::define('::name::')
         ->addJob(new TestJob1())
-        ->addJob(new TestJob2(), [TestJob1::class]);
+        ->addJob(new TestJob2(), dependencies: [TestJob1::class]);
 
     assertTrue($definition->hasJob(TestJob2::class, [TestJob1::class]));
 });
@@ -260,7 +260,7 @@ it('returns false if job exists, but with incorrect dependencies', function () {
     $definition = WorkflowFacade::define('::name::')
         ->addJob(new TestJob1())
         ->addJob(new TestJob2())
-        ->addJob(new TestJob3(), [TestJob2::class]);
+        ->addJob(new TestJob3(), dependencies: [TestJob2::class]);
 
     assertFalse($definition->hasJob(TestJob3::class, [TestJob1::class]));
 });
@@ -278,7 +278,7 @@ it('returns true if job exists with correct delay', function ($delay) {
     Carbon::setTestNow(now());
 
     $definition = WorkflowFacade::define('::name::')
-        ->addJob(new TestJob1(), [], '', $delay);
+        ->addJob(new TestJob1(), delay: $delay);
 
     assertTrue($definition->hasJob(TestJob1::class, [], $delay));
 })->with('delay provider');
@@ -295,7 +295,7 @@ it('calls the before create hook before saving the workflow if provided', functi
     };
 
     [$workflow, $initialBatch] = WorkflowFacade::define('::old-name::')
-        ->addJob(new TestJob1(), [])
+        ->addJob(new TestJob1(), dependencies: [])
         ->build($callback);
 
     assertEquals('::new-name::', $workflow->name);
@@ -328,14 +328,14 @@ it('can add another workflow', function () {
             return WorkflowFacade::define('::name::')
                 ->addJob(new TestJob4())
                 ->addJob(new TestJob5())
-                ->addJob(new TestJob6(), [TestJob4::class]);
+                ->addJob(new TestJob6(), dependencies: [TestJob4::class]);
         }
     };
     $definition = (new WorkflowDefinition())
         ->addJob(new TestJob1())
         ->addJob(new TestJob2())
-        ->addJob(new TestJob3(), [TestJob1::class])
-        ->addWorkflow($workflow, [TestJob1::class]);
+        ->addJob(new TestJob3(), dependencies: [TestJob1::class])
+        ->addWorkflow($workflow, dependencies: [TestJob1::class]);
 
     assertTrue($definition->hasJobWithDependencies(TestJob4::class, [TestJob1::class]));
     assertTrue($definition->hasJobWithDependencies(TestJob5::class, [TestJob1::class]));
