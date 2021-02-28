@@ -57,19 +57,6 @@ class WorkflowDefinition
         return $this;
     }
 
-    /**
-     * @param object                                  $job
-     * @param DateTimeInterface|DateInterval|int|null $delay
-     * @param array                                   $dependencies
-     * @param string|null                             $name
-     *
-     * @return $this
-     */
-    public function addJobWithDelay(object $job, $delay, array $dependencies = [], ?string $name = null): self
-    {
-        return $this->addJob($job, $dependencies, $name, $delay);
-    }
-
     public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = []): self
     {
         $definition = $workflow->definition();
