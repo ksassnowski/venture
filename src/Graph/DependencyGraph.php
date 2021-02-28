@@ -59,17 +59,28 @@ class DependencyGraph
 
     public function connectGraph(DependencyGraph $otherGraph, string $id, array $dependencies): void
     {
+        if (isset($this->nestedGraphs[$id])) {
+            throw new DuplicateWorkflowException(sprintf(
+                'A nested workflow with id "%s" already exists. When trying to add multiple instances of the same workflow, make sure to provide unique ids for all of them',
+                $id
+            ));
+        }
+
         $this->nestedGraphs[$id] = $otherGraph->graph;
 
         foreach ($otherGraph->graph as $nodeId => $node) {
-            // The root nodes of the nested graph should be connected to
-            // the provided dependencies. If the dependency happens to be
-            // another graph, it will be resolved inside `addDependantJob`.
             if (count($node['in_edges']) === 0) {
+                // The root nodes of the nested graph should be connected to
+                // the provided dependencies. If the dependency happens to be
+                // another graph, it will be resolved inside `addDependantJob`.
                 $node['in_edges'] = $dependencies;
+            } else {
+                // All dependencies inside the nested graph get namespaced
+                // to avoid any ambiguity with the jobs from the outer workflow.
+                $node['in_edges'] = collect($node['in_edges'])->map(fn (string $edgeId) => $id . '.' . $edgeId)->toArray();
             }
 
-            $this->addDependantJob($node['instance'], $node['in_edges'], $nodeId);
+            $this->addDependantJob($node['instance'], $node['in_edges'], $id . '.' . $nodeId);
         }
     }
 
@@ -92,6 +103,7 @@ class DependencyGraph
             return collect($this->nestedGraphs[$dependency])
                 ->filter(fn (array $node) => count($node['out_edges']) === 0)
                 ->keys()
+                ->map(fn (string $key) => $dependency . '.' . $key)
                 ->all();
         }
 

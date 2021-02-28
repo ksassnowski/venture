@@ -60,16 +60,17 @@ class WorkflowDefinition
         return $this;
     }
 
-    public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = []): self
+    public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = [], ?string $id = null): self
     {
         $definition = $workflow->definition();
+        $workflowId = $id ?: get_class($workflow);
 
         $workflow->beforeNesting($definition->getJobInstances());
 
-        $this->graph->connectGraph($definition->graph, get_class($workflow), $dependencies);
+        $this->graph->connectGraph($definition->graph, $workflowId, $dependencies);
 
-        foreach ($definition->jobs as $job) {
-            $this->jobs[] = $job;
+        foreach ($definition->jobs as $jobId => $job) {
+            $this->jobs[$workflowId . '.' . $jobId] = $job;
         }
 
         return $this;

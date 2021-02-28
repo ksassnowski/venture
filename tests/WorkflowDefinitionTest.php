@@ -353,9 +353,20 @@ it('can add another workflow', function () {
         ->addJob(new TestJob3(), dependencies: [TestJob1::class])
         ->addWorkflow($workflow, dependencies: [TestJob1::class]);
 
-    assertTrue($definition->hasJobWithDependencies(TestJob4::class, [TestJob1::class]));
-    assertTrue($definition->hasJobWithDependencies(TestJob5::class, [TestJob1::class]));
-    assertTrue($definition->hasJobWithDependencies(TestJob6::class, [TestJob4::class]));
+    assertTrue($definition->hasJobWithDependencies($workflow::class . '.' . TestJob4::class, [TestJob1::class]));
+    assertTrue($definition->hasJobWithDependencies($workflow::class . '.' . TestJob5::class, [TestJob1::class]));
+    assertTrue($definition->hasJobWithDependencies($workflow::class . '.' . TestJob6::class, [$workflow::class . '.' . TestJob4::class]));
+});
+
+it('adding another workflow namespaces the nested workflow\'s job ids', function () {
+    $definition = (new WorkflowDefinition())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2(), [TestJob1::class])
+        ->addWorkflow(new NestedWorkflow());
+
+    assertTrue($definition->hasJob(NestedWorkflow::class . '.' . TestJob1::class));
+    assertTrue($definition->hasJob(TestJob1::class));
+    assertTrue($definition->hasJobWithDependencies(TestJob2::class, [TestJob1::class]));
 });
 
 it('throws an exception when trying to add a job without the ShouldQueue interface', function () {
@@ -382,10 +393,35 @@ it('can allows FQCN and explicit id when declaring dependencies', function () {
     assertTrue($definition->hasJobWithDependencies(TestJob3::class, ['::id::']));
 });
 
+it('can add multiple instances of the same workflow if they have different ids', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::name::')
+                ->addJob(new TestJob2(), id: '::job-2-id::');
+        }
+    };
+    $definition = (new WorkflowDefinition())
+        ->addJob(new TestJob1(), id: '::job-1-id::')
+        ->addWorkflow($workflow, dependencies: ['::job-1-id::'], id: '::workflow-1-id::')
+        ->addWorkflow($workflow, dependencies: ['::job-1-id::'], id: '::workflow-2-id::');
+
+    assertTrue($definition->hasJobWithDependencies('::workflow-1-id::.::job-2-id::', ['::job-1-id::']));
+    assertTrue($definition->hasJobWithDependencies('::workflow-2-id::.::job-2-id::', ['::job-1-id::']));
+});
+
 class DummyCallback
 {
     public function __invoke()
     {
         echo 'herp';
+    }
+}
+
+class NestedWorkflow extends AbstractWorkflow
+{
+    public function definition(): WorkflowDefinition
+    {
+        return WorkflowFacade::define('::name::')->addJob(new TestJob1());
     }
 }
