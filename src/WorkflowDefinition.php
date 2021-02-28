@@ -40,7 +40,7 @@ class WorkflowDefinition
     public function addJob($job, array $dependencies = [], ?string $name = null, $delay = null): self
     {
         if (!($job instanceof ShouldQueue)) {
-            throw new NonQueueableWorkflowStepException();
+            throw NonQueueableWorkflowStepException::fromJob($job);
         }
 
         $this->graph->addDependantJob($job, $dependencies);
