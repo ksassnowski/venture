@@ -48,7 +48,7 @@ class WorkflowDefinition
             throw NonQueueableWorkflowStepException::fromJob($job);
         }
 
-        $id = $id ?: get_class($job);
+        $id = $this->buildIdentifier($id, $job);
 
         $this->graph->addDependantJob($job, $dependencies, $id);
 
@@ -67,7 +67,7 @@ class WorkflowDefinition
     public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = [], ?string $id = null): self
     {
         $definition = $workflow->definition();
-        $workflowId = $id ?: get_class($workflow);
+        $workflowId = $this->buildIdentifier($id, $workflow);
 
         $workflow->beforeNesting($definition->getJobInstances());
 
@@ -169,6 +169,11 @@ class WorkflowDefinition
         }
 
         return $job['job']->delay == $delay;
+    }
+
+    protected function buildIdentifier(?string $id, $object): string
+    {
+        return $id ?: get_class($object);
     }
 
     private function getJobById(string $className): ?array
