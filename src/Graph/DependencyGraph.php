@@ -2,6 +2,8 @@
 
 namespace Sassnowski\Venture\Graph;
 
+use Sassnowski\Venture\Exceptions\DuplicateJobException;
+use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
 
 class DependencyGraph
@@ -14,13 +16,13 @@ class DependencyGraph
         $this->graph = $graph;
     }
 
+    /**
+     * @throws DuplicateJobException
+     */
     public function addDependantJob($job, array $dependencies, string $id): void
     {
         if (isset($this->graph[$id])) {
-            throw new DuplicateJobException(sprintf(
-                'A job with id "%s" already exists in this workflow. If you are trying to add multiple instances of the same job, make sure to provide explicit ids for them',
-                $id
-            ));
+            throw new DuplicateJobException(sprintf('A job with id "%s" already exists in this workflow.', $id));
         }
 
         $resolvedDependencies = $this->resolveDependencies($dependencies);
@@ -57,13 +59,14 @@ class DependencyGraph
             ->toArray();
     }
 
+    /**
+     * @throws DuplicateWorkflowException
+     * @throws DuplicateJobException
+     */
     public function connectGraph(DependencyGraph $otherGraph, string $id, array $dependencies): void
     {
         if (isset($this->nestedGraphs[$id])) {
-            throw new DuplicateWorkflowException(sprintf(
-                'A nested workflow with id "%s" already exists. When trying to add multiple instances of the same workflow, make sure to provide unique ids for all of them',
-                $id
-            ));
+            throw new DuplicateWorkflowException(sprintf('A nested workflow with id "%s" already exists', $id));
         }
 
         $this->nestedGraphs[$id] = $otherGraph->graph;

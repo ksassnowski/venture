@@ -9,8 +9,8 @@ use Stubs\TestJob6;
 use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\Graph\DependencyGraph;
-use Sassnowski\Venture\Graph\DuplicateJobException;
-use Sassnowski\Venture\Graph\DuplicateWorkflowException;
+use Sassnowski\Venture\Exceptions\DuplicateJobException;
+use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
 
 beforeEach(function () {
