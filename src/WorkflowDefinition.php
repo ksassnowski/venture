@@ -37,8 +37,13 @@ class WorkflowDefinition
      * @throws NonQueueableWorkflowStepException
      * @throws \Sassnowski\Venture\Exceptions\DuplicateJobException
      */
-    public function addJob($job, array $dependencies = [], ?string $name = null, $delay = null, ?string $id = null): self
-    {
+    public function addJob(
+        object $job,
+        array $dependencies = [],
+        ?string $name = null,
+        $delay = null,
+        ?string $id = null
+    ): self {
         if (!($job instanceof ShouldQueue)) {
             throw NonQueueableWorkflowStepException::fromJob($job);
         }
