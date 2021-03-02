@@ -18,10 +18,10 @@ use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
 
 class WorkflowDefinition
 {
-    private array $jobs = [];
-    private DependencyGraph $graph;
-    private ?string $thenCallback = null;
-    private ?string $catchCallback = null;
+    protected array $jobs = [];
+    protected DependencyGraph $graph;
+    protected ?string $thenCallback = null;
+    protected ?string $catchCallback = null;
 
     public function __construct(protected string $workflowName = '')
     {
@@ -182,12 +182,12 @@ class WorkflowDefinition
         return $id ?: get_class($object);
     }
 
-    private function getJobById(string $className): ?array
+    protected function getJobById(string $className): ?array
     {
         return $this->jobs[$className] ?? null;
     }
 
-    private function getJobInstances(): array
+    protected function getJobInstances(): array
     {
         return collect($this->jobs)
             ->map(fn (array $job) => $job['job'])
