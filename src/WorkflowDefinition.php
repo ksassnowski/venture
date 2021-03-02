@@ -35,6 +35,7 @@ class WorkflowDefinition
      * @return $this
      *
      * @throws NonQueueableWorkflowStepException
+     * @throws Graph\DuplicateJobException
      */
     public function addJob($job, array $dependencies = [], ?string $name = null, $delay = null, ?string $id = null): self
     {
