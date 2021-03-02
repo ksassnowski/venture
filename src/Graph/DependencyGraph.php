@@ -8,12 +8,10 @@ use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
 
 class DependencyGraph
 {
-    private array $graph;
     private array $nestedGraphs = [];
 
-    public function __construct(array $graph = [])
+    public function __construct(protected array $graph = [])
     {
-        $this->graph = $graph;
     }
 
     /**
