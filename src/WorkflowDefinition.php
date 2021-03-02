@@ -12,6 +12,8 @@ use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Sassnowski\Venture\Graph\DependencyGraph;
+use Sassnowski\Venture\Exceptions\DuplicateJobException;
+use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
 
 class WorkflowDefinition
@@ -35,7 +37,7 @@ class WorkflowDefinition
      * @return $this
      *
      * @throws NonQueueableWorkflowStepException
-     * @throws \Sassnowski\Venture\Exceptions\DuplicateJobException
+     * @throws DuplicateJobException
      */
     public function addJob(
         object $job,
@@ -64,6 +66,10 @@ class WorkflowDefinition
         return $this;
     }
 
+    /**
+     * @throws DuplicateWorkflowException
+     * @throws DuplicateJobException
+     */
     public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = [], ?string $id = null): self
     {
         $definition = $workflow->definition();
