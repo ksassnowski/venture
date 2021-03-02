@@ -18,14 +18,12 @@ class WorkflowDefinition
 {
     private array $jobs = [];
     private DependencyGraph $graph;
-    private string $workflowName;
     private ?string $thenCallback = null;
     private ?string $catchCallback = null;
 
-    public function __construct(string $workflowName = '')
+    public function __construct(protected string $workflowName = '')
     {
         $this->graph = new DependencyGraph();
-        $this->workflowName = $workflowName;
     }
 
     /**
