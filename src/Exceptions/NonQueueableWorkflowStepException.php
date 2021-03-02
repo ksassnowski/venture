@@ -12,7 +12,7 @@ class NonQueueableWorkflowStepException extends Exception implements ProvidesSol
 {
     public static function fromJob($job): NonQueueableWorkflowStepException
     {
-        return new self(sprintf("Job [%s] does not implement the 'ShouldQueue' interface. If you want to " . get_class($job)));
+        return new self(sprintf("Job [%s] does not implement the 'ShouldQueue' interface", get_class($job)));
     }
 
     public function getSolution(): Solution
@@ -21,7 +21,7 @@ class NonQueueableWorkflowStepException extends Exception implements ProvidesSol
             ->setSolutionDescription(sprintf(
                 'All jobs used in a workflow need to provide the [%s] interface. If you want to execute ' .
                 'execute jobs synchronously, you should explicitly dispatch them on the `sync` connection.',
-                [ShouldQueue::class]
+                ShouldQueue::class
             ))
             ->setDocumentationLinks([
                 'Laravel documentation' => 'https://laravel.com/docs/8.x/queues#synchronous-dispatching',
