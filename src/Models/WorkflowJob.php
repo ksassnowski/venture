@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * @property string $uuid
  * @property string $name
+ * @property string $exception
  * @property ?Carbon $finished_at
  * @property ?Carbon $failed_at
  * @property string[] $edges

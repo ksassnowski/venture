@@ -18,9 +18,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property array $finished_jobs
  * @property int $jobs_processed
+ * @property int $jobs_failed
  * @property int $job_count
+ * @property ?string $then_callback
+ * @property ?string $catch_callback
  * @property ?Carbon $cancelled_at
  * @property ?Carbon $finished_at
+ * @property Collection $jobs
  */
 class Workflow extends Model
 {
