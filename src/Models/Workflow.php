@@ -86,7 +86,7 @@ class Workflow extends Model
             });
     }
 
-    public function onStepFailed($job, Throwable $e)
+    public function onStepFailed($job, Throwable $e): void
     {
         DB::transaction(function () use ($job, $e) {
             $this->jobs_failed++;
@@ -174,7 +174,7 @@ class Workflow extends Model
     private function canJobRun($job): bool
     {
         return collect($job->dependencies)->every(function (string $dependency) {
-            return in_array($dependency, $this->finished_jobs);
+            return in_array($dependency, $this->finished_jobs, true);
         });
     }
 
@@ -200,6 +200,6 @@ class Workflow extends Model
             $callback = $callback->getClosure();
         }
 
-        call_user_func($callback, ...$args);
+        $callback(...$args);
     }
 }
