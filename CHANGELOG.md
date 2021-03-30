@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] — 2021-03-30
+### Added
+
+- Added support for adding multiple instances of the same job to a workflow. Check the
+  [documentation](https://laravel-venture.netlify.app/usage/duplicate-jobs.html) for more details.
+  See #14 for the discussion on this feature. Special thanks to @conors511 for his help.
+
+### Changed
+
+- Change required minimum PHP version to 8.
+
+### Removed
+
+- Removed `addJobWithDelay` method from `WorkflowDefinition`. You should use `addJob` 
+  and provide the `delay` parameter instead. Since this version of Venture requires PHP 8,
+  you can make use of named arguments to skip any default parameters you don't want to change.
+
 ## [2.1.1] — 2021-01-20
 ### Changed
 
