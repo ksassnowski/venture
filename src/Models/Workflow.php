@@ -91,9 +91,8 @@ class Workflow extends Model
         DB::transaction(function () use ($job, $e) {
             /** @var self $workflow */
             $workflow = $this->newQuery()
-                ->whereKey($this->getKey())
                 ->lockForUpdate()
-                ->firstOrFail(['jobs_failed']);
+                ->findOrFail($this->getKey(), ['jobs_failed']);
 
             $this->jobs_failed = $workflow->jobs_failed + 1;
             $this->save();
@@ -171,9 +170,8 @@ class Workflow extends Model
         DB::transaction(function () use ($job) {
             /** @var self $workflow */
             $workflow = $this->newQuery()
-                ->whereKey($this->getKey())
                 ->lockForUpdate()
-                ->firstOrFail(['finished_jobs', 'jobs_processed']);
+                ->findOrFail($this->getKey(), ['finished_jobs', 'jobs_processed']);
 
             $this->finished_jobs = array_merge($workflow->finished_jobs, [$job->jobId ?: get_class($job)]);
             $this->jobs_processed = $workflow->jobs_processed + 1;
