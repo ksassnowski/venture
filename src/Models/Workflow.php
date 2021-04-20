@@ -89,7 +89,12 @@ class Workflow extends Model
     public function onStepFailed($job, Throwable $e): void
     {
         DB::transaction(function () use ($job, $e) {
-            $this->jobs_failed++;
+            /** @var self $workflow */
+            $workflow = $this->newQuery()
+                ->lockForUpdate()
+                ->findOrFail($this->getKey(), ['jobs_failed']);
+
+            $this->jobs_failed = $workflow->jobs_failed + 1;
             $this->save();
 
             optional($job->step())->update([
@@ -163,8 +168,13 @@ class Workflow extends Model
     private function markJobAsFinished($job): void
     {
         DB::transaction(function () use ($job) {
-            $this->finished_jobs = array_merge($this->finished_jobs, [$job->jobId ?: get_class($job)]);
-            $this->jobs_processed++;
+            /** @var self $workflow */
+            $workflow = $this->newQuery()
+                ->lockForUpdate()
+                ->findOrFail($this->getKey(), ['finished_jobs', 'jobs_processed']);
+
+            $this->finished_jobs = array_merge($workflow->finished_jobs, [$job->jobId ?: get_class($job)]);
+            $this->jobs_processed = $workflow->jobs_processed + 1;
             $this->save();
 
             optional($job->step())->update(['finished_at' => now()]);
