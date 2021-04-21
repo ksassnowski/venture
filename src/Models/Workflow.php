@@ -79,7 +79,7 @@ class Workflow extends Model
             return;
         }
 
-        $jobs = WorkflowJob::where('uuid', $job->dependantJobs)
+        WorkflowJob::whereIn('uuid', $job->dependantJobs)
             ->get('job')
             ->pluck('job')
             ->map(fn ($job) => unserialize($job))
