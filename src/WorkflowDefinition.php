@@ -82,6 +82,7 @@ class WorkflowDefinition
         $this->graph->connectGraph($definition->graph, $workflowId, $dependencies);
 
         foreach ($definition->jobs as $jobId => $job) {
+            $job['job'] = $job['job']->withJobId($workflowId . '.' . $jobId);
             $this->jobs[$workflowId . '.' . $jobId] = $job;
         }
 
