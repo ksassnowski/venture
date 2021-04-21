@@ -22,6 +22,7 @@ class WorkflowDefinition
     protected DependencyGraph $graph;
     protected ?string $thenCallback = null;
     protected ?string $catchCallback = null;
+    protected array $nestedWorkflows = [];
 
     public function __construct(protected string $workflowName = '')
     {
@@ -82,6 +83,8 @@ class WorkflowDefinition
         foreach ($definition->jobs as $jobId => $job) {
             $this->jobs[$workflowId . '.' . $jobId] = $job;
         }
+
+        $this->nestedWorkflows[$workflowId] = [$dependencies];
 
         return $this;
     }
@@ -175,6 +178,19 @@ class WorkflowDefinition
         }
 
         return $job['job']->delay == $delay;
+    }
+
+    public function hasWorkflow(string $workflowId, ?array $dependencies = null): bool
+    {
+        if (!isset($this->nestedWorkflows[$workflowId])) {
+            return false;
+        }
+
+        if ($dependencies === null) {
+            return true;
+        }
+
+        return $this->nestedWorkflows[$workflowId] === $dependencies;
     }
 
     protected function buildIdentifier(?string $id, $object): string

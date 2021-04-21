@@ -410,6 +410,44 @@ it('can add multiple instances of the same workflow if they have different ids',
     assertTrue($definition->hasJobWithDependencies('::workflow-2-id::.::job-2-id::', ['::job-1-id::']));
 });
 
+it('can check if a workflow contains a nested workflow', function (callable $configureWorkflow, ?array $dependencies, bool $expected) {
+    $definition = new WorkflowDefinition();
+
+    $configureWorkflow($definition);
+
+    assertEquals($expected, $definition->hasWorkflow(NestedWorkflow::class, $dependencies));
+})->with([
+    'has workflow, ignore dependencies' => [
+        'configureWorkflow' => function (WorkflowDefinition $definition) {
+            $definition->addWorkflow(new NestedWorkflow());
+        },
+        'dependencies' => null,
+        'expected' => true,
+    ],
+    'does not have workflow, ignore dependencies' => [
+        'configureWorkflow' => function (WorkflowDefinition $definition) {},
+        'dependencies' => null,
+        'expected' => false,
+    ],
+    'has workflow, incorrect dependencies' => [
+        'configureWorkflow' => function (WorkflowDefinition $definition) {
+            $definition
+                ->addWorkflow(new NestedWorkflow());
+        },
+        'dependencies' => [TestJob1::class],
+        'expected' => false,
+    ],
+    'has workflow, correct dependencies' => [
+        'configureWorkflow' => function (WorkflowDefinition $definition) {
+            $definition
+                ->addJob(new TestJob1())
+                ->addWorkflow(new NestedWorkflow(), [TestJob1::class]);
+        },
+        'dependencies' => [TestJob1::class],
+        'expected' => false,
+    ],
+]);
+
 class DummyCallback
 {
     public function __invoke()
