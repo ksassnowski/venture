@@ -75,13 +75,15 @@ it('marks the corresponding job step finished whenever a job finishes', function
 it('runs a finished job\'s dependency if no other dependencies exist', function () {
     Bus::fake();
 
-    $job1 = new TestJob1();
-    $job2 = new TestJob2();
+    $job1 = (new TestJob1())->withStepId(Str::orderedUuid());
+    $job2 = (new TestJob2())->withStepId(Str::orderedUuid());
     $job1->withDependantJobs([$job2]);
     $job2->withDependencies([TestJob1::class]);
     $workflow = createWorkflow([
         'job_count' => 2,
     ]);
+
+    $workflow->addJobs(wrapJobsForWorkflow([$job1, $job2]));
 
     $workflow->onStepFinished($job1);
 
@@ -109,15 +111,18 @@ it('does not run a dependant job if some of its dependencies have not finished y
 it('runs a job if all of its dependencies have finished', function () {
     Bus::fake();
 
-    $job1 = new TestJob1();
-    $job2 = new TestJob2();
-    $job3 = (new TestJob3())->withJobId('::job-3-id::');
-    $job1->withDependantJobs([$job2]);
-    $job2->withDependencies([TestJob1::class, '::job-3-id::']);
-    $job3->withDependantJobs([$job2]);
     $workflow = createWorkflow([
         'job_count' => 3,
     ]);
+
+    $job1 = (new TestJob1())->withStepId(Str::orderedUuid());
+    $job2 = (new TestJob2())->withStepId(Str::orderedUuid());
+    $job3 = (new TestJob3())->withJobId('::job-3-id::')->withStepId(Str::orderedUuid());
+    $job1->withDependantJobs([$job2]);
+    $job2->withDependencies([TestJob1::class, '::job-3-id::']);
+    $job3->withDependantJobs([$job2]);
+
+    $workflow->addJobs(wrapJobsForWorkflow([$job1, $job2, $job3]));
 
     $workflow->onStepFinished($job1);
     $workflow->onStepFinished($job3);

@@ -58,7 +58,7 @@ class Workflow extends Model
             'job' => serialize($job['job']),
             'name' => $job['name'],
             'uuid' => $job['job']->stepId,
-            'edges' => collect($job['job']->dependantJobs)->pluck('stepId')->all()
+            'edges' => $job['job']->dependantJobs
         ])
         ->pipe(function ($jobs) {
             $this->jobs()->createMany($jobs);
@@ -79,7 +79,10 @@ class Workflow extends Model
             return;
         }
 
-        collect($job->dependantJobs)
+        $jobs = WorkflowJob::where('uuid', $job->dependantJobs)
+            ->get('job')
+            ->pluck('job')
+            ->map(fn ($job) => unserialize($job))
             ->filter(fn ($job) => $this->canJobRun($job))
             ->each(function ($job) {
                 $this->dispatchJob($job);

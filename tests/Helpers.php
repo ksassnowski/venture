@@ -25,3 +25,10 @@ function createWorkflowJob(Workflow $workflow, array $attributes = []): Workflow
         'finished_at' => null,
     ], $attributes));
 }
+
+function wrapJobsForWorkflow($jobs) {
+    return collect($jobs)->map(fn ($job) => [
+        'job' => $job->withJobId($job->jobId ?? get_class($job)),
+        'name' => get_class($job)
+    ])->all();
+}

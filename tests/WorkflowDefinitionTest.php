@@ -121,7 +121,7 @@ it('sets the dependants of a job', function () {
         ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
 
-    assertEquals([$testJob2], $testJob1->dependantJobs);
+    assertEquals([$testJob2->stepId], $testJob1->dependantJobs);
     assertEquals([], $testJob2->dependantJobs);
 });
 
