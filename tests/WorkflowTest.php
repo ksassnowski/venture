@@ -1,12 +1,14 @@
 <?php declare(strict_types=1);
 
 use Carbon\Carbon;
+use Stubs\NestedWorkflow;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
+use Stubs\WorkflowWithWorkflow;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 use function PHPUnit\Framework\assertCount;
@@ -34,6 +36,43 @@ it('it increments the finished jobs count when a job finished', function () {
     $workflow->onStepFinished($job1);
 
     assertEquals(1, $workflow->refresh()->jobs_processed);
+});
+
+it('it stores finished job id, defaulting to class name', function () {
+    $job1 = new TestJob1();
+    $workflow = createWorkflow([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+    ]);
+
+    $workflow->onStepFinished($job1);
+
+    assertEquals([$job1::class], $workflow->refresh()->finished_jobs);
+});
+
+it('it stores finished job id', function () {
+    $job1 = (new TestJob1())->withJobId('::job-id::');
+    $workflow = createWorkflow([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+    ]);
+
+    $workflow->onStepFinished($job1);
+
+    assertEquals(['::job-id::'], $workflow->refresh()->finished_jobs);
+});
+
+it('it stores finished job id for nested workflow jobs', function () {
+    $workflow = new WorkflowWithWorkflow(new NestedWorkflow(
+        $job = new TestJob1()
+    ));
+    $definition = $workflow->definition();
+    [$model, $initial] = $definition->build();
+
+    $model->onStepFinished($job);
+
+    assertEquals(NestedWorkflow::class . '.' . TestJob1::class, $job->jobId);
+    assertEquals([NestedWorkflow::class . '.' . TestJob1::class], $model->refresh()->finished_jobs);
 });
 
 it('marks itself as finished if the all jobs have been processed', function () {
