@@ -4,7 +4,6 @@ namespace Sassnowski\Venture\Manager;
 
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\AbstractWorkflow;
-use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\WorkflowDefinition;
 
 interface WorkflowManagerInterface
@@ -13,5 +12,5 @@ interface WorkflowManagerInterface
 
     public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow;
 
-    public function job(int $workflowId): ?WorkflowJob;
+    public function completeJob(int $jobId): void;
 }

@@ -38,8 +38,10 @@ class WorkflowManager implements WorkflowManagerInterface
         return $workflow;
     }
 
-    public function job(int $workflowId): ?WorkflowJob
+    public function completeJob(int $jobId): void
     {
-        return Workflow::find($workflowId);
+        $jobInstance = WorkflowJob::with('workflow')->find($jobId);
+
+        optional($jobInstance->workflow())->onStepFinished($jobInstance);
     }
 }

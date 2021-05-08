@@ -38,9 +38,9 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         return $workflow;
     }
 
-    public function job(int $workflowId): ?WorkflowJob
+    public function completeJob(int $jobId): void
     {
-        return Workflow::find($workflowId);
+        // todo
     }
 
     public function hasStarted(string $workflowClass, ?callable $callback = null): bool
