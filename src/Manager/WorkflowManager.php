@@ -6,6 +6,7 @@ use Closure;
 use Sassnowski\Venture\Models\Workflow;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowManager implements WorkflowManagerInterface
@@ -35,5 +36,10 @@ class WorkflowManager implements WorkflowManagerInterface
         });
 
         return $workflow;
+    }
+
+    public function job(int $workflowId): ?WorkflowJob
+    {
+        return Workflow::find($workflowId);
     }
 }

@@ -6,6 +6,7 @@ use Closure;
 use Sassnowski\Venture\Models\Workflow;
 use PHPUnit\Framework\Assert as PHPUnit;
 use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowManagerFake implements WorkflowManagerInterface
@@ -35,6 +36,11 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         $this->started[get_class($abstractWorkflow)] = $abstractWorkflow;
 
         return $workflow;
+    }
+
+    public function job(int $workflowId): ?WorkflowJob
+    {
+        return Workflow::find($workflowId);
     }
 
     public function hasStarted(string $workflowClass, ?callable $callback = null): bool

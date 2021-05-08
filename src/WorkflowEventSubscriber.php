@@ -37,6 +37,9 @@ class WorkflowEventSubscriber
         $jobInstance = $this->getJobInstance($event->job);
 
         if ($this->isWorkflowStep($jobInstance)) {
+            if ($this->isUserTask($jobInstance)) {
+                return;
+            }
             optional($jobInstance->workflow())->onStepFinished($jobInstance);
         }
     }
@@ -72,6 +75,15 @@ class WorkflowEventSubscriber
         $uses = class_uses_recursive($job);
 
         return in_array(WorkflowStep::class, $uses);
+    }
+
+    private function isUserTask($job): bool
+    {
+        if (! $this->isWorkflowStep($job)) {
+            return false;
+        }
+
+        return $job->isUserTask();
     }
 
     private function getJobInstance(Job $job)
