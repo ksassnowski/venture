@@ -38,29 +38,25 @@ it('it increments the finished jobs count when a job finished', function () {
     assertEquals(1, $workflow->refresh()->jobs_processed);
 });
 
-it('it stores finished job id, defaulting to class name', function () {
-    $job1 = new TestJob1();
+it('stores a finished job\'s id', function ($job, string $expectedJobId) {
     $workflow = createWorkflow([
         'job_count' => 1,
         'jobs_processed' => 0,
     ]);
 
-    $workflow->onStepFinished($job1);
+    $workflow->onStepFinished($job);
 
-    assertEquals([$job1::class], $workflow->refresh()->finished_jobs);
-});
-
-it('it stores finished job id', function () {
-    $job1 = (new TestJob1())->withJobId('::job-id::');
-    $workflow = createWorkflow([
-        'job_count' => 1,
-        'jobs_processed' => 0,
-    ]);
-
-    $workflow->onStepFinished($job1);
-
-    assertEquals(['::job-id::'], $workflow->refresh()->finished_jobs);
-});
+    assertEquals([$expectedJobId], $workflow->refresh()->finished_jobs);
+})->with([
+    'no job id should default to class name' => [
+        new TestJob1(),
+        TestJob1::class,
+    ],
+    'use existing job id' => [
+        (new TestJob1())->withJobId('::job-id::'),
+        '::job-id::',
+    ]
+]);
 
 it('it stores finished job id for nested workflow jobs', function () {
     $workflow = new WorkflowWithWorkflow(new NestedWorkflow(
@@ -71,7 +67,6 @@ it('it stores finished job id for nested workflow jobs', function () {
 
     $model->onStepFinished($job);
 
-    assertEquals(NestedWorkflow::class . '.' . TestJob1::class, $job->jobId);
     assertEquals([NestedWorkflow::class . '.' . TestJob1::class], $model->refresh()->finished_jobs);
 });
 
