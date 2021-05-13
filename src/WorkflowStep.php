@@ -2,6 +2,7 @@
 
 namespace Sassnowski\Venture;
 
+use Illuminate\Support\Arr;
 use Ramsey\Uuid\UuidInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
@@ -32,7 +33,7 @@ trait WorkflowStep
 
     public function withDependantJobs(array $jobs): self
     {
-        $this->dependantJobs = $jobs;
+        $this->dependantJobs = Arr::pluck($jobs, 'stepId');
 
         return $this;
     }

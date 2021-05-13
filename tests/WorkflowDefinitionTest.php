@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Carbon\Carbon;
+use Stubs\NestedWorkflow;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
@@ -121,7 +122,7 @@ it('sets the dependants of a job', function () {
         ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
 
-    assertEquals([$testJob2], $testJob1->dependantJobs);
+    assertEquals([$testJob2->stepId], $testJob1->dependantJobs);
     assertEquals([], $testJob2->dependantJobs);
 });
 
@@ -369,6 +370,15 @@ it('adding another workflow namespaces the nested workflow\'s job ids', function
     assertTrue($definition->hasJobWithDependencies(TestJob2::class, [TestJob1::class]));
 });
 
+it('adding another workflow updates the job id on nested job instances', function () {
+    $definition = (new WorkflowDefinition())
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2(), [TestJob1::class])
+        ->addWorkflow(new NestedWorkflow($job = new TestJob1()));
+
+    assertEquals(NestedWorkflow::class . '.' . TestJob1::class, $job->jobId);
+});
+
 it('throws an exception when trying to add a job without the ShouldQueue interface', function () {
     (new WorkflowDefinition())->addJob(new NonQueueableJob());
 })->expectException(NonQueueableWorkflowStepException::class);
@@ -456,10 +466,3 @@ class DummyCallback
     }
 }
 
-class NestedWorkflow extends AbstractWorkflow
-{
-    public function definition(): WorkflowDefinition
-    {
-        return WorkflowFacade::define('::name::')->addJob(new TestJob1());
-    }
-}

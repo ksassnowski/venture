@@ -60,7 +60,9 @@ class WorkflowDefinition
         }
 
         $this->jobs[$id] = [
-            'job' => $job,
+            'job' => $job
+                ->withJobId($id)
+                ->withStepId(Str::orderedUuid()),
             'name' => $name ?: get_class($job),
         ];
 
@@ -81,6 +83,7 @@ class WorkflowDefinition
         $this->graph->connectGraph($definition->graph, $workflowId, $dependencies);
 
         foreach ($definition->jobs as $jobId => $job) {
+            $job['job'] = $job['job']->withJobId($workflowId . '.' . $jobId);
             $this->jobs[$workflowId . '.' . $jobId] = $job;
         }
 
@@ -124,8 +127,6 @@ class WorkflowDefinition
         foreach ($this->jobs as $id => $job) {
             $job['job']
                 ->withWorkflowId($workflow->id)
-                ->withStepId(Str::orderedUuid())
-                ->withJobId($id)
                 ->withDependantJobs($this->graph->getDependantJobs($id))
                 ->withDependencies($this->graph->getDependencies($id));
         }
