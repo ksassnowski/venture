@@ -8,6 +8,7 @@ use Opis\Closure\SerializableClosure;
 use Illuminate\Queue\Events\JobFailed;
 use Sassnowski\Venture\Models\Workflow;
 use Illuminate\Queue\Events\JobProcessed;
+use Stubs\TestUserTask1;
 use function PHPUnit\Framework\assertTrue;
 use Illuminate\Queue\Events\JobProcessing;
 use function PHPUnit\Framework\assertFalse;
@@ -174,4 +175,25 @@ it('does not delete a job if its workflow has not been cancelled', function () {
     $eventSubscriber->onJobProcessing($event);
 
     $laravelJob->shouldNotHaveReceived('delete');
+});
+
+it('will wait for user to complete the job before workflow continues', function () {
+    $workflow = Workflow::create([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+        'jobs_failed' => 0,
+        'finished_jobs' => [],
+    ]);
+    $workflowJob = (new TestUserTask1())->withWorkflowId($workflow->id);
+    $event = new JobProcessed('::connection::', prepareFakeJob($workflowJob));
+    $eventSubscriber = new WorkflowEventSubscriber();
+
+    assertFalse($workflow->isFinished());
+    $eventSubscriber->handleJobProcessed($event);
+    assertFalse($workflow->fresh()->isFinished());
+
+    // manually finish the job
+    $workflow->onStepFinished($workflowJob);
+
+    assertTrue($workflow->fresh()->isFinished());
 });

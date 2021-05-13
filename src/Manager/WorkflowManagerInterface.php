@@ -11,4 +11,6 @@ interface WorkflowManagerInterface
     public function define(string $workflowName): WorkflowDefinition;
 
     public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow;
+
+    public function completeJob(int $jobId): void;
 }

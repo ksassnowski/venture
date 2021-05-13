@@ -14,6 +14,7 @@ trait WorkflowStep
     public ?int $workflowId = null;
     public ?string $stepId = null;
     public ?string $jobId = null;
+    public bool $isUserTask = false;
 
     public function withWorkflowId(int $workflowId): self
     {
@@ -66,5 +67,17 @@ trait WorkflowStep
         }
 
         return WorkflowJob::where('uuid', $this->stepId)->first();
+    }
+
+    public function withUserTask(): self
+    {
+        $this->isUserTask = true;
+
+        return $this;
+    }
+
+    public function isUserTask(): bool
+    {
+        return $this->isUserTask;
     }
 }
