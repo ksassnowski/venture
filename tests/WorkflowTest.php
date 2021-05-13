@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
 use Carbon\Carbon;
-use Stubs\NestedWorkflow;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
+use Stubs\NestedWorkflow;
 use Illuminate\Support\Str;
+use Stubs\WorkflowWithWorkflow;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
-use Stubs\WorkflowWithWorkflow;
 use function PHPUnit\Framework\assertNull;
 use function PHPUnit\Framework\assertTrue;
 use function PHPUnit\Framework\assertCount;
@@ -127,9 +127,9 @@ it('runs a finished job\'s dependency if no other dependencies exist', function 
 it('does not run a dependant job if some of its dependencies have not finished yet', function () {
     Bus::fake();
 
-    $job1 = new TestJob1();
-    $job2 = new TestJob2();
-    $job3 = new TestJob3();
+    $job1 = (new TestJob1())->withStepId(Str::orderedUuid());
+    $job2 = (new TestJob2())->withStepId(Str::orderedUuid());
+    $job3 = (new TestJob3())->withStepId(Str::orderedUuid());
     $job1->withDependantJobs([$job2]);
     $job2->withDependencies([TestJob1::class, TestJob3::class]);
     $job3->withDependantJobs([$job2]);

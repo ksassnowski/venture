@@ -79,14 +79,11 @@ class Workflow extends Model
             return;
         }
 
-        WorkflowJob::whereIn('uuid', $job->dependantJobs)
-            ->get('job')
-            ->pluck('job')
-            ->map(fn ($job) => unserialize($job))
-            ->filter(fn ($job) => $this->canJobRun($job))
-            ->each(function ($job) {
-                $this->dispatchJob($job);
-            });
+        if (empty($job->dependantJobs)) {
+            return;
+        }
+
+        $this->runDependantJobs($job);
     }
 
     public function onStepFailed($job, Throwable $e): void
@@ -214,5 +211,28 @@ class Workflow extends Model
         }
 
         $callback(...$args);
+    }
+
+    private function runDependantJobs($job): void
+    {
+        // @TODO: Should be removed in the next major version.
+        //
+        // This is to keep backwards compatibility for workflows
+        // that were created when Venture still stored serialized
+        // instances of a job's dependencies instead of the step id.
+        if (is_object($job->dependantJobs[0])) {
+            $dependantJobs = collect($job->dependantJobs);
+        } else {
+            $dependantJobs = WorkflowJob::whereIn('uuid', $job->dependantJobs)
+                ->get('job')
+                ->pluck('job')
+                ->map(fn ($job) => unserialize($job));
+        }
+
+        $dependantJobs
+            ->filter(fn ($job) => $this->canJobRun($job))
+            ->each(function ($job) {
+                $this->dispatchJob($job);
+            });
     }
 }
