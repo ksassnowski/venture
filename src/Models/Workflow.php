@@ -116,6 +116,11 @@ class Workflow extends Model
         return $this->cancelled_at !== null;
     }
 
+    public function isDone(): bool
+    {
+        return ($this->jobs_processed + $this->jobs_failed) === $this->job_count;
+    }
+
     public function cancel(): void
     {
         if ($this->isCancelled()) {
