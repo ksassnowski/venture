@@ -33,6 +33,7 @@ class Workflow extends Model
     protected $casts = [
         'finished_jobs' => 'json',
         'job_count' => 'int',
+        'jobs_failed' => 'int',
         'jobs_processed' => 'int',
     ];
 
