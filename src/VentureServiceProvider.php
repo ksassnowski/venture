@@ -26,6 +26,7 @@ class VentureServiceProvider extends ServiceProvider
             __DIR__ . '/../config/venture.php',
             'venture'
         );
+        /** @psalm-suppress UndefinedInterfaceMethod */
         $this->app['events']->subscribe(WorkflowEventSubscriber::class);
         $this->app->bind('venture.manager', WorkflowManager::class);
     }

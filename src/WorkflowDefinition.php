@@ -37,6 +37,8 @@ class WorkflowDefinition
      * @param  string|null                             $id
      * @return $this
      *
+     * @psalm-suppress UndefinedInterfaceMethod
+     *
      * @throws NonQueueableWorkflowStepException
      * @throws DuplicateJobException
      */
