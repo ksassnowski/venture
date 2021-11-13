@@ -12,11 +12,11 @@
     "require": {
         "php": "^8.0",
         "ext-json": "*",
-        "illuminate/bus": "^7.30.3 || ^8.22.1",
-        "illuminate/container": "^7.30.3 || ^8.22.1",
-        "illuminate/events": "^7.30.3 || ^8.22.1",
-        "illuminate/queue": "^7.30.3 || ^8.22.1",
-        "illuminate/support": "^7.30.3 || ^8.22.1",
+        "illuminate/bus": "^8.22.1",
+        "illuminate/container": "^8.22.1",
+        "illuminate/events": "^8.22.1",
+        "illuminate/queue": "^8.22.1",
+        "illuminate/support": "^8.22.1",
         "opis/closure": "^3.5",
         "ramsey/uuid": "^4.0"
     },
