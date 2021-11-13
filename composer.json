@@ -53,6 +53,9 @@
         ],
         "post-update-cmd": [
             "@composer normalize"
+        ],
+        "psalm": [
+            "vendor/bin/psalm"
         ]
     }
 }
