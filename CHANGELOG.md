@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.1.2] — 2021-11-13
 
+### Changed
+
+- Added missing `int` cast to `jobs_failed` property of `Workflow` model (#36). Credits, @stevebauman.
+- Added `vimeo/psalm` dependency for static type checking during development.
+- Added various missing type hints to get `psalm` to pass at level 2.
+
 ### Fixed
 
 - Fixed bug where `WorkflowDefinition::hasWorkflow()` wasn't working properly when checking
@@ -169,3 +175,22 @@ Please see the documentation's [upgrade guide](https://laravel-venture.netlify.a
 - Added `catch` method to workflow. This method will be called everytime a job inside a workflow is marked as failed.
 - Make it possible to cancel a workflow. A cancelled workflow will not execute any further jobs, but will finish any job
   that was already running before the workflow got cancelled.
+
+[3.1.2]: https://github.com/ksassnowski/venture/compare/3.1.1...3.1.2
+[3.1.1]: https://github.com/ksassnowski/venture/compare/3.1.0...3.1.1
+[3.1.0]: https://github.com/ksassnowski/venture/compare/3.0.1...3.1.0
+[3.0.1]: https://github.com/ksassnowski/venture/compare/3.0.0...3.0.1
+[3.0.0]: https://github.com/ksassnowski/venture/compare/2.1.1...3.0.0
+[2.1.1]: https://github.com/ksassnowski/venture/compare/2.1.0...2.1.1
+[2.1.0]: https://github.com/ksassnowski/venture/compare/2.0.0...2.1.0
+[2.0.0]: https://github.com/ksassnowski/venture/compare/1.2.1...2.0.0
+[1.2.1]: https://github.com/ksassnowski/venture/compare/1.2.0...1.2.1
+[1.2.0]: https://github.com/ksassnowski/venture/compare/1.1.1...1.2.0
+[1.1.1]: https://github.com/ksassnowski/venture/compare/1.1.0...1.1.1
+[1.1.0]: https://github.com/ksassnowski/venture/compare/1.0.0...1.1.0
+[1.0.0]: https://github.com/ksassnowski/venture/compare/0.9.0...1.0.0
+[0.9.0]: https://github.com/ksassnowski/venture/compare/0.8.0...0.9.0
+[0.8.0]: https://github.com/ksassnowski/venture/compare/0.7.0...0.8.0
+[0.7.0]: https://github.com/ksassnowski/venture/compare/0.6.1...0.7.0
+[0.6.1]: https://github.com/ksassnowski/venture/compare/0.6.0...0.6.1
+[0.6.0]: https://github.com/ksassnowski/venture/compare/0.5.2...0.6.0
