@@ -8,6 +8,7 @@ use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Contracts\Events\Dispatcher;
+use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 
 class WorkflowEventSubscriber
 {
@@ -70,6 +71,10 @@ class WorkflowEventSubscriber
 
     private function isWorkflowStep(object $job): bool
     {
+        if ($job instanceof WorkflowStepInterface) {
+            return true;
+        }
+
         $uses = class_uses_recursive($job);
 
         return in_array(WorkflowStep::class, $uses);

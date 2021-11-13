@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Sassnowski\Venture;
+namespace Sassnowski\Venture\Workflow;
 
 use Countable;
 use Traversable;

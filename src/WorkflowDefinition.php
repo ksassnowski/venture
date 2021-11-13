@@ -3,18 +3,22 @@
 namespace Sassnowski\Venture;
 
 use Closure;
+use Throwable;
 use DateInterval;
 use function count;
 use DateTimeInterface;
 use function array_diff;
 use Illuminate\Support\Str;
+use const E_USER_DEPRECATED;
 use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Sassnowski\Venture\Graph\DependencyGraph;
+use Sassnowski\Venture\Workflow\JobCollection;
+use Sassnowski\Venture\Workflow\JobDefinition;
+use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
+use Sassnowski\Venture\Workflow\LegacyWorkflowStepAdapter;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
-use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
 
 class WorkflowDefinition
 {
@@ -41,7 +45,6 @@ class WorkflowDefinition
      *
      * @psalm-suppress UndefinedInterfaceMethod
      *
-     * @throws NonQueueableWorkflowStepException
      * @throws DuplicateJobException
      */
     public function addJob(
@@ -51,8 +54,13 @@ class WorkflowDefinition
         mixed $delay = null,
         ?string $id = null
     ): self {
-        if (!($job instanceof ShouldQueue)) {
-            throw NonQueueableWorkflowStepException::fromJob($job);
+        if (!($job instanceof WorkflowStepInterface)) {
+            trigger_error(
+                'Workflow jobs using the "WorkflowStep" trait have been deprecated. Steps should extend from "\Sassnowski\Venture\Workflow\WorkflowStep" instead.',
+                E_USER_DEPRECATED
+            );
+
+            $job = LegacyWorkflowStepAdapter::from($job);
         }
 
         $id = $this->buildIdentifier($id, $job);
@@ -105,6 +113,9 @@ class WorkflowDefinition
         return $this;
     }
 
+    /**
+     * @param callable(Workflow): void $callback
+     */
     public function then(callable $callback): self
     {
         $this->thenCallback = $this->serializeCallback($callback);
@@ -112,6 +123,9 @@ class WorkflowDefinition
         return $this;
     }
 
+    /**
+     * @param callable(Workflow, WorkflowStepInterface, Throwable): void $callback
+     */
     public function catch(callable $callback): self
     {
         $this->catchCallback = $this->serializeCallback($callback);
@@ -197,7 +211,7 @@ class WorkflowDefinition
             return false;
         }
 
-        return $jobDefinition->job->delay == $delay;
+        return $jobDefinition->job->getDelay() == $delay;
     }
 
     /**

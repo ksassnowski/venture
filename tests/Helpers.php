@@ -1,10 +1,11 @@
 <?php declare(strict_types=1);
 
 use Illuminate\Support\Str;
-use Sassnowski\Venture\JobCollection;
-use Sassnowski\Venture\JobDefinition;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
+use Sassnowski\Venture\Workflow\JobCollection;
+use Sassnowski\Venture\Workflow\JobDefinition;
+use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 
 function createWorkflow(array $attributes = []): Workflow
 {
@@ -29,16 +30,16 @@ function createWorkflowJob(Workflow $workflow, array $attributes = []): Workflow
 }
 
 /**
- * @param object[] $jobs
+ * @param WorkflowStepInterface[] $jobs
  */
 function wrapJobsForWorkflow(array $jobs): JobCollection
 {
-    return collect($jobs)->reduce(function (JobCollection $collection, object $job) {
-        if ($job->jobId === null) {
-            $job->jobId = get_class($job);
+    return collect($jobs)->reduce(function (JobCollection $collection, WorkflowStepInterface $job) {
+        if ($job->getJobId() === null) {
+            $job->withJobId(get_class($job));
         }
 
-        $definition = new JobDefinition($job->jobId, get_class($job), $job);
+        $definition = new JobDefinition($job->getJobId(), get_class($job), $job);
 
         $collection->add($definition);
 

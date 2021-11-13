@@ -2,11 +2,8 @@
 
 namespace Stubs;
 
-use Illuminate\Bus\Queueable;
-use Sassnowski\Venture\WorkflowStep;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Sassnowski\Venture\Workflow\WorkflowStep;
 
-class TestJob1 implements ShouldQueue
+class TestJob1 extends WorkflowStep
 {
-    use Queueable, WorkflowStep;
 }

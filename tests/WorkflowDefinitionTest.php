@@ -8,7 +8,6 @@ use Stubs\TestJob4;
 use Stubs\TestJob5;
 use Stubs\TestJob6;
 use Stubs\NestedWorkflow;
-use Stubs\NonQueueableJob;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
@@ -19,7 +18,6 @@ use function PHPUnit\Framework\assertFalse;
 use function Pest\Laravel\assertDatabaseHas;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
-use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
 
 uses(TestCase::class);
 
@@ -78,9 +76,9 @@ it('sets a reference to the workflow on each job', function () {
         ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
 
-    $workflowId = Workflow::first()->id;
-    assertEquals($workflowId, $testJob1->workflowId);
-    assertEquals($workflowId, $testJob2->workflowId);
+    $workflow = Workflow::first();
+    assertTrue($testJob1->workflow()->is($workflow));
+    assertTrue($testJob2->workflow()->is($workflow));
 });
 
 it('sets the job dependencies on the job instances', function () {
@@ -94,9 +92,9 @@ it('sets the job dependencies on the job instances', function () {
         ->addJob($testJob3, dependencies: ['::job-2-id::'])
         ->build();
 
-    assertEquals([TestJob1::class], $testJob2->dependencies);
-    assertEquals([], $testJob1->dependencies);
-    assertEquals(['::job-2-id::'], $testJob3->dependencies);
+    assertEquals([TestJob1::class], $testJob2->getDependencies());
+    assertEquals([], $testJob1->getDependencies());
+    assertEquals(['::job-2-id::'], $testJob3->getDependencies());
 });
 
 it('sets the jobId on the job instance', function () {
@@ -108,8 +106,8 @@ it('sets the jobId on the job instance', function () {
         ->addJob($testJob2, id: '::job-2-id::')
         ->build();
 
-    assertEquals(TestJob1::class, $testJob1->jobId);
-    assertEquals('::job-2-id::', $testJob2->jobId);
+    assertEquals(TestJob1::class, $testJob1->getJobId());
+    assertEquals('::job-2-id::', $testJob2->getJobId());
 });
 
 it('sets the dependants of a job', function () {
@@ -122,8 +120,8 @@ it('sets the dependants of a job', function () {
         ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
 
-    assertEquals([$testJob2->stepId], $testJob1->dependantJobs);
-    assertEquals([], $testJob2->dependantJobs);
+    assertEquals([$testJob2->getStepId()], $testJob1->getDependantJobs());
+    assertEquals([], $testJob2->getDependantJobs());
 });
 
 it('saves the workflow steps to the database', function () {
@@ -150,12 +148,12 @@ it('saves the list of edges for each job', function () {
 
     $jobs = $workflow->jobs;
     assertEquals(
-        [$testJob2->stepId],
-        $jobs->firstWhere('uuid', $testJob1->stepId)->edges
+        [$testJob2->getStepId()],
+        $jobs->firstWhere('uuid', $testJob1->getStepId())->edges
     );
     assertEquals(
         [],
-        $jobs->firstWhere('uuid', $testJob2->stepId)->edges
+        $jobs->firstWhere('uuid', $testJob2->getStepId())->edges
     );
 });
 
@@ -185,8 +183,8 @@ it('creates workflow step records that use the jobs uuid', function () {
         ->addJob($testJob2, dependencies: [TestJob1::class], name: '::job-name::')
         ->build();
 
-    assertDatabaseHas('workflow_jobs', ['uuid' => $testJob1->stepId]);
-    assertDatabaseHas('workflow_jobs', ['uuid' => $testJob2->stepId]);
+    assertDatabaseHas('workflow_jobs', ['uuid' => $testJob1->getStepId()]);
+    assertDatabaseHas('workflow_jobs', ['uuid' => $testJob2->getStepId()]);
 });
 
 it('creates a workflow with the provided name', function () {
@@ -376,12 +374,8 @@ it('adding another workflow updates the job id on nested job instances', functio
         ->addJob(new TestJob2(), [TestJob1::class])
         ->addWorkflow(new NestedWorkflow($job = new TestJob1()));
 
-    assertEquals(NestedWorkflow::class . '.' . TestJob1::class, $job->jobId);
+    assertEquals(NestedWorkflow::class . '.' . TestJob1::class, $job->getJobId());
 });
-
-it('throws an exception when trying to add a job without the ShouldQueue interface', function () {
-    (new WorkflowDefinition())->addJob(new NonQueueableJob());
-})->expectException(NonQueueableWorkflowStepException::class);
 
 it('allows multiple instances of the same job with explicit ids', function () {
     $definition = (new WorkflowDefinition())

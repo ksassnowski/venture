@@ -8,15 +8,17 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Container\Container;
 use Opis\Closure\SerializableClosure;
-use Sassnowski\Venture\JobCollection;
-use Sassnowski\Venture\JobDefinition;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Bus\Dispatcher;
+use Sassnowski\Venture\Workflow\JobCollection;
+use Sassnowski\Venture\Workflow\JobDefinition;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 /**
  * @method Workflow create(array $attributes)
+ *
  * @property int $id
  * @property string $name
  * @property array $finished_jobs
@@ -63,15 +65,15 @@ class Workflow extends Model
         collect($jobs)->map(fn (JobDefinition $jobDefinition) => [
             'job' => serialize($jobDefinition->job),
             'name' => $jobDefinition->name,
-            'uuid' => $jobDefinition->job->stepId,
-            'edges' => $jobDefinition->job->dependantJobs
+            'uuid' => $jobDefinition->job->getStepId(),
+            'edges' => $jobDefinition->job->getDependantJobs()
         ])
         ->pipe(function (Collection $jobs) {
             $this->jobs()->createMany($jobs);
         });
     }
 
-    public function onStepFinished(object $job): void
+    public function onStepFinished(WorkflowStepInterface $job): void
     {
         $this->markJobAsFinished($job);
 
@@ -85,14 +87,14 @@ class Workflow extends Model
             return;
         }
 
-        if (empty($job->dependantJobs)) {
+        if (empty($job->getDependantJobs())) {
             return;
         }
 
         $this->runDependantJobs($job);
     }
 
-    public function onStepFailed(object $job, Throwable $e): void
+    public function onStepFailed(WorkflowStepInterface $job, Throwable $e): void
     {
         DB::transaction(function () use ($job, $e) {
             /** @var self $workflow */
@@ -171,7 +173,7 @@ class Workflow extends Model
         ])->all();
     }
 
-    private function markJobAsFinished(object $job): void
+    private function markJobAsFinished(WorkflowStepInterface $job): void
     {
         DB::transaction(function () use ($job) {
             /** @var self $workflow */
@@ -179,7 +181,7 @@ class Workflow extends Model
                 ->lockForUpdate()
                 ->findOrFail($this->getKey(), ['finished_jobs', 'jobs_processed']);
 
-            $this->finished_jobs = array_merge($workflow->finished_jobs, [$job->jobId ?: get_class($job)]);
+            $this->finished_jobs = array_merge($workflow->finished_jobs, [$job->getJobId() ?: get_class($job)]);
             $this->jobs_processed = $workflow->jobs_processed + 1;
             $this->save();
 
@@ -187,14 +189,14 @@ class Workflow extends Model
         });
     }
 
-    private function canJobRun(object $job): bool
+    private function canJobRun(WorkflowStepInterface $job): bool
     {
-        return collect($job->dependencies)->every(function (string $dependency) {
+        return collect($job->getDependencies())->every(function (string $dependency) {
             return in_array($dependency, $this->finished_jobs, true);
         });
     }
 
-    private function dispatchJob(object $job): void
+    private function dispatchJob(WorkflowStepInterface $job): void
     {
         Container::getInstance()->get(Dispatcher::class)->dispatch($job);
     }
@@ -219,25 +221,14 @@ class Workflow extends Model
         $callback(...$args);
     }
 
-    private function runDependantJobs(object $job): void
+    private function runDependantJobs(WorkflowStepInterface $job): void
     {
-        // @TODO: Should be removed in the next major version.
-        //
-        // This is to keep backwards compatibility for workflows
-        // that were created when Venture still stored serialized
-        // instances of a job's dependencies instead of the step id.
-        if (is_object($job->dependantJobs[0])) {
-            $dependantJobs = collect($job->dependantJobs);
-        } else {
-            $dependantJobs = WorkflowJob::whereIn('uuid', $job->dependantJobs)
-                ->get('job')
-                ->pluck('job')
-                ->map(fn (string $job) => unserialize($job));
-        }
-
-        $dependantJobs
-            ->filter(fn (object $job) => $this->canJobRun($job))
-            ->each(function (object $job) {
+        $dependantJobs = WorkflowJob::whereIn('uuid', $job->getDependantJobs())
+            ->get('job')
+            ->pluck('job')
+            ->map(fn (string $job) => unserialize($job))
+            ->filter(fn (WorkflowStepInterface $job) => $this->canJobRun($job))
+            ->each(function (WorkflowStepInterface $job) {
                 $this->dispatchJob($job);
             });
     }

@@ -7,6 +7,10 @@ use Ramsey\Uuid\UuidInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
 
+/**
+ * @deprecated This trait has been deprecated and will be removed in Venture 5.
+ *             Workflow jobs should extend from Sassnowski\Venture\Workflow\WorkflowStep instead.
+ */
 trait WorkflowStep
 {
     public array $dependantJobs = [];
