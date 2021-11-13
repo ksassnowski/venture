@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
 use Illuminate\Support\Str;
+use Sassnowski\Venture\JobCollection;
+use Sassnowski\Venture\JobDefinition;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
 
@@ -26,9 +28,20 @@ function createWorkflowJob(Workflow $workflow, array $attributes = []): Workflow
     ], $attributes));
 }
 
-function wrapJobsForWorkflow($jobs) {
-    return collect($jobs)->map(fn ($job) => [
-        'job' => $job->withJobId($job->jobId ?? get_class($job)),
-        'name' => get_class($job)
-    ])->all();
+/**
+ * @param object[] $jobs
+ */
+function wrapJobsForWorkflow(array $jobs): JobCollection
+{
+    return collect($jobs)->reduce(function (JobCollection $collection, object $job) {
+        if ($job->jobId === null) {
+            $job->jobId = get_class($job);
+        }
+
+        $definition = new JobDefinition($job->jobId, get_class($job), $job);
+
+        $collection->add($definition);
+
+        return $collection;
+    }, new JobCollection());
 }

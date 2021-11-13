@@ -8,6 +8,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Container\Container;
 use Opis\Closure\SerializableClosure;
+use Sassnowski\Venture\JobCollection;
+use Sassnowski\Venture\JobDefinition;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -56,13 +58,13 @@ class Workflow extends Model
         return $this->hasMany(WorkflowJob::class);
     }
 
-    public function addJobs(array $jobs): void
+    public function addJobs(JobCollection $jobs): void
     {
-        collect($jobs)->map(fn (array $job) => [
-            'job' => serialize($job['job']),
-            'name' => $job['name'],
-            'uuid' => $job['job']->stepId,
-            'edges' => $job['job']->dependantJobs
+        collect($jobs)->map(fn (JobDefinition $jobDefinition) => [
+            'job' => serialize($jobDefinition->job),
+            'name' => $jobDefinition->name,
+            'uuid' => $jobDefinition->job->stepId,
+            'edges' => $jobDefinition->job->dependantJobs
         ])
         ->pipe(function (Collection $jobs) {
             $this->jobs()->createMany($jobs);

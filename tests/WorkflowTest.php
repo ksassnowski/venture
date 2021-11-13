@@ -58,7 +58,7 @@ it('stores a finished job\'s id', function ($job, string $expectedJobId) {
     ]
 ]);
 
-it('it stores finished job id for nested workflow jobs', function () {
+it('stores finished job id for nested workflow jobs', function () {
     $workflow = new WorkflowWithWorkflow(new NestedWorkflow(
         $job = new TestJob1()
     ));

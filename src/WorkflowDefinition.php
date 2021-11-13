@@ -18,15 +18,17 @@ use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
 
 class WorkflowDefinition
 {
-    protected array $jobs = [];
+    protected JobCollection $jobs;
     protected DependencyGraph $graph;
     protected ?string $thenCallback = null;
     protected ?string $catchCallback = null;
+    /** @var array<string, string[]> */
     protected array $nestedWorkflows = [];
 
     public function __construct(protected string $workflowName = '')
     {
         $this->graph = new DependencyGraph();
+        $this->jobs = new JobCollection();
     }
 
     /**
@@ -46,7 +48,7 @@ class WorkflowDefinition
         object $job,
         array $dependencies = [],
         ?string $name = null,
-        $delay = null,
+        mixed $delay = null,
         ?string $id = null
     ): self {
         if (!($job instanceof ShouldQueue)) {
@@ -61,17 +63,20 @@ class WorkflowDefinition
             $job->delay($delay);
         }
 
-        $this->jobs[$id] = [
-            'job' => $job
-                ->withJobId($id)
-                ->withStepId(Str::orderedUuid()),
-            'name' => $name ?: get_class($job),
-        ];
+        $jobDefinition = new JobDefinition(
+            $id,
+            $name ?: get_class($job),
+            $job->withJobId($id)->withStepId(Str::orderedUuid()),
+        );
+
+        $this->jobs->add($jobDefinition);
 
         return $this;
     }
 
     /**
+     * @param string[] $dependencies
+     *
      * @throws DuplicateWorkflowException
      * @throws DuplicateJobException
      */
@@ -80,13 +85,19 @@ class WorkflowDefinition
         $definition = $workflow->definition();
         $workflowId = $this->buildIdentifier($id, $workflow);
 
-        $workflow->beforeNesting($definition->getJobInstances());
+        $workflow->beforeNesting($definition->jobs->getInstances());
 
         $this->graph->connectGraph($definition->graph, $workflowId, $dependencies);
 
-        foreach ($definition->jobs as $jobId => $job) {
-            $job['job'] = $job['job']->withJobId($workflowId . '.' . $jobId);
-            $this->jobs[$workflowId . '.' . $jobId] = $job;
+        foreach ($definition->jobs as $jobId => $jobDefinition) {
+            $newId = $workflowId . '.' . $jobId;
+
+            $instance = $jobDefinition->job;
+            $instance->withJobId($newId);
+
+            $this->jobs->add(
+                new JobDefinition($newId, $jobDefinition->name, $instance)
+            );
         }
 
         $this->nestedWorkflows[$workflowId] = $dependencies;
@@ -126,8 +137,8 @@ class WorkflowDefinition
 
         $workflow->save();
 
-        foreach ($this->jobs as $id => $job) {
-            $job['job']
+        foreach ($this->jobs as $id => $jobDefinition) {
+            $jobDefinition->job
                 ->withWorkflowId($workflow->id)
                 ->withDependantJobs($this->graph->getDependantJobs($id))
                 ->withDependencies($this->graph->getDependencies($id));
@@ -158,7 +169,7 @@ class WorkflowDefinition
     public function hasJob(string $id, ?array $dependencies = null, mixed $delay = null): bool
     {
         if ($dependencies === null && $delay === null) {
-            return $this->getJobById($id) !== null;
+            return $this->jobs->find($id) !== null;
         }
 
         if ($dependencies !== null && !$this->hasJobWithDependencies($id, $dependencies)) {
@@ -182,13 +193,16 @@ class WorkflowDefinition
      */
     public function hasJobWithDelay(string $jobClassName, mixed $delay): bool
     {
-        if (($job = $this->getJobById($jobClassName)) === null) {
+        if (($jobDefinition = $this->jobs->find($jobClassName)) === null) {
             return false;
         }
 
-        return $job['job']->delay == $delay;
+        return $jobDefinition->job->delay == $delay;
     }
 
+    /**
+     * @param string[]|null $dependencies
+     */
     public function hasWorkflow(string $workflowId, ?array $dependencies = null): bool
     {
         if (!isset($this->nestedWorkflows[$workflowId])) {
@@ -205,17 +219,5 @@ class WorkflowDefinition
     protected function buildIdentifier(?string $id, object $object): string
     {
         return $id ?: get_class($object);
-    }
-
-    protected function getJobById(string $className): ?array
-    {
-        return $this->jobs[$className] ?? null;
-    }
-
-    protected function getJobInstances(): array
-    {
-        return collect($this->jobs)
-            ->map(fn (array $job): object => $job['job'])
-            ->all();
     }
 }
