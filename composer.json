@@ -23,7 +23,7 @@
     "require-dev": {
         "ergebnis/composer-normalize": "^2.15",
         "mockery/mockery": "^1.3.3",
-        "orchestra/testbench": "^6.0",
+        "orchestra/testbench": "^6.23",
         "pestphp/pest": "^1.2",
         "pestphp/pest-plugin-laravel": "^1.0",
         "phpunit/phpunit": "^9.4",
