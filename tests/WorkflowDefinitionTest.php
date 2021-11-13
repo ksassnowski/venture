@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
 use Carbon\Carbon;
-use Stubs\NestedWorkflow;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
 use Stubs\TestJob4;
 use Stubs\TestJob5;
 use Stubs\TestJob6;
+use Stubs\NestedWorkflow;
 use Stubs\NonQueueableJob;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
@@ -465,4 +465,3 @@ class DummyCallback
         echo 'herp';
     }
 }
-
