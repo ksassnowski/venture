@@ -7,7 +7,7 @@ use Sassnowski\Venture\Manager\WorkflowManager;
 
 class VentureServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         $this->publishes([
             __DIR__ . '/../config/venture.php' => config_path('venture.php'),
@@ -20,7 +20,7 @@ class VentureServiceProvider extends ServiceProvider
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
     }
 
-    public function register()
+    public function register(): void
     {
         $this->mergeConfigFrom(
             __DIR__ . '/../config/venture.php',

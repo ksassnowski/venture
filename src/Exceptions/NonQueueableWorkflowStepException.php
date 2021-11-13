@@ -10,7 +10,7 @@ use Facade\IgnitionContracts\ProvidesSolution;
 
 class NonQueueableWorkflowStepException extends Exception implements ProvidesSolution
 {
-    public static function fromJob($job): NonQueueableWorkflowStepException
+    public static function fromJob(object $job): NonQueueableWorkflowStepException
     {
         return new self(sprintf("Job [%s] does not implement the 'ShouldQueue' interface", get_class($job)));
     }

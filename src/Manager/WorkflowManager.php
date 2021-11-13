@@ -30,7 +30,7 @@ class WorkflowManager implements WorkflowManagerInterface
             Closure::fromCallable([$abstractWorkflow, 'beforeCreate'])
         );
 
-        collect($initialJobs)->each(function ($job) {
+        collect($initialJobs)->each(function (object $job) {
             $this->dispatcher->dispatch($job);
         });
 

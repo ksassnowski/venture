@@ -4,13 +4,14 @@ namespace Sassnowski\Venture\Models;
 
 use Throwable;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Container\Container;
 use Opis\Closure\SerializableClosure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Bus\Dispatcher;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 /**
  * @method Workflow create(array $attributes)
@@ -24,7 +25,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?string $catch_callback
  * @property ?Carbon $cancelled_at
  * @property ?Carbon $finished_at
- * @property Collection $jobs
+ * @property EloquentCollection $jobs
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class Workflow extends Model
 {
@@ -42,7 +45,7 @@ class Workflow extends Model
         'cancelled_at',
     ];
 
-    public function __construct($attributes = [])
+    public function __construct(array $attributes = [])
     {
         $this->table = config('venture.workflow_table');
         parent::__construct($attributes);
@@ -55,18 +58,18 @@ class Workflow extends Model
 
     public function addJobs(array $jobs): void
     {
-        collect($jobs)->map(fn ($job) => [
+        collect($jobs)->map(fn (array $job) => [
             'job' => serialize($job['job']),
             'name' => $job['name'],
             'uuid' => $job['job']->stepId,
             'edges' => $job['job']->dependantJobs
         ])
-        ->pipe(function ($jobs) {
+        ->pipe(function (Collection $jobs) {
             $this->jobs()->createMany($jobs);
         });
     }
 
-    public function onStepFinished($job): void
+    public function onStepFinished(object $job): void
     {
         $this->markJobAsFinished($job);
 
@@ -87,7 +90,7 @@ class Workflow extends Model
         $this->runDependantJobs($job);
     }
 
-    public function onStepFailed($job, Throwable $e): void
+    public function onStepFailed(object $job, Throwable $e): void
     {
         DB::transaction(function () use ($job, $e) {
             /** @var self $workflow */
@@ -131,14 +134,14 @@ class Workflow extends Model
         return $this->job_count - $this->jobs_processed;
     }
 
-    public function failedJobs(): Collection
+    public function failedJobs(): EloquentCollection
     {
         return $this->jobs()
             ->whereNotNull('failed_at')
             ->get();
     }
 
-    public function pendingJobs(): Collection
+    public function pendingJobs(): EloquentCollection
     {
         return $this->jobs()
             ->whereNull('finished_at')
@@ -146,7 +149,7 @@ class Workflow extends Model
             ->get();
     }
 
-    public function finishedJobs(): Collection
+    public function finishedJobs(): EloquentCollection
     {
         return $this->jobs()
             ->whereNotNull('finished_at')
@@ -166,7 +169,7 @@ class Workflow extends Model
         ])->all();
     }
 
-    private function markJobAsFinished($job): void
+    private function markJobAsFinished(object $job): void
     {
         DB::transaction(function () use ($job) {
             /** @var self $workflow */
@@ -182,14 +185,14 @@ class Workflow extends Model
         });
     }
 
-    private function canJobRun($job): bool
+    private function canJobRun(object $job): bool
     {
         return collect($job->dependencies)->every(function (string $dependency) {
             return in_array($dependency, $this->finished_jobs, true);
         });
     }
 
-    private function dispatchJob($job): void
+    private function dispatchJob(object $job): void
     {
         Container::getInstance()->get(Dispatcher::class)->dispatch($job);
     }
@@ -199,7 +202,7 @@ class Workflow extends Model
         $this->runCallback($this->then_callback, $this);
     }
 
-    private function runCallback(?string $serializedCallback, ...$args): void
+    private function runCallback(?string $serializedCallback, mixed ...$args): void
     {
         if ($serializedCallback === null) {
             return;
@@ -214,7 +217,7 @@ class Workflow extends Model
         $callback(...$args);
     }
 
-    private function runDependantJobs($job): void
+    private function runDependantJobs(object $job): void
     {
         // @TODO: Should be removed in the next major version.
         //
@@ -227,12 +230,12 @@ class Workflow extends Model
             $dependantJobs = WorkflowJob::whereIn('uuid', $job->dependantJobs)
                 ->get('job')
                 ->pluck('job')
-                ->map(fn ($job) => unserialize($job));
+                ->map(fn (string $job) => unserialize($job));
         }
 
         $dependantJobs
-            ->filter(fn ($job) => $this->canJobRun($job))
-            ->each(function ($job) {
+            ->filter(fn (object $job) => $this->canJobRun($job))
+            ->each(function (object $job) {
                 $this->dispatchJob($job);
             });
     }

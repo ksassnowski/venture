@@ -17,7 +17,7 @@ class DependencyGraph
     /**
      * @throws DuplicateJobException
      */
-    public function addDependantJob($job, array $dependencies, string $id): void
+    public function addDependantJob(object $job, array $dependencies, string $id): void
     {
         if (isset($this->graph[$id])) {
             throw new DuplicateJobException(sprintf('A job with id "%s" already exists in this workflow.', $id));
@@ -37,9 +37,7 @@ class DependencyGraph
     public function getDependantJobs(string $jobId): array
     {
         return collect($this->graph[$jobId]['out_edges'])
-            ->map(function (string $dependantJob) {
-                return $this->graph[$dependantJob]['instance'];
-            })
+            ->map(fn (string $dependantJob): object => $this->graph[$dependantJob]['instance'])
             ->toArray();
     }
 
@@ -51,8 +49,8 @@ class DependencyGraph
     public function getJobsWithoutDependencies(): array
     {
         return collect($this->graph)
-            ->filter(fn (array $node) => count($node['in_edges']) === 0)
-            ->map(fn (array $node) => $node['instance'])
+            ->filter(fn (array $node): bool => count($node['in_edges']) === 0)
+            ->map(fn (array $node): object => $node['instance'])
             ->values()
             ->toArray();
     }

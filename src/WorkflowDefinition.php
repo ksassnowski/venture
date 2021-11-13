@@ -94,14 +94,14 @@ class WorkflowDefinition
         return $this;
     }
 
-    public function then($callback): self
+    public function then(callable $callback): self
     {
         $this->thenCallback = $this->serializeCallback($callback);
 
         return $this;
     }
 
-    public function catch($callback): self
+    public function catch(callable $callback): self
     {
         $this->catchCallback = $this->serializeCallback($callback);
 
@@ -143,7 +143,7 @@ class WorkflowDefinition
         return $this->workflowName;
     }
 
-    private function serializeCallback($callback): string
+    private function serializeCallback(mixed $callback): string
     {
         if ($callback instanceof Closure) {
             $callback = SerializableClosure::from($callback);
@@ -152,7 +152,10 @@ class WorkflowDefinition
         return serialize($callback);
     }
 
-    public function hasJob(string $id, ?array $dependencies = null, $delay = null): bool
+    /**
+     * @param DateTimeInterface|DateInterval|int|null $delay
+     */
+    public function hasJob(string $id, ?array $dependencies = null, mixed $delay = null): bool
     {
         if ($dependencies === null && $delay === null) {
             return $this->getJobById($id) !== null;
@@ -174,7 +177,10 @@ class WorkflowDefinition
         return count(array_diff($dependencies, $this->graph->getDependencies($jobId))) === 0;
     }
 
-    public function hasJobWithDelay(string $jobClassName, $delay): bool
+    /**
+     * @param DateTimeInterface|DateInterval|int|null $delay
+     */
+    public function hasJobWithDelay(string $jobClassName, mixed $delay): bool
     {
         if (($job = $this->getJobById($jobClassName)) === null) {
             return false;
@@ -196,7 +202,7 @@ class WorkflowDefinition
         return $this->nestedWorkflows[$workflowId] === $dependencies;
     }
 
-    protected function buildIdentifier(?string $id, $object): string
+    protected function buildIdentifier(?string $id, object $object): string
     {
         return $id ?: get_class($object);
     }
@@ -209,7 +215,7 @@ class WorkflowDefinition
     protected function getJobInstances(): array
     {
         return collect($this->jobs)
-            ->map(fn (array $job) => $job['job'])
+            ->map(fn (array $job): object => $job['job'])
             ->all();
     }
 }
