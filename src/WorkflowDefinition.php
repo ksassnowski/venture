@@ -89,7 +89,7 @@ class WorkflowDefinition
             $this->jobs[$workflowId . '.' . $jobId] = $job;
         }
 
-        $this->nestedWorkflows[$workflowId] = [$dependencies];
+        $this->nestedWorkflows[$workflowId] = $dependencies;
 
         return $this;
     }

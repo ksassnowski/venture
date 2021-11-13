@@ -454,7 +454,7 @@ it('can check if a workflow contains a nested workflow', function (callable $con
                 ->addWorkflow(new NestedWorkflow(), [TestJob1::class]);
         },
         'dependencies' => [TestJob1::class],
-        'expected' => false,
+        'expected' => true,
     ],
 ]);
 
