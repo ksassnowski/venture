@@ -223,7 +223,7 @@ class Workflow extends Model
 
     private function runDependantJobs(WorkflowStepInterface $job): void
     {
-        $dependantJobs = WorkflowJob::whereIn('uuid', $job->getDependantJobs())
+        WorkflowJob::whereIn('uuid', $job->getDependantJobs())
             ->get('job')
             ->pluck('job')
             ->map(fn (string $job) => unserialize($job))
