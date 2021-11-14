@@ -234,8 +234,16 @@ class WorkflowDefinition
         return $this->nestedWorkflows[$workflowId] === $dependencies;
     }
 
-    protected function buildIdentifier(?string $id, object $object): string
+    protected function buildIdentifier(?string $id, object $job): string
     {
-        return $id ?: get_class($object);
+        if ($id !== null) {
+            return $id;
+        }
+
+        if ($job instanceof LegacyWorkflowStepAdapter) {
+            $job = $job->getWrappedJob();
+        }
+
+        return get_class($job);
     }
 }

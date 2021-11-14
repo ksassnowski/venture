@@ -391,6 +391,13 @@ it('allows multiple instances of the same job with explicit ids', function () {
     assertTrue($definition->hasJob('::id-2::'));
 });
 
+it('uses a legacy job\'s wrapped class name as the id if no explicit id was provided ', function () {
+    $definition = (new WorkflowDefinition())
+        ->addJob(new LegacyJob());
+
+    expect($definition)->hasJob(LegacyJob::class)->toBeTrue();
+});
+
 it('can allows FQCN and explicit id when declaring dependencies', function () {
     $definition = (new WorkflowDefinition())
         ->addJob(new TestJob1())
