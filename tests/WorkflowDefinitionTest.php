@@ -248,10 +248,10 @@ it('can add a job with a delay', function ($delay) {
     $workflow1 = WorkflowFacade::define('::name-1::')
         ->addJob(new TestJob1(), delay: $delay);
     $workflow2 = WorkflowFacade::define('::name-2::')
-        ->addJob(new TestJob2(), delay: $delay);
+        ->addJob(new LegacyJob(), delay: $delay);
 
     assertTrue($workflow1->hasJobWithDelay(TestJob1::class, $delay));
-    assertTrue($workflow2->hasJobWithDelay(TestJob2::class, $delay));
+    assertTrue($workflow2->hasJobWithDelay(LegacyJob::class, $delay));
 })->with('delay provider');
 
 it('returns true if job is part of the workflow', function () {

@@ -68,9 +68,10 @@ class WorkflowDefinition
 
         $this->graph->addDependantJob($job, $dependencies, $id);
 
-        if ($delay !== null) {
-            $job->delay($delay);
-        }
+        $job
+            ->withJobId($id)
+            ->withStepId(Str::orderedUuid())
+            ->withDelay($delay);
 
         $jobDefinition = new JobDefinition(
             $id,
