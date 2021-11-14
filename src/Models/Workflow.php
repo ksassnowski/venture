@@ -78,8 +78,8 @@ class Workflow extends Model
             'edges' => $jobDefinition->job->getDependantJobs(),
         ])
             ->pipe(function (Collection $jobs): void {
-            $this->jobs()->createMany($jobs);
-        });
+                $this->jobs()->createMany($jobs);
+            });
     }
 
     public function onStepFinished(WorkflowStepInterface $job): void
