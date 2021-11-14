@@ -3,6 +3,7 @@
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
+use Stubs\LegacyJob;
 use Illuminate\Support\Facades\Bus;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\AbstractWorkflow;
@@ -44,6 +45,21 @@ it('starts a workflow by dispatching all jobs without dependencies', function ()
     Bus::assertDispatchedTimes(TestJob1::class, 1);
     Bus::assertDispatchedTimes(TestJob2::class, 1);
     Bus::assertNotDispatched(TestJob3::class);
+});
+
+it('unwraps any legacy steps before dispatching them', function () {
+    $workflow = new class extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return WorkflowFacade::define('::name::')
+                ->addJob(new LegacyJob());
+        }
+    };
+    $manager = new WorkflowManager($this->dispatcherSpy);
+
+    $manager->startWorkflow($workflow);
+
+    Bus::assertDispatchedTimes(LegacyJob::class, 1);
 });
 
 it('returns the created workflow', function () {

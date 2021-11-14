@@ -21,6 +21,9 @@ final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
     {
     }
 
+    /**
+     * @throws InvalidArgumentException
+     */
     public static function from(object $job): WorkflowStepInterface
     {
         if ($job instanceof WorkflowStepInterface) {
@@ -119,5 +122,13 @@ final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
     public function getDelay(): DateInterval | DateTimeInterface | int | null
     {
         return $this->workflowStep->delay;
+    }
+
+    /**
+     * @return UsesWorkflowStepTrait
+     */
+    public function getWrappedJob(): object
+    {
+        return $this->workflowStep;
     }
 }

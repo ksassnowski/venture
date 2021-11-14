@@ -7,6 +7,8 @@ use Sassnowski\Venture\Models\Workflow;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\WorkflowDefinition;
+use Sassnowski\Venture\Workflow\WorkflowStepInterface;
+use Sassnowski\Venture\Workflow\LegacyWorkflowStepAdapter;
 
 class WorkflowManager implements WorkflowManagerInterface
 {
@@ -30,7 +32,11 @@ class WorkflowManager implements WorkflowManagerInterface
             Closure::fromCallable([$abstractWorkflow, 'beforeCreate'])
         );
 
-        collect($initialJobs)->each(function (object $job) {
+        collect($initialJobs)->each(function (WorkflowStepInterface $job) {
+            if ($job instanceof LegacyWorkflowStepAdapter) {
+                $job = $job->getWrappedJob();
+            }
+
             $this->dispatcher->dispatch($job);
         });
 

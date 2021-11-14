@@ -2,6 +2,7 @@
 
 use Mockery as m;
 use Stubs\TestJob1;
+use Stubs\LegacyJob;
 use Stubs\NonWorkflowJob;
 use Illuminate\Contracts\Queue\Job;
 use Opis\Closure\SerializableClosure;
@@ -20,7 +21,7 @@ beforeEach(function () {
     $_SERVER['__catch.called'] = false;
 });
 
-function prepareFakeJob($workflowJob, bool $failed = false, bool $released = false)
+function prepareFakeJob(object $workflowJob, bool $failed = false, bool $released = false)
 {
     return with(m::mock(Job::class), function (m\MockInterface $job) use ($workflowJob, $failed, $released) {
         $job->allows('payload')->andReturns([
@@ -36,14 +37,19 @@ function prepareFakeJob($workflowJob, bool $failed = false, bool $released = fal
     });
 }
 
-it('notifies the workflow if a workflow step has finished', function () {
+dataset('workflow step provider', [
+    'regular job' => [new TestJob1()],
+    'legacy job' => [new LegacyJob()],
+]);
+
+it('notifies the workflow if a workflow step has finished', function (object $workflowJob) {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
         'jobs_failed' => 0,
         'finished_jobs' => [],
     ]);
-    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $workflowJob = $workflowJob->withWorkflowId($workflow->id);
     $event = new JobProcessed('::connection::', prepareFakeJob($workflowJob));
     $eventSubscriber = new WorkflowEventSubscriber();
 
@@ -51,16 +57,16 @@ it('notifies the workflow if a workflow step has finished', function () {
     $eventSubscriber->handleJobProcessed($event);
 
     assertTrue($workflow->fresh()->isFinished());
-});
+})->with('workflow step provider');
 
-it('does not notify the workflow has finished when job is released back into the queue', function () {
+it('does not notify the workflow has finished when job is released back into the queue', function (object $workflowJob) {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
         'jobs_failed' => 0,
         'finished_jobs' => [],
     ]);
-    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $workflowJob = $workflowJob->withWorkflowId($workflow->id);
     $event = new JobProcessed('::connection::', prepareFakeJob($workflowJob, false, true));
     $eventSubscriber = new WorkflowEventSubscriber();
 
@@ -69,9 +75,9 @@ it('does not notify the workflow has finished when job is released back into the
     $eventSubscriber->handleJobProcessed($event);
 
     assertFalse($workflow->fresh()->isFinished());
-});
+})->with('workflow step provider');
 
-it('only cares about jobs that use the WorkflowStep trait', function () {
+it('does not care about non-workflow jobs', function () {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
@@ -86,7 +92,7 @@ it('only cares about jobs that use the WorkflowStep trait', function () {
     assertFalse($workflow->fresh()->isFinished());
 });
 
-it('notifies the workflow if a job fails', function () {
+it('notifies the workflow if a job fails', function (object $workflowJob) {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
@@ -96,16 +102,16 @@ it('notifies the workflow if a job fails', function () {
             $_SERVER['__catch.called'] = true;
         })),
     ]);
-    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $workflowJob = $workflowJob->withWorkflowId($workflow->id);
     $event = new JobFailed('::connection::', prepareFakeJob($workflowJob, true), new Exception());
     $eventSubscriber = new WorkflowEventSubscriber();
 
     $eventSubscriber->handleJobFailed($event);
 
     assertTrue($_SERVER['__catch.called']);
-});
+})->with('workflow step provider');
 
-it('does not notify the workflow is the job is not marked as failed', function () {
+it('does not notify the workflow is the job is not marked as failed', function (object $workflowJob) {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
@@ -115,16 +121,16 @@ it('does not notify the workflow is the job is not marked as failed', function (
             $_SERVER['__catch.called'] = true;
         })),
     ]);
-    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $workflowJob = $workflowJob->withWorkflowId($workflow->id);
     $event = new JobFailed('::connection::', prepareFakeJob($workflowJob, false), new Exception());
     $eventSubscriber = new WorkflowEventSubscriber();
 
     $eventSubscriber->handleJobFailed($event);
 
     assertFalse($_SERVER['__catch.called']);
-});
+})->with('workflow step provider');
 
-it('passes the exception along to the workflow', function () {
+it('passes the exception along to the workflow', function (object $workflowJob) {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
@@ -134,16 +140,16 @@ it('passes the exception along to the workflow', function () {
             assertEquals('::message::', $e->getMessage());
         })),
     ]);
-    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $workflowJob = $workflowJob->withWorkflowId($workflow->id);
     $event = new JobFailed('::connection::', prepareFakeJob($workflowJob, false), new Exception('::message::'));
     $eventSubscriber = new WorkflowEventSubscriber();
 
     $eventSubscriber->handleJobFailed($event);
-});
+})->with('workflow step provider');
 
-it('will delete the job if the workflow it belongs to has been cancelled', function () {
+it('will delete the job if the workflow it belongs to has been cancelled', function (object $workflowJob) {
     $workflow = createWorkflow(['cancelled_at' => now()]);
-    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $workflowJob = $workflowJob->withWorkflowId($workflow->id);
     $laravelJob = prepareFakeJob($workflowJob);
     $event = new JobProcessing('::connection::', $laravelJob);
     $eventSubscriber = new WorkflowEventSubscriber();
@@ -151,7 +157,7 @@ it('will delete the job if the workflow it belongs to has been cancelled', funct
     $eventSubscriber->onJobProcessing($event);
 
     $laravelJob->shouldHaveReceived('delete');
-});
+})->with('workflow step provider');
 
 it('only cares about workflow jobs when checking for cancelled workflows', function () {
     $workflowJob = new NonWorkflowJob();
@@ -164,9 +170,9 @@ it('only cares about workflow jobs when checking for cancelled workflows', funct
     $laravelJob->shouldNotHaveReceived('delete');
 });
 
-it('does not delete a job if its workflow has not been cancelled', function () {
+it('does not delete a job if its workflow has not been cancelled', function (object $workflowJob) {
     $workflow = createWorkflow(['cancelled_at' => null]);
-    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $workflowJob = $workflowJob->withWorkflowId($workflow->id);
     $laravelJob = prepareFakeJob($workflowJob);
     $event = new JobProcessing('::connection::', $laravelJob);
     $eventSubscriber = new WorkflowEventSubscriber();
@@ -174,4 +180,4 @@ it('does not delete a job if its workflow has not been cancelled', function () {
     $eventSubscriber->onJobProcessing($event);
 
     $laravelJob->shouldNotHaveReceived('delete');
-});
+})->with('workflow step provider');

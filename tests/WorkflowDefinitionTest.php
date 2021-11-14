@@ -7,6 +7,7 @@ use Stubs\TestJob3;
 use Stubs\TestJob4;
 use Stubs\TestJob5;
 use Stubs\TestJob6;
+use Stubs\LegacyJob;
 use Stubs\NestedWorkflow;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
@@ -18,6 +19,7 @@ use function PHPUnit\Framework\assertFalse;
 use function Pest\Laravel\assertDatabaseHas;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
+use Sassnowski\Venture\Workflow\LegacyWorkflowStepAdapter;
 
 uses(TestCase::class);
 
@@ -30,10 +32,11 @@ it('creates a workflow', function () {
     (new WorkflowDefinition())
         ->addJob(new TestJob1())
         ->addJob(new TestJob2(), dependencies: [TestJob1::class])
+        ->addJob(new LegacyJob())
         ->build();
 
     assertDatabaseHas('workflows', [
-        'job_count' => 2,
+        'job_count' => 3,
         'jobs_processed' => 0,
         'jobs_failed' => 0,
         'finished_jobs' => json_encode([]),
@@ -43,14 +46,16 @@ it('creates a workflow', function () {
 it('returns the workflow\'s initial batch of jobs', function () {
     $job1 = new TestJob1();
     $job2 = new TestJob2();
+    $job3 = new LegacyJob();
 
     [$workflow, $initialBatch] = (new WorkflowDefinition())
         ->addJob($job1)
         ->addJob($job2)
         ->addJob(new TestJob3(), dependencies: [TestJob1::class])
+        ->addJob($job3)
         ->build();
 
-    assertEquals([$job1, $job2], $initialBatch);
+    assertEquals([$job1, $job2, LegacyWorkflowStepAdapter::from($job3)], $initialBatch);
 });
 
 it('returns the workflow', function () {
