@@ -254,6 +254,30 @@ it('can add a job with a delay', function ($delay) {
     assertTrue($workflow2->hasJobWithDelay(LegacyJob::class, $delay));
 })->with('delay provider');
 
+it('uses the name of the legacy class for the step name if no explicit name is provided', function () {
+    $workflow = WorkflowFacade::define('::name::')
+        ->addJob(new LegacyJob());
+
+    [$workflowModel, $initialJobs] = $workflow->build();
+
+    assertDatabaseHas('workflow_jobs', [
+        'workflow_id' => $workflowModel->id,
+        'name' => LegacyJob::class
+    ]);
+});
+
+it('uses the explicit name for a legacy job if provided', function () {
+    $workflow = WorkflowFacade::define('::name::')
+        ->addJob(new LegacyJob(), name: '::job-name::');
+
+    [$workflowModel, $initialJobs] = $workflow->build();
+
+    assertDatabaseHas('workflow_jobs', [
+        'workflow_id' => $workflowModel->id,
+        'name' => '::job-name::',
+    ]);
+});
+
 it('returns true if job is part of the workflow', function () {
     $definition = WorkflowFacade::define('::name::')
         ->addJob(new TestJob1());

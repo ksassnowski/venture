@@ -60,6 +60,8 @@ class WorkflowDefinition
                 E_USER_DEPRECATED
             );
 
+            $name ??= get_class($job);
+
             /** @psalm-suppress ArgumentTypeCoercion */
             $job = LegacyWorkflowStepAdapter::from($job);
         }
@@ -76,7 +78,7 @@ class WorkflowDefinition
         $jobDefinition = new JobDefinition(
             $id,
             $name ?: get_class($job),
-            $job->withJobId($id)->withStepId(Str::orderedUuid()),
+            $job
         );
 
         $this->jobs->add($jobDefinition);
