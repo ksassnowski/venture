@@ -1,16 +1,29 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture\Workflow;
 
-use Countable;
-use Traversable;
 use ArrayIterator;
+use Countable;
 use IteratorAggregate;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
+use Traversable;
 
-final class JobCollection implements IteratorAggregate, Countable
+final class JobCollection implements Countable, IteratorAggregate
 {
-    /** @var array<string, JobDefinition> */
+    /**
+     * @var array<string, JobDefinition>
+     */
     private array $jobs = [];
 
     /**
@@ -45,9 +58,9 @@ final class JobCollection implements IteratorAggregate, Countable
      */
     public function getInstances(): array
     {
-        return array_map(
+        return \array_map(
             fn (JobDefinition $definition) => $definition->job,
-            $this->jobs
+            $this->jobs,
         );
     }
 
@@ -61,6 +74,6 @@ final class JobCollection implements IteratorAggregate, Countable
 
     public function count(): int
     {
-        return count($this->jobs);
+        return \count($this->jobs);
     }
 }

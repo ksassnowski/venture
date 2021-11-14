@@ -1,13 +1,24 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture\Workflow;
 
 use DateInterval;
 use DateTimeInterface;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Ramsey\Uuid\UuidInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
 interface WorkflowStepInterface extends ShouldQueue
 {
@@ -45,7 +56,7 @@ interface WorkflowStepInterface extends ShouldQueue
 
     public function step(): ?WorkflowJob;
 
-    public function withDelay(DateTimeInterface | DateInterval | int | null $delay): self;
+    public function withDelay(DateTimeInterface|DateInterval|int|null $delay): self;
 
-    public function getDelay(): DateInterval | DateTimeInterface | int | null;
+    public function getDelay(): DateInterval|DateTimeInterface|int|null;
 }

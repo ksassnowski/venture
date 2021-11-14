@@ -1,29 +1,38 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture;
 
 use Closure;
-use Throwable;
 use DateInterval;
-use function count;
 use DateTimeInterface;
 use Illuminate\Support\Str;
-use const E_USER_DEPRECATED;
 use Opis\Closure\SerializableClosure;
-use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Exceptions\DuplicateJobException;
+use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Graph\DependencyGraph;
+use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Testing\WorkflowDefinitionInspections;
 use Sassnowski\Venture\Workflow\JobCollection;
 use Sassnowski\Venture\Workflow\JobDefinition;
-use Sassnowski\Venture\Workflow\WorkflowStepInterface;
-use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Workflow\LegacyWorkflowStepAdapter;
-use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
-use Sassnowski\Venture\Testing\WorkflowDefinitionInspections;
+use Sassnowski\Venture\Workflow\WorkflowStepInterface;
+use Throwable;
+use const E_USER_DEPRECATED;
 
 class WorkflowDefinition
 {
     use WorkflowDefinitionInspections;
-
     protected JobCollection $jobs;
     protected DependencyGraph $graph;
     protected ?string $thenCallback = null;
@@ -36,31 +45,28 @@ class WorkflowDefinition
     }
 
     /**
-     * @param  object                                  $job
-     * @param  array                                   $dependencies
-     * @param  string|null                             $name
-     * @param  DateTimeInterface|DateInterval|int|null $delay
-     * @param  string|null                             $id
+     * @param null|DateInterval|DateTimeInterface|int $delay
+     *
+     * @throws DuplicateJobException
+     *
      * @return $this
      *
      * @psalm-suppress UndefinedInterfaceMethod
-     *
-     * @throws DuplicateJobException
      */
     public function addJob(
         object $job,
         array $dependencies = [],
         ?string $name = null,
         mixed $delay = null,
-        ?string $id = null
+        ?string $id = null,
     ): self {
         if (!($job instanceof WorkflowStepInterface)) {
-            trigger_error(
+            @\trigger_error(
                 'Workflow jobs using the "WorkflowStep" trait have been deprecated. Steps should extend from "\Sassnowski\Venture\Workflow\WorkflowStep" instead.',
-                E_USER_DEPRECATED
+                E_USER_DEPRECATED,
             );
 
-            $name ??= get_class($job);
+            $name ??= \get_class($job);
 
             /** @psalm-suppress ArgumentTypeCoercion */
             $job = LegacyWorkflowStepAdapter::from($job);
@@ -77,8 +83,8 @@ class WorkflowDefinition
 
         $jobDefinition = new JobDefinition(
             $id,
-            $name ?: get_class($job),
-            $job
+            $name ?: \get_class($job),
+            $job,
         );
 
         $this->jobs->add($jobDefinition);
@@ -89,8 +95,8 @@ class WorkflowDefinition
     /**
      * @param string[] $dependencies
      *
-     * @throws DuplicateWorkflowException
      * @throws DuplicateJobException
+     * @throws DuplicateWorkflowException
      */
     public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = [], ?string $id = null): self
     {
@@ -108,7 +114,7 @@ class WorkflowDefinition
             $instance->withJobId($newId);
 
             $this->jobs->add(
-                new JobDefinition($newId, $jobDefinition->name, $instance)
+                new JobDefinition($newId, $jobDefinition->name, $instance),
             );
         }
 
@@ -144,7 +150,7 @@ class WorkflowDefinition
     {
         $workflow = new Workflow([
             'name' => $this->workflowName,
-            'job_count' => count($this->jobs),
+            'job_count' => \count($this->jobs),
             'jobs_processed' => 0,
             'jobs_failed' => 0,
             'finished_jobs' => [],
@@ -152,7 +158,7 @@ class WorkflowDefinition
             'catch_callback' => $this->catchCallback,
         ]);
 
-        if ($beforeCreate !== null) {
+        if (null !== $beforeCreate) {
             $beforeCreate($workflow);
         }
 
@@ -175,18 +181,9 @@ class WorkflowDefinition
         return $this->workflowName;
     }
 
-    private function serializeCallback(mixed $callback): string
-    {
-        if ($callback instanceof Closure) {
-            $callback = SerializableClosure::from($callback);
-        }
-
-        return serialize($callback);
-    }
-
     protected function buildIdentifier(?string $id, object $job): string
     {
-        if ($id !== null) {
+        if (null !== $id) {
             return $id;
         }
 
@@ -194,6 +191,15 @@ class WorkflowDefinition
             $job = $job->getWrappedJob();
         }
 
-        return get_class($job);
+        return \get_class($job);
+    }
+
+    private function serializeCallback(mixed $callback): string
+    {
+        if ($callback instanceof Closure) {
+            $callback = SerializableClosure::from($callback);
+        }
+
+        return \serialize($callback);
     }
 }

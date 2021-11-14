@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Stubs;
 
-use Sassnowski\Venture\Workflow\WorkflowStep;
-
-class TestJob4 extends WorkflowStep
+class DummyCallback
 {
+    public function __invoke(): void
+    {
+        echo 'herp';
+    }
 }

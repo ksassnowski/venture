@@ -1,35 +1,46 @@
-<?php declare(strict_types=1);
+<?php
 
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
+
+use Illuminate\Support\Facades\Bus;
+use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
+use Sassnowski\Venture\Manager\WorkflowManager;
+use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\WorkflowDefinition;
+use Stubs\LegacyJob;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
-use Stubs\LegacyJob;
-use Illuminate\Support\Facades\Bus;
-use Sassnowski\Venture\Models\Workflow;
-use Sassnowski\Venture\AbstractWorkflow;
-use function PHPUnit\Framework\assertTrue;
-use Sassnowski\Venture\WorkflowDefinition;
 use function PHPUnit\Framework\assertEquals;
-use Sassnowski\Venture\Manager\WorkflowManager;
 use function PHPUnit\Framework\assertInstanceOf;
-use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
+use function PHPUnit\Framework\assertTrue;
 
 uses(TestCase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->dispatcherSpy = Bus::fake();
     $this->manager = new WorkflowManager($this->dispatcherSpy);
 });
 
-it('creates a new workflow definition with the provided name', function () {
+it('creates a new workflow definition with the provided name', function (): void {
     $definition = $this->manager->define('::name::');
 
     assertInstanceOf(WorkflowDefinition::class, $definition);
     assertEquals('::name::', $definition->name());
 });
 
-it('starts a workflow by dispatching all jobs without dependencies', function () {
-    $definition = new class extends AbstractWorkflow {
+it('starts a workflow by dispatching all jobs without dependencies', function (): void {
+    $definition = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
             return WorkflowFacade::define('::name::')
@@ -47,8 +58,8 @@ it('starts a workflow by dispatching all jobs without dependencies', function ()
     Bus::assertNotDispatched(TestJob3::class);
 });
 
-it('unwraps any legacy steps before dispatching them', function () {
-    $workflow = new class extends AbstractWorkflow {
+it('unwraps any legacy steps before dispatching them', function (): void {
+    $workflow = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
             return WorkflowFacade::define('::name::')
@@ -62,8 +73,8 @@ it('unwraps any legacy steps before dispatching them', function () {
     Bus::assertDispatchedTimes(LegacyJob::class, 1);
 });
 
-it('returns the created workflow', function () {
-    $definition = new class extends AbstractWorkflow {
+it('returns the created workflow', function (): void {
+    $definition = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
             return WorkflowFacade::define('::name::')
@@ -79,8 +90,8 @@ it('returns the created workflow', function () {
     assertTrue($workflow->wasRecentlyCreated);
 });
 
-it('applies the before create hook if it exists', function () {
-    $definition = new class extends AbstractWorkflow {
+it('applies the before create hook if it exists', function (): void {
+    $definition = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
             return WorkflowFacade::define('::old-name::')

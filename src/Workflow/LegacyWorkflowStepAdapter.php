@@ -1,16 +1,26 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture\Workflow;
 
 use DateInterval;
-use Ramsey\Uuid\Uuid;
 use DateTimeInterface;
-use function in_array;
 use InvalidArgumentException;
+use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use function class_uses_recursive;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
+use function class_uses_recursive;
 
 final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
 {
@@ -32,9 +42,9 @@ final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
 
         $uses = class_uses_recursive($job);
 
-        if (!in_array(\Sassnowski\Venture\WorkflowStep::class, $uses)) {
+        if (!\in_array(\Sassnowski\Venture\WorkflowStep::class, $uses, true)) {
             throw new InvalidArgumentException(
-                'Provided job uses neither the WorkflowStep trait, nor does it implement the interface itself.'
+                'Provided job uses neither the WorkflowStep trait, nor does it implement the interface itself.',
             );
         }
 
@@ -76,7 +86,7 @@ final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
     /**
      * @return string[]
      */
-    final public function getDependencies(): array
+    public function getDependencies(): array
     {
         return $this->workflowStep->dependencies;
     }
@@ -90,7 +100,7 @@ final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
 
     public function getStepId(): ?UuidInterface
     {
-        return $this->workflowStep->stepId !== null
+        return null !== $this->workflowStep->stepId
             ? Uuid::fromString($this->workflowStep->stepId)
             : null;
     }
@@ -112,14 +122,14 @@ final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
         return $this->workflowStep->step();
     }
 
-    public function withDelay(DateInterval | DateTimeInterface | int | null $delay): WorkflowStepInterface
+    public function withDelay(DateInterval|DateTimeInterface|int|null $delay): WorkflowStepInterface
     {
         $this->workflowStep->delay = $delay;
 
         return $this;
     }
 
-    public function getDelay(): DateInterval | DateTimeInterface | int | null
+    public function getDelay(): DateInterval|DateTimeInterface|int|null
     {
         return $this->workflowStep->delay;
     }

@@ -1,4 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture\Workflow;
 
@@ -13,9 +24,14 @@ abstract class WorkflowStep implements WorkflowStepInterface
 {
     use Queueable;
 
-    /** @var string[] */
+    /**
+     * @var string[]
+     */
     private array $dependantJobs = [];
-    /** @var string[] */
+
+    /**
+     * @var string[]
+     */
     private array $dependencies = [];
     private ?int $workflowId = null;
     private ?UuidInterface $stepId = null;
@@ -30,7 +46,7 @@ abstract class WorkflowStep implements WorkflowStepInterface
 
     final public function workflow(): ?Workflow
     {
-        if ($this->workflowId === null) {
+        if (null === $this->workflowId) {
             return null;
         }
 
@@ -42,9 +58,9 @@ abstract class WorkflowStep implements WorkflowStepInterface
      */
     final public function withDependantJobs(array $jobs): self
     {
-        $this->dependantJobs = array_map(
+        $this->dependantJobs = \array_map(
             fn (WorkflowStepInterface $step) => (string) $step->getStepId(),
-            $jobs
+            $jobs,
         );
 
         return $this;
@@ -99,21 +115,21 @@ abstract class WorkflowStep implements WorkflowStepInterface
 
     final public function step(): ?WorkflowJob
     {
-        if ($this->stepId === null) {
+        if (null === $this->stepId) {
             return null;
         }
 
         return WorkflowJob::where('uuid', $this->stepId)->first();
     }
 
-    final public function withDelay(DateInterval | DateTimeInterface | int | null $delay): self
+    final public function withDelay(DateInterval|DateTimeInterface|int|null $delay): self
     {
         $this->delay = $delay;
 
         return $this;
     }
 
-    final public function getDelay(): DateInterval | DateTimeInterface | int | null
+    final public function getDelay(): DateInterval|DateTimeInterface|int|null
     {
         return $this->delay;
     }

@@ -1,11 +1,22 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture\Graph;
 
-use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
+use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 
 /**
  * @psalm-type GraphEntry array{instance: WorkflowStepInterface, in_edges: string[], out_edges: string[]}
@@ -30,7 +41,7 @@ class DependencyGraph
     public function addDependantJob(WorkflowStepInterface $job, array $dependencies, string $id): void
     {
         if (isset($this->graph[$id])) {
-            throw new DuplicateJobException(sprintf('A job with id "%s" already exists in this workflow.', $id));
+            throw new DuplicateJobException(\sprintf('A job with id "%s" already exists in this workflow.', $id));
         }
 
         $resolvedDependencies = $this->resolveDependencies($dependencies);
@@ -68,26 +79,26 @@ class DependencyGraph
     public function getJobsWithoutDependencies(): array
     {
         return collect($this->graph)
-            ->filter(fn (array $node): bool => count($node['in_edges']) === 0)
+            ->filter(fn (array $node): bool => \count($node['in_edges']) === 0)
             ->map(fn (array $node): WorkflowStepInterface => $node['instance'])
             ->values()
             ->toArray();
     }
 
     /**
-     * @throws DuplicateWorkflowException
      * @throws DuplicateJobException
+     * @throws DuplicateWorkflowException
      */
-    public function connectGraph(DependencyGraph $otherGraph, string $id, array $dependencies): void
+    public function connectGraph(self $otherGraph, string $id, array $dependencies): void
     {
         if (isset($this->nestedGraphs[$id])) {
-            throw new DuplicateWorkflowException(sprintf('A nested workflow with id "%s" already exists', $id));
+            throw new DuplicateWorkflowException(\sprintf('A nested workflow with id "%s" already exists', $id));
         }
 
         $this->nestedGraphs[$id] = $otherGraph->graph;
 
         foreach ($otherGraph->graph as $nodeId => $node) {
-            if (count($node['in_edges']) === 0) {
+            if (\count($node['in_edges']) === 0) {
                 // The root nodes of the nested graph should be connected to
                 // the provided dependencies. If the dependency happens to be
                 // another graph, it will be resolved inside `addDependantJob`.
@@ -115,29 +126,29 @@ class DependencyGraph
     }
 
     /**
-     * @return string[]
-     *
      * @throws UnresolvableDependenciesException
+     *
+     * @return string[]
      */
     private function resolveDependency(string $dependency): array
     {
-        if (array_key_exists($dependency, $this->graph)) {
+        if (\array_key_exists($dependency, $this->graph)) {
             return [$dependency];
         }
 
         // Depending on a nested graph means depending on each of the graph's
         // leaf nodes, i.e. nodes with an out-degree of 0.
-        if (array_key_exists($dependency, $this->nestedGraphs)) {
+        if (\array_key_exists($dependency, $this->nestedGraphs)) {
             return collect($this->nestedGraphs[$dependency])
-                ->filter(fn (array $node) => count($node['out_edges']) === 0)
+                ->filter(fn (array $node) => \count($node['out_edges']) === 0)
                 ->keys()
                 ->map(fn (string $key) => $dependency . '.' . $key)
                 ->all();
         }
 
-        throw new UnresolvableDependenciesException(sprintf(
+        throw new UnresolvableDependenciesException(\sprintf(
             'Unable to resolve dependency [%s]. Make sure it was added before declaring it as a dependency.',
-            $dependency
+            $dependency,
         ));
     }
 }

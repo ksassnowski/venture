@@ -1,17 +1,27 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture\Manager;
 
 use Closure;
-use Sassnowski\Venture\Models\Workflow;
 use PHPUnit\Framework\Assert as PHPUnit;
 use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowManagerFake implements WorkflowManagerInterface
 {
     private array $started = [];
-
     private WorkflowManager $manager;
 
     public function __construct(WorkflowManager $manager)
@@ -29,21 +39,21 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         $pendingWorkflow = $abstractWorkflow->definition();
 
         [$workflow, $initialBatch] = $pendingWorkflow->build(
-            Closure::fromCallable([$abstractWorkflow, 'beforeCreate'])
+            Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
         );
 
-        $this->started[get_class($abstractWorkflow)] = $abstractWorkflow;
+        $this->started[\get_class($abstractWorkflow)] = $abstractWorkflow;
 
         return $workflow;
     }
 
     public function hasStarted(string $workflowClass, ?callable $callback = null): bool
     {
-        if (!array_key_exists($workflowClass, $this->started)) {
+        if (!\array_key_exists($workflowClass, $this->started)) {
             return false;
         }
 
-        if ($callback === null) {
+        if (null === $callback) {
             return true;
         }
 
@@ -54,7 +64,7 @@ class WorkflowManagerFake implements WorkflowManagerInterface
     {
         PHPUnit::assertTrue(
             $this->hasStarted($workflowDefinition, $callback),
-            "The expected workflow [{$workflowDefinition}] was not started."
+            "The expected workflow [{$workflowDefinition}] was not started.",
         );
     }
 
@@ -62,7 +72,7 @@ class WorkflowManagerFake implements WorkflowManagerInterface
     {
         PHPUnit::assertFalse(
             $this->hasStarted($workflowDefinition, $callback),
-            "The unexpected [{$workflowDefinition}] workflow was started."
+            "The unexpected [{$workflowDefinition}] workflow was started.",
         );
     }
 }

@@ -1,4 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 use Illuminate\Support\Str;
 use Sassnowski\Venture\Models\Workflow;
@@ -9,7 +20,7 @@ use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 
 function createWorkflow(array $attributes = []): Workflow
 {
-    return Workflow::create(array_merge([
+    return Workflow::create(\array_merge([
         'job_count' => 0,
         'jobs_processed' => 0,
         'jobs_failed' => 0,
@@ -19,7 +30,7 @@ function createWorkflow(array $attributes = []): Workflow
 
 function createWorkflowJob(Workflow $workflow, array $attributes = []): WorkflowJob
 {
-    return WorkflowJob::create(array_merge([
+    return WorkflowJob::create(\array_merge([
         'uuid' => (string) Str::orderedUuid(),
         'name' => '::name::',
         'job' => '::job::',
@@ -36,10 +47,10 @@ function wrapJobsForWorkflow(array $jobs): JobCollection
 {
     return collect($jobs)->reduce(function (JobCollection $collection, WorkflowStepInterface $job) {
         if ($job->getJobId() === null) {
-            $job->withJobId(get_class($job));
+            $job->withJobId(\get_class($job));
         }
 
-        $definition = new JobDefinition($job->getJobId(), get_class($job), $job);
+        $definition = new JobDefinition($job->getJobId(), \get_class($job), $job);
 
         $collection->add($definition);
 

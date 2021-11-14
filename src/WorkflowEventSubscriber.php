@@ -1,16 +1,27 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture;
 
 use Closure;
-use function class_uses_recursive;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
-use Illuminate\Contracts\Events\Dispatcher;
-use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 use Sassnowski\Venture\Workflow\LegacyWorkflowStepAdapter;
+use Sassnowski\Venture\Workflow\WorkflowStepInterface;
+use function class_uses_recursive;
 
 class WorkflowEventSubscriber
 {
@@ -38,7 +49,7 @@ class WorkflowEventSubscriber
             return;
         }
 
-        $this->withJobInstance($event, function (WorkflowStepInterface $jobInstance) {
+        $this->withJobInstance($event, function (WorkflowStepInterface $jobInstance): void {
             optional($jobInstance->workflow())->onStepFinished($jobInstance);
         });
     }
@@ -49,14 +60,14 @@ class WorkflowEventSubscriber
             return;
         }
 
-        $this->withJobInstance($event, function (WorkflowStepInterface $jobInstance) use ($event) {
+        $this->withJobInstance($event, function (WorkflowStepInterface $jobInstance) use ($event): void {
             optional($jobInstance->workflow())->onStepFailed($jobInstance, $event->exception);
         });
     }
 
     public function onJobProcessing(JobProcessing $event): void
     {
-        $this->withJobInstance($event, function (WorkflowStepInterface $jobInstance) use ($event) {
+        $this->withJobInstance($event, function (WorkflowStepInterface $jobInstance) use ($event): void {
             if (optional($jobInstance->workflow())->isCancelled()) {
                 $event->job->delete();
             }
@@ -67,19 +78,19 @@ class WorkflowEventSubscriber
      * @param Closure(WorkflowStepInterface): void $callback
      */
     private function withJobInstance(
-        JobProcessing | JobFailed | JobProcessed $event,
-        Closure $callback
+        JobProcessing|JobFailed|JobProcessed $event,
+        Closure $callback,
     ): void {
         $jobInstance = $this->getJobInstance($event->job);
 
-        if ($jobInstance !== null) {
+        if (null !== $jobInstance) {
             $callback($jobInstance);
         }
     }
 
     private function getJobInstance(Job $job): ?WorkflowStepInterface
     {
-        $job = unserialize($job->payload()['data']['command']);
+        $job = \unserialize($job->payload()['data']['command']);
 
         // First, we want to check if we're dealing with a job that
         // already implements the correct interface. If so, we simply
@@ -104,6 +115,6 @@ class WorkflowEventSubscriber
     {
         $uses = class_uses_recursive($job);
 
-        return in_array(WorkflowStep::class, $uses);
+        return \in_array(WorkflowStep::class, $uses, true);
     }
 }
