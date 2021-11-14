@@ -60,6 +60,7 @@ class WorkflowDefinition
                 E_USER_DEPRECATED
             );
 
+            /** @psalm-suppress ArgumentTypeCoercion */
             $job = LegacyWorkflowStepAdapter::from($job);
         }
 
@@ -133,6 +134,9 @@ class WorkflowDefinition
         return $this;
     }
 
+    /**
+     * @psalm-param Closure(Workflow): void|null $beforeCreate
+     */
     public function build(?Closure $beforeCreate = null): array
     {
         $workflow = new Workflow([

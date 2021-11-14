@@ -14,7 +14,10 @@ use Sassnowski\Venture\Models\WorkflowJob;
 
 final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
 {
-    private function __construct(private object $workflowStep)
+    /**
+     * @param UsesWorkflowStepTrait $workflowStep
+     */
+    private function __construct(private mixed $workflowStep)
     {
     }
 
@@ -32,6 +35,7 @@ final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
             );
         }
 
+        /** @var UsesWorkflowStepTrait $job */
         return new self($job);
     }
 
@@ -83,7 +87,9 @@ final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
 
     public function getStepId(): ?UuidInterface
     {
-        return Uuid::fromString($this->workflowStep->stepId);
+        return $this->workflowStep->stepId !== null
+            ? Uuid::fromString($this->workflowStep->stepId)
+            : null;
     }
 
     public function withJobId(string $jobId): WorkflowStepInterface

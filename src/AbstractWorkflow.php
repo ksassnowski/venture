@@ -4,6 +4,7 @@ namespace Sassnowski\Venture;
 
 use Illuminate\Container\Container;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Manager\WorkflowManagerInterface;
 
 abstract class AbstractWorkflow
 {
@@ -15,9 +16,10 @@ abstract class AbstractWorkflow
 
     private function run(): Workflow
     {
-        return Container::getInstance()
-            ->make('venture.manager')
-            ->startWorkflow($this);
+        /** @var WorkflowManagerInterface $manager */
+        $manager = Container::getInstance()->make('venture.manager');
+
+        return $manager->startWorkflow($this);
     }
 
     abstract public function definition(): WorkflowDefinition;

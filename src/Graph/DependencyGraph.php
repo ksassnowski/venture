@@ -2,22 +2,32 @@
 
 namespace Sassnowski\Venture\Graph;
 
+use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
 
+/**
+ * @psalm-type GraphEntry array{instance: WorkflowStepInterface, in_edges: string[], out_edges: string[]}
+ * @psalm-type Graph array<string, GraphEntry>
+ */
 class DependencyGraph
 {
     private array $nestedGraphs = [];
 
+    /**
+     * @psalm-param Graph $graph
+     */
     public function __construct(protected array $graph = [])
     {
     }
 
     /**
+     * @param string[] $dependencies
+     *
      * @throws DuplicateJobException
      */
-    public function addDependantJob(object $job, array $dependencies, string $id): void
+    public function addDependantJob(WorkflowStepInterface $job, array $dependencies, string $id): void
     {
         if (isset($this->graph[$id])) {
             throw new DuplicateJobException(sprintf('A job with id "%s" already exists in this workflow.', $id));
@@ -34,23 +44,32 @@ class DependencyGraph
         }
     }
 
+    /**
+     * @return WorkflowStepInterface[]
+     */
     public function getDependantJobs(string $jobId): array
     {
         return collect($this->graph[$jobId]['out_edges'])
-            ->map(fn (string $dependantJob): object => $this->graph[$dependantJob]['instance'])
+            ->map(fn (string $dependantJob): WorkflowStepInterface => $this->graph[$dependantJob]['instance'])
             ->toArray();
     }
 
+    /**
+     * @return string[]
+     */
     public function getDependencies(string $jobId): array
     {
         return $this->graph[$jobId]['in_edges'];
     }
 
+    /**
+     * @return WorkflowStepInterface[]
+     */
     public function getJobsWithoutDependencies(): array
     {
         return collect($this->graph)
             ->filter(fn (array $node): bool => count($node['in_edges']) === 0)
-            ->map(fn (array $node): object => $node['instance'])
+            ->map(fn (array $node): WorkflowStepInterface => $node['instance'])
             ->values()
             ->toArray();
     }
@@ -83,6 +102,11 @@ class DependencyGraph
         }
     }
 
+    /**
+     * @param string[] $dependencies
+     *
+     * @return string[]
+     */
     private function resolveDependencies(array $dependencies): array
     {
         return collect($dependencies)->flatMap(function (string $dependency) {
@@ -90,6 +114,11 @@ class DependencyGraph
         })->all();
     }
 
+    /**
+     * @return string[]
+     *
+     * @throws UnresolvableDependenciesException
+     */
     private function resolveDependency(string $dependency): array
     {
         if (array_key_exists($dependency, $this->graph)) {
