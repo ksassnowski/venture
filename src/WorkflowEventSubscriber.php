@@ -50,7 +50,7 @@ class WorkflowEventSubscriber
         }
 
         $this->withJobInstance($event, function (WorkflowStepInterface $jobInstance): void {
-            optional($jobInstance->workflow())->onStepFinished($jobInstance);
+            $jobInstance->workflow()?->onStepFinished($jobInstance);
         });
     }
 
@@ -61,14 +61,14 @@ class WorkflowEventSubscriber
         }
 
         $this->withJobInstance($event, function (WorkflowStepInterface $jobInstance) use ($event): void {
-            optional($jobInstance->workflow())->onStepFailed($jobInstance, $event->exception);
+            $jobInstance->workflow()?->onStepFailed($jobInstance, $event->exception);
         });
     }
 
     public function onJobProcessing(JobProcessing $event): void
     {
         $this->withJobInstance($event, function (WorkflowStepInterface $jobInstance) use ($event): void {
-            if (optional($jobInstance->workflow())->isCancelled()) {
+            if ($jobInstance->workflow()?->isCancelled()) {
                 $event->job->delete();
             }
         });
@@ -88,9 +88,16 @@ class WorkflowEventSubscriber
         }
     }
 
-    private function getJobInstance(Job $job): ?WorkflowStepInterface
+    private function getJobInstance(Job $queueJob): ?WorkflowStepInterface
     {
-        $job = \unserialize($job->payload()['data']['command']);
+        /**
+         * @var string $serializedCommand
+         * @psalm-suppress MixedArrayAccess
+         */
+        $serializedCommand = $queueJob->payload()['data']['command'];
+
+        /** @var object $job */
+        $job = \unserialize($serializedCommand);
 
         // First, we want to check if we're dealing with a job that
         // already implements the correct interface. If so, we simply
