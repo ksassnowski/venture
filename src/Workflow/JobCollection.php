@@ -19,6 +19,9 @@ use IteratorAggregate;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Traversable;
 
+/**
+ * @implements IteratorAggregate<string, JobDefinition>
+ */
 final class JobCollection implements Countable, IteratorAggregate
 {
     /**
