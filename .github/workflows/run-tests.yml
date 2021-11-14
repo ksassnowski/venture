@@ -40,5 +40,10 @@ jobs:
       - name: Run psalm
         run: composer psalm
 
+      - name: Run php-cs-fixer
+        run: |
+          mkdir -p .build/php-cs-fixer
+          vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --diff --verbose --dry-run
+
       - name: Execute tests
         run: vendor/bin/pest
