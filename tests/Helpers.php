@@ -12,9 +12,9 @@ declare(strict_types=1);
  */
 
 use Illuminate\Support\Str;
+use Sassnowski\Venture\Collection\JobDefinitionCollection;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
-use Sassnowski\Venture\Workflow\JobCollection;
 use Sassnowski\Venture\Workflow\JobDefinition;
 use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 
@@ -43,9 +43,9 @@ function createWorkflowJob(Workflow $workflow, array $attributes = []): Workflow
 /**
  * @param WorkflowStepInterface[] $jobs
  */
-function wrapJobsForWorkflow(array $jobs): JobCollection
+function wrapJobsForWorkflow(array $jobs): JobDefinitionCollection
 {
-    return collect($jobs)->reduce(function (JobCollection $collection, WorkflowStepInterface $job) {
+    return collect($jobs)->reduce(function (JobDefinitionCollection $collection, WorkflowStepInterface $job) {
         if ($job->getJobId() === null) {
             $job->withJobId(\get_class($job));
         }
@@ -55,5 +55,5 @@ function wrapJobsForWorkflow(array $jobs): JobCollection
         $collection->add($definition);
 
         return $collection;
-    }, new JobCollection());
+    }, new JobDefinitionCollection());
 }

@@ -11,24 +11,18 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-namespace Sassnowski\Venture\Workflow;
+namespace Sassnowski\Venture\DTO;
 
-use Sassnowski\Venture\Collection\Identifiable;
+use DateTimeImmutable;
 
 /**
  * @psalm-immutable
  */
-final class JobDefinition implements Identifiable
+final class WorkflowJob
 {
     public function __construct(
         public string $id,
-        public string $name,
-        public WorkflowStepInterface $job,
+        public ?DateTimeImmutable $failedAt,
     ) {
-    }
-
-    public function getId(): string
-    {
-        return $this->id;
     }
 }

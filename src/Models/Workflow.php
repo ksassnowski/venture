@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Opis\Closure\SerializableClosure;
-use Sassnowski\Venture\Workflow\JobCollection;
+use Sassnowski\Venture\Collection\JobDefinitionCollection;
 use Sassnowski\Venture\Workflow\JobDefinition;
 use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 use Throwable;
@@ -69,7 +69,7 @@ class Workflow extends Model
         return $this->hasMany(WorkflowJob::class);
     }
 
-    public function addJobs(JobCollection $jobs): void
+    public function addJobs(JobDefinitionCollection $jobs): void
     {
         collect($jobs)->map(fn (JobDefinition $jobDefinition) => [
             'job' => \serialize($jobDefinition->job),

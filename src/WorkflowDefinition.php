@@ -18,12 +18,12 @@ use DateInterval;
 use DateTimeInterface;
 use Illuminate\Support\Str;
 use Opis\Closure\SerializableClosure;
+use Sassnowski\Venture\Collection\JobDefinitionCollection;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Graph\DependencyGraph;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Testing\WorkflowDefinitionInspections;
-use Sassnowski\Venture\Workflow\JobCollection;
 use Sassnowski\Venture\Workflow\JobDefinition;
 use Sassnowski\Venture\Workflow\LegacyWorkflowStepAdapter;
 use Sassnowski\Venture\Workflow\WorkflowStepInterface;
@@ -33,7 +33,7 @@ use const E_USER_DEPRECATED;
 class WorkflowDefinition
 {
     use WorkflowDefinitionInspections;
-    protected JobCollection $jobs;
+    protected JobDefinitionCollection $jobs;
     protected DependencyGraph $graph;
     protected ?string $thenCallback = null;
     protected ?string $catchCallback = null;
@@ -41,7 +41,7 @@ class WorkflowDefinition
     public function __construct(protected string $workflowName = '')
     {
         $this->graph = new DependencyGraph();
-        $this->jobs = new JobCollection();
+        $this->jobs = new JobDefinitionCollection();
     }
 
     /**
