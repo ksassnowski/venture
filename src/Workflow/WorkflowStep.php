@@ -44,6 +44,11 @@ abstract class WorkflowStep implements WorkflowStepInterface
         return $this;
     }
 
+    final public function getWorkflowId(): ?int
+    {
+        return $this->workflowId;
+    }
+
     final public function workflow(): ?Workflow
     {
         if (null === $this->workflowId) {

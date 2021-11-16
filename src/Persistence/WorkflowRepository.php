@@ -14,8 +14,12 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Persistence;
 
 use Sassnowski\Venture\DTO\Workflow;
+use Sassnowski\Venture\DTO\WorkflowJob;
+use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 
 interface WorkflowRepository
 {
     public function find(int $workflowId): ?Workflow;
+
+    public function markStepAsFinished(WorkflowStepInterface $step): void;
 }

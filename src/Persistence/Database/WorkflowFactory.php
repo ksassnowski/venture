@@ -21,12 +21,12 @@ final class WorkflowFactory
     public function hydrateWorkflow(stdClass $row): Workflow
     {
         return new Workflow(
-            $row->id,
+            (string) $row->id,
             (int) $row->job_count,
             (int) $row->jobs_failed,
             (int) $row->jobs_processed,
-            explode(',', $row->finished_jobs),
-            []
+            \explode(',', $row->finished_jobs),
+            [],
         );
     }
 }

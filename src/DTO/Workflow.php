@@ -17,29 +17,37 @@ use Sassnowski\Venture\Collection\WorkflowJobCollection;
 
 final class Workflow
 {
-    /** @readonly */
+    /**
+     * @readonly
+     */
     public string $id;
 
-    /** @readonly */
+    /**
+     * @readonly
+     */
     public int $jobCount;
 
-    /** @readonly */
+    /**
+     * @readonly
+     */
     public int $failedJobsCount;
 
-    /** @readonly */
+    /**
+     * @readonly
+     */
     public int $processedJobsCount;
 
     /**
      * @readonly
+     *
      * @var string[]
      */
     private array $processedJobs;
-
     private WorkflowJobCollection $jobs;
 
     /**
      * @param WorkflowJob[] $jobs
-     * @param string[] $processedJobs
+     * @param string[]      $processedJobs
      */
     public function __construct(
         string $id,
@@ -63,5 +71,17 @@ final class Workflow
     public function failedJobs(): array
     {
         return $this->jobs->failedJobs();
+    }
+
+    public function withJobs(WorkflowJob ...$jobs): self
+    {
+        return new self(
+            $this->id,
+            $this->jobCount,
+            $this->failedJobsCount,
+            $this->processedJobsCount,
+            $this->processedJobs,
+            $jobs,
+        );
     }
 }

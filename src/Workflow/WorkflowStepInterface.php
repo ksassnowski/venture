@@ -24,6 +24,8 @@ interface WorkflowStepInterface extends ShouldQueue
 {
     public function withWorkflowId(int $workflowId): self;
 
+    public function getWorkflowId(): ?int;
+
     public function workflow(): ?Workflow;
 
     /**

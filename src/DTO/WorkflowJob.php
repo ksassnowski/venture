@@ -14,15 +14,27 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\DTO;
 
 use DateTimeImmutable;
+use Sassnowski\Venture\Collection\Identifiable;
 
 /**
  * @psalm-immutable
  */
-final class WorkflowJob
+final class WorkflowJob implements Identifiable
 {
+    /**
+     * @param string                 $id
+     * @param string[]               $dependencies
+     * @param null|DateTimeImmutable $failedAt
+     */
     public function __construct(
         public string $id,
+        public array $dependencies,
         public ?DateTimeImmutable $failedAt,
     ) {
+    }
+
+    public function getId(): string
+    {
+        return $this->id;
     }
 }

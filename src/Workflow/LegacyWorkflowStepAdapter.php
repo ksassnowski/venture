@@ -59,6 +59,11 @@ final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
         return $this;
     }
 
+    public function getWorkflowId(): ?int
+    {
+        return $this->workflowStep->workflowId;
+    }
+
     public function workflow(): ?Workflow
     {
         return $this->workflowStep->workflow();

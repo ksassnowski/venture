@@ -19,25 +19,23 @@ use IteratorAggregate;
 use Traversable;
 
 /**
- * @psalm-template T extends Identifiable
+ * @template T of Identifiable
  */
 class KeyedCollection implements Countable, IteratorAggregate
 {
     /**
      * @var array<string, T>
      */
-    protected array $items;
+    protected array $items = [];
 
     /**
-     * @param T[] $items
+     * @param array<int, T> $items
      */
     public function __construct(array $items = [])
     {
-        $this->items = \array_reduce($items, function (array $acc, mixed $item) {
-            $acc[$item->getId()] = $item;
-
-            return $acc;
-        }, []);
+        foreach ($items as $item) {
+            $this->items[$item->getId()] = $item;
+        }
     }
 
     /**

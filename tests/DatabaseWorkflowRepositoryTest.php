@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 /**
  * Copyright (c) 2021 Kai Sassnowski
@@ -14,11 +16,11 @@ use Sassnowski\Venture\Persistence\Database\DatabaseWorkflowRepository;
 
 uses(TestCase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->repository = resolve(DatabaseWorkflowRepository::class);
 });
 
-it('returns a hydrated workflow model if a workflow exists for the given id', function (Closure $createWorkflow, array $expectedCounts) {
+it('returns a hydrated workflow model if a workflow exists for the given id', function (Closure $createWorkflow, array $expectedCounts): void {
     $workflowModel = $createWorkflow();
 
     $result = $this->repository->find($workflowModel->id);
@@ -60,10 +62,10 @@ it('returns a hydrated workflow model if a workflow exists for the given id', fu
             'failedJobsCount' => 1,
             'processedJobsCount' => 1,
         ],
-    ]
+    ],
 ]);
 
-it('returns null if no workflow exists for the given id', function () {
+it('returns null if no workflow exists for the given id', function (): void {
     $result = $this->repository->find(1);
 
     expect($result)->toBeNull();

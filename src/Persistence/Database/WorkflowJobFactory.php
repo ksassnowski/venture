@@ -13,6 +13,18 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Persistence\Database;
 
+use DateTimeImmutable;
+use Sassnowski\Venture\DTO\WorkflowJob;
+use stdClass;
+
 final class WorkflowJobFactory
 {
+    public function hydrateWorkflowJob(stdClass $row): WorkflowJob
+    {
+        return new WorkflowJob(
+            $row->uuid,
+            \explode(',', $row->edges ?? ''),
+            $row->failed_at ? new DateTimeImmutable($row->failed_at) : null,
+        );
+    }
 }
