@@ -64,6 +64,14 @@
         ],
         "psalm": [
             "vendor/bin/psalm"
+        ],
+        "test": [
+            "vendor/bin/pest"
+        ],
+        "check": [
+            "@cs",
+            "@psalm",
+            "@test"
         ]
     }
 }

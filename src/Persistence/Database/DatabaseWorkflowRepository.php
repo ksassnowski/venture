@@ -34,7 +34,6 @@ final class DatabaseWorkflowRepository implements WorkflowRepository
 
     public function markStepAsFinished(WorkflowStepInterface $step): void
     {
-
     }
 
     private function hydrateRow(?stdClass $row): ?Workflow
