@@ -27,6 +27,7 @@
         "pestphp/pest": "^1.20",
         "pestphp/pest-plugin-laravel": "^1.0",
         "phpunit/phpunit": "^9.4",
+        "roave/security-advisories": "dev-latest",
         "spatie/phpunit-watcher": "^1.22",
         "vimeo/psalm": "^4.12"
     },
