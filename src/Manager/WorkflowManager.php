@@ -15,9 +15,9 @@ namespace Sassnowski\Venture\Manager;
 
 use Closure;
 use Illuminate\Contracts\Bus\Dispatcher;
-use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Workflow\LegacyWorkflowStepAdapter;
+use Sassnowski\Venture\Workflow\WorkflowBuilder;
 use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 use Sassnowski\Venture\WorkflowDefinition;
 
@@ -35,12 +35,12 @@ class WorkflowManager implements WorkflowManagerInterface
         return new WorkflowDefinition($workflowName);
     }
 
-    public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow
+    public function startWorkflow(WorkflowBuilder $workflowBuilder): Workflow
     {
-        $definition = $abstractWorkflow->definition();
+        $definition = $workflowBuilder->definition();
 
         [$workflow, $initialJobs] = $definition->build(
-            Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
+            Closure::fromCallable([$workflowBuilder, 'beforeCreate']),
         );
 
         collect($initialJobs)->each(function (WorkflowStepInterface $job): void {

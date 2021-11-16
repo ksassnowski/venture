@@ -52,10 +52,6 @@ interface WorkflowStepInterface extends ShouldQueue
 
     public function getStepId(): ?UuidInterface;
 
-    public function withJobId(string $jobId): self;
-
-    public function getJobId(): ?string;
-
     public function step(): ?WorkflowJob;
 
     public function withDelay(DateTimeInterface|DateInterval|int|null $delay): self;

@@ -49,27 +49,20 @@ it('it increments the finished jobs count when a job finished', function (): voi
     assertEquals(1, $workflow->refresh()->jobs_processed);
 });
 
-it('stores a finished job\'s id', function ($job, string $expectedJobId): void {
+it('stores a finished job\'s id', function (): void {
     $workflow = createWorkflow([
         'job_count' => 1,
         'jobs_processed' => 0,
     ]);
+    $stepId = Str::orderedUuid();
+    $job = (new TestJob1())->withStepId($stepId);
 
     $workflow->onStepFinished($job);
 
-    assertEquals([$expectedJobId], $workflow->refresh()->finished_jobs);
-})->with([
-    'no job id should default to class name' => [
-        new TestJob1(),
-        TestJob1::class,
-    ],
-    'use existing job id' => [
-        (new TestJob1())->withJobId('::job-id::'),
-        '::job-id::',
-    ],
-]);
+    assertEquals([(string) $stepId], $workflow->refresh()->finished_jobs);
+});
 
-it('stores finished job id for nested workflow jobs', function (): void {
+it('stores finished job step id for nested workflow jobs', function (): void {
     $workflow = new WorkflowWithWorkflow(new NestedWorkflow(
         $job = new TestJob1(),
     ));
@@ -78,7 +71,7 @@ it('stores finished job id for nested workflow jobs', function (): void {
 
     $model->onStepFinished($job);
 
-    assertEquals([NestedWorkflow::class . '.' . TestJob1::class], $model->refresh()->finished_jobs);
+    assertEquals([(string) $job->getStepId()], $model->refresh()->finished_jobs);
 });
 
 it('marks itself as finished if the all jobs have been processed', function (): void {
@@ -123,7 +116,7 @@ it('runs a finished job\'s dependency if no other dependencies exist', function 
     $job1 = (new TestJob1())->withStepId(Str::orderedUuid());
     $job2 = (new TestJob2())->withStepId(Str::orderedUuid());
     $job1->withDependantJobs([$job2]);
-    $job2->withDependencies([TestJob1::class]);
+    $job2->withDependencies([(string) $job1->getStepId()]);
     $workflow = createWorkflow([
         'job_count' => 2,
     ]);
@@ -142,7 +135,7 @@ it('does not run a dependant job if some of its dependencies have not finished y
     $job2 = (new TestJob2())->withStepId(Str::orderedUuid());
     $job3 = (new TestJob3())->withStepId(Str::orderedUuid());
     $job1->withDependantJobs([$job2]);
-    $job2->withDependencies([TestJob1::class, TestJob3::class]);
+    $job2->withDependencies([(string) $job1->getStepId(), (string) $job3->getStepId()]);
     $job3->withDependantJobs([$job2]);
     $workflow = createWorkflow([
         'job_count' => 3,
@@ -162,9 +155,9 @@ it('runs a job if all of its dependencies have finished', function (): void {
 
     $job1 = (new TestJob1())->withStepId(Str::orderedUuid());
     $job2 = (new TestJob2())->withStepId(Str::orderedUuid());
-    $job3 = (new TestJob3())->withJobId('::job-3-id::')->withStepId(Str::orderedUuid());
+    $job3 = (new TestJob3())->withStepId(Str::orderedUuid());
     $job1->withDependantJobs([$job2]);
-    $job2->withDependencies([TestJob1::class, '::job-3-id::']);
+    $job2->withDependencies([(string) $job1->getStepId(), (string) $job3->getStepId()]);
     $job3->withDependantJobs([$job2]);
 
     $workflow->addJobs(wrapJobsForWorkflow([$job1, $job2, $job3]));

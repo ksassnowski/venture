@@ -106,18 +106,6 @@ abstract class WorkflowStep implements WorkflowStepInterface
         return $this->stepId;
     }
 
-    final public function withJobId(string $jobId): self
-    {
-        $this->jobId = $jobId;
-
-        return $this;
-    }
-
-    final public function getJobId(): ?string
-    {
-        return $this->jobId;
-    }
-
     final public function step(): ?WorkflowJob
     {
         if (null === $this->stepId) {

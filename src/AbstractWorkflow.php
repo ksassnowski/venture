@@ -13,33 +13,14 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
-use Illuminate\Container\Container;
-use Sassnowski\Venture\Manager\WorkflowManagerInterface;
-use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Workflow\WorkflowBuilder;
 
-abstract class AbstractWorkflow
+/**
+ * @deprecated This class has been deprecated and will be removed in future versions
+ *             of Venture. Workflows should extend \Sassnowski\Venture\Workflow\WorkflowBuilder
+ *             instead.
+ * @see \Sassnowski\Venture\Workflow\WorkflowBuilder
+ */
+abstract class AbstractWorkflow extends WorkflowBuilder
 {
-    public static function start(): Workflow
-    {
-        /** @psalm-suppress TooManyArguments, UnsafeInstantiation */
-        return (new static(...\func_get_args()))->run();
-    }
-
-    abstract public function definition(): WorkflowDefinition;
-
-    public function beforeCreate(Workflow $workflow): void
-    {
-    }
-
-    public function beforeNesting(array $jobs): void
-    {
-    }
-
-    private function run(): Workflow
-    {
-        /** @var WorkflowManagerInterface $manager */
-        $manager = Container::getInstance()->make('venture.manager');
-
-        return $manager->startWorkflow($this);
-    }
 }

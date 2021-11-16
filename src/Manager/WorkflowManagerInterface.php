@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Manager;
 
-use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Workflow\WorkflowBuilder;
 use Sassnowski\Venture\WorkflowDefinition;
 
 interface WorkflowManagerInterface
 {
     public function define(string $workflowName): WorkflowDefinition;
 
-    public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow;
+    public function startWorkflow(WorkflowBuilder $workflowBuilder): Workflow;
 }

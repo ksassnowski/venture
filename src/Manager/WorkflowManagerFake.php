@@ -15,8 +15,8 @@ namespace Sassnowski\Venture\Manager;
 
 use Closure;
 use PHPUnit\Framework\Assert as PHPUnit;
-use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Workflow\WorkflowBuilder;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowManagerFake implements WorkflowManagerInterface
@@ -34,19 +34,24 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         return $this->manager->define($workflowName);
     }
 
-    public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow
+    public function startWorkflow(WorkflowBuilder $workflowBuilder): Workflow
     {
-        $pendingWorkflow = $abstractWorkflow->definition();
+        $pendingWorkflow = $workflowBuilder->definition();
 
         [$workflow, $initialBatch] = $pendingWorkflow->build(
-            Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
+            Closure::fromCallable([$workflowBuilder, 'beforeCreate']),
         );
 
-        $this->started[\get_class($abstractWorkflow)] = $abstractWorkflow;
+        $this->started[\get_class($workflowBuilder)] = $workflowBuilder;
 
         return $workflow;
     }
 
+    /**
+     * @psalm-param class-string<WorkflowBuilder> $workflowClass
+     *
+     * @param null|callable(WorkflowBuilder): bool $callback
+     */
     public function hasStarted(string $workflowClass, ?callable $callback = null): bool
     {
         if (!\array_key_exists($workflowClass, $this->started)) {
@@ -60,19 +65,29 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         return $callback($this->started[$workflowClass]);
     }
 
-    public function assertStarted(string $workflowDefinition, ?callable $callback = null): void
+    /**
+     * @psalm-param class-string<WorkflowBuilder> $workflowClass
+     *
+     * @param null|callable(WorkflowBuilder): bool $callback
+     */
+    public function assertStarted(string $workflowClass, ?callable $callback = null): void
     {
         PHPUnit::assertTrue(
-            $this->hasStarted($workflowDefinition, $callback),
-            "The expected workflow [{$workflowDefinition}] was not started.",
+            $this->hasStarted($workflowClass, $callback),
+            "The expected workflow [{$workflowClass}] was not started.",
         );
     }
 
-    public function assertNotStarted(string $workflowDefinition, ?callable $callback = null): void
+    /**
+     * @psalm-param class-string<WorkflowBuilder> $workflowClass
+     *
+     * @param null|callable(WorkflowBuilder): bool $callback
+     */
+    public function assertNotStarted(string $workflowClass, ?callable $callback = null): void
     {
         PHPUnit::assertFalse(
-            $this->hasStarted($workflowDefinition, $callback),
-            "The unexpected [{$workflowDefinition}] workflow was started.",
+            $this->hasStarted($workflowClass, $callback),
+            "The unexpected [{$workflowClass}] workflow was started.",
         );
     }
 }

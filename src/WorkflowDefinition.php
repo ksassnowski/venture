@@ -26,6 +26,7 @@ use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Testing\WorkflowDefinitionInspections;
 use Sassnowski\Venture\Workflow\JobDefinition;
 use Sassnowski\Venture\Workflow\LegacyWorkflowStepAdapter;
+use Sassnowski\Venture\Workflow\WorkflowBuilder;
 use Sassnowski\Venture\Workflow\WorkflowStepInterface;
 use Throwable;
 use const E_USER_DEPRECATED;
@@ -74,12 +75,10 @@ class WorkflowDefinition
 
         $id = $this->buildIdentifier($id, $job);
 
-        $this->graph->addDependantJob($job, $dependencies, $id);
-
-        $job
-            ->withJobId($id)
-            ->withStepId(Str::orderedUuid())
+        $job->withStepId(Str::orderedUuid())
             ->withDelay($delay);
+
+        $this->graph->addDependantJob($job, $dependencies, $id);
 
         $jobDefinition = new JobDefinition(
             $id,
@@ -98,7 +97,7 @@ class WorkflowDefinition
      * @throws DuplicateJobException
      * @throws DuplicateWorkflowException
      */
-    public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = [], ?string $id = null): self
+    public function addWorkflow(WorkflowBuilder $workflow, array $dependencies = [], ?string $id = null): self
     {
         $definition = $workflow->definition();
         $workflowId = $this->buildIdentifier($id, $workflow);
@@ -111,7 +110,6 @@ class WorkflowDefinition
             $newId = $workflowId . '.' . $jobId;
 
             $instance = $jobDefinition->job;
-            $instance->withJobId($newId);
 
             $this->jobs->add(
                 new JobDefinition($newId, $jobDefinition->name, $instance),

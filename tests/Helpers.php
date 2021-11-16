@@ -46,11 +46,11 @@ function createWorkflowJob(Workflow $workflow, array $attributes = []): Workflow
 function wrapJobsForWorkflow(array $jobs): JobDefinitionCollection
 {
     return collect($jobs)->reduce(function (JobDefinitionCollection $collection, WorkflowStepInterface $job) {
-        if ($job->getJobId() === null) {
-            $job->withJobId(\get_class($job));
-        }
-
-        $definition = new JobDefinition($job->getJobId(), \get_class($job), $job);
+        $definition = new JobDefinition(
+            (string) Str::orderedUuid(),
+            \get_class($job),
+            $job
+        );
 
         $collection->add($definition);
 

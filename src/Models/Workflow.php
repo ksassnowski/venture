@@ -191,7 +191,7 @@ class Workflow extends Model
                 ->lockForUpdate()
                 ->findOrFail($this->getKey(), ['finished_jobs', 'jobs_processed']);
 
-            $this->finished_jobs = \array_merge($workflow->finished_jobs, [$job->getJobId() ?: \get_class($job)]);
+            $this->finished_jobs = \array_merge($workflow->finished_jobs, [$job->getStepId()]);
             $this->jobs_processed = $workflow->jobs_processed + 1;
             $this->save();
 

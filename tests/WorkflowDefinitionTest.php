@@ -18,6 +18,7 @@ use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Workflow\LegacyWorkflowStepAdapter;
+use Sassnowski\Venture\Workflow\WorkflowBuilder;
 use Sassnowski\Venture\WorkflowDefinition;
 use Stubs\DummyCallback;
 use Stubs\LegacyJob;
@@ -112,19 +113,6 @@ it('sets the job dependencies on the job instances', function (): void {
     assertEquals([TestJob1::class], $testJob2->getDependencies());
     assertEquals([], $testJob1->getDependencies());
     assertEquals(['::job-2-id::'], $testJob3->getDependencies());
-});
-
-it('sets the jobId on the job instance', function (): void {
-    $testJob1 = new TestJob1();
-    $testJob2 = new TestJob2();
-
-    (new WorkflowDefinition())
-        ->addJob($testJob1)
-        ->addJob($testJob2, id: '::job-2-id::')
-        ->build();
-
-    assertEquals(TestJob1::class, $testJob1->getJobId());
-    assertEquals('::job-2-id::', $testJob2->getJobId());
 });
 
 it('sets the dependants of a job', function (): void {
@@ -378,7 +366,7 @@ it('calls the before connecting hook before adding a nested workflow', function 
 });
 
 it('can add another workflow', function (): void {
-    $workflow = new class() extends AbstractWorkflow {
+    $workflow = new class() extends WorkflowBuilder {
         public function definition(): WorkflowDefinition
         {
             return WorkflowFacade::define('::name::')
@@ -407,15 +395,6 @@ it('adding another workflow namespaces the nested workflow\'s job ids', function
     assertTrue($definition->hasJob(NestedWorkflow::class . '.' . TestJob1::class));
     assertTrue($definition->hasJob(TestJob1::class));
     assertTrue($definition->hasJobWithDependencies(TestJob2::class, [TestJob1::class]));
-});
-
-it('adding another workflow updates the job id on nested job instances', function (): void {
-    $definition = (new WorkflowDefinition())
-        ->addJob(new TestJob1())
-        ->addJob(new TestJob2(), [TestJob1::class])
-        ->addWorkflow(new NestedWorkflow($job = new TestJob1()));
-
-    assertEquals(NestedWorkflow::class . '.' . TestJob1::class, $job->getJobId());
 });
 
 it('allows multiple instances of the same job with explicit ids', function (): void {
