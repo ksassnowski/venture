@@ -49,7 +49,7 @@ function wrapJobsForWorkflow(array $jobs): JobDefinitionCollection
         $definition = new JobDefinition(
             (string) Str::orderedUuid(),
             \get_class($job),
-            $job
+            $job,
         );
 
         $collection->add($definition);

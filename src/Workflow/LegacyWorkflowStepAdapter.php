@@ -110,18 +110,6 @@ final class LegacyWorkflowStepAdapter implements WorkflowStepInterface
             : null;
     }
 
-    public function withJobId(string $jobId): WorkflowStepInterface
-    {
-        $this->workflowStep->withJobId($jobId);
-
-        return $this;
-    }
-
-    public function getJobId(): ?string
-    {
-        return $this->workflowStep->jobId;
-    }
-
     public function step(): ?WorkflowJob
     {
         return $this->workflowStep->step();
