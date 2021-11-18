@@ -7,10 +7,11 @@ use Illuminate\Contracts\Queue\Job;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Contracts\Events\Dispatcher;
 
 class WorkflowEventSubscriber
 {
-    public function subscribe($events)
+    public function subscribe(Dispatcher $events): void
     {
         $events->listen(
             JobProcessed::class,
@@ -33,7 +34,7 @@ class WorkflowEventSubscriber
         if ($event->job->isReleased()) {
             return;
         }
-        
+
         $jobInstance = $this->getJobInstance($event->job);
 
         if ($this->isWorkflowStep($jobInstance)) {
@@ -67,14 +68,14 @@ class WorkflowEventSubscriber
         }
     }
 
-    private function isWorkflowStep($job): bool
+    private function isWorkflowStep(object $job): bool
     {
         $uses = class_uses_recursive($job);
 
         return in_array(WorkflowStep::class, $uses);
     }
 
-    private function getJobInstance(Job $job)
+    private function getJobInstance(Job $job): object
     {
         return unserialize($job->payload()['data']['command']);
     }

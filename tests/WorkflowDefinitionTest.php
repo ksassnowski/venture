@@ -1,13 +1,14 @@
 <?php declare(strict_types=1);
 
 use Carbon\Carbon;
-use Stubs\NestedWorkflow;
+use Sassnowski\Venture\StepIdGenerator;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
 use Stubs\TestJob4;
 use Stubs\TestJob5;
 use Stubs\TestJob6;
+use Stubs\NestedWorkflow;
 use Stubs\NonQueueableJob;
 use Illuminate\Support\Facades\Bus;
 use Opis\Closure\SerializableClosure;
@@ -99,18 +100,40 @@ it('sets the job dependencies on the job instances', function () {
     assertEquals(['::job-2-id::'], $testJob3->dependencies);
 });
 
-it('sets the jobId on the job instance', function () {
-    $testJob1 = new TestJob1();
-    $testJob2 = new TestJob2();
+it('sets the jobId on the job instance if explicitly provided', function () {
+    $testJob = new TestJob1();
 
     (new WorkflowDefinition())
-        ->addJob($testJob1)
-        ->addJob($testJob2, id: '::job-2-id::')
+        ->addJob($testJob, id: '::job-id::')
         ->build();
 
-    assertEquals(TestJob1::class, $testJob1->jobId);
-    assertEquals('::job-2-id::', $testJob2->jobId);
+    expect($testJob)->jobId->toBe('::job-id::');
 });
+
+it('generates a new id for a job if none was provided', function (string $expectedId) {
+    $generator = new class($expectedId) implements StepIdGenerator {
+        public function __construct(private string $id)
+        {
+        }
+
+        public function generateId(object $job): string
+        {
+            return $this->id;
+        }
+    };
+    $testJob = new TestJob1();
+
+    (new WorkflowDefinition(stepIdGenerator: $generator))
+        ->addJob($testJob)
+        ->build();
+
+    expect($testJob)->jobId->toBe($expectedId);
+})->with([
+    ['::id-1::'],
+    ['::id-2::'],
+    ['::id-3::'],
+    ['::id-4::'],
+]);
 
 it('sets the dependants of a job', function () {
     Bus::fake();
@@ -428,19 +451,19 @@ it('can check if a workflow contains a nested workflow', function (callable $con
     assertEquals($expected, $definition->hasWorkflow(NestedWorkflow::class, $dependencies));
 })->with([
     'has workflow, ignore dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition) {
+        'configureWorkflow' => fn () => function (WorkflowDefinition $definition) {
             $definition->addWorkflow(new NestedWorkflow());
         },
         'dependencies' => null,
         'expected' => true,
     ],
     'does not have workflow, ignore dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition) {},
+        'configureWorkflow' => fn () => function (WorkflowDefinition $definition) {},
         'dependencies' => null,
         'expected' => false,
     ],
     'has workflow, incorrect dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition) {
+        'configureWorkflow' => fn () => function (WorkflowDefinition $definition) {
             $definition
                 ->addWorkflow(new NestedWorkflow());
         },
@@ -448,13 +471,13 @@ it('can check if a workflow contains a nested workflow', function (callable $con
         'expected' => false,
     ],
     'has workflow, correct dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition) {
+        'configureWorkflow' => fn () => function (WorkflowDefinition $definition) {
             $definition
                 ->addJob(new TestJob1())
                 ->addWorkflow(new NestedWorkflow(), [TestJob1::class]);
         },
         'dependencies' => [TestJob1::class],
-        'expected' => false,
+        'expected' => true,
     ],
 ]);
 
@@ -465,4 +488,3 @@ class DummyCallback
         echo 'herp';
     }
 }
-

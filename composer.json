@@ -1,7 +1,7 @@
 {
     "name": "sassnowski/venture",
-    "description": "A package to manage complex workflows built on top of Laravel's queue.",
     "type": "library",
+    "description": "A package to manage complex workflows built on top of Laravel's queue.",
     "license": "MIT",
     "authors": [
         {
@@ -12,13 +12,31 @@
     "require": {
         "php": "^8.0",
         "ext-json": "*",
-        "illuminate/support": "^7.30.3|^8.22.1",
-        "illuminate/container": "^7.30.3|^8.22.1",
-        "illuminate/bus": "^7.30.3|^8.22.1",
-        "illuminate/queue": "^7.30.3|^8.22.1",
-        "ramsey/uuid": "^4.0",
+        "illuminate/bus": "^8.0",
+        "illuminate/container": "^8.0",
+        "illuminate/events": "^8.0",
+        "illuminate/queue": "^8.0",
+        "illuminate/support": "^8.0",
         "opis/closure": "^3.5",
-        "illuminate/events": "^7.30.3|^8.22.1"
+        "ramsey/uuid": "^4.0"
+    },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.15",
+        "mockery/mockery": "^1.3.3",
+        "orchestra/testbench": "^6.23",
+        "pestphp/pest": "^1.20",
+        "pestphp/pest-plugin-laravel": "^1.0",
+        "phpunit/phpunit": "^9.5.8",
+        "roave/security-advisories": "dev-latest",
+        "spatie/phpunit-watcher": "^1.22",
+        "vimeo/psalm": "^4.12"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Sassnowski\\Venture\\VentureServiceProvider"
+            ]
+        }
     },
     "autoload": {
         "psr-4": {
@@ -30,19 +48,17 @@
             "": "tests"
         }
     },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Sassnowski\\Venture\\VentureServiceProvider"
-            ]
-        }
-    },
-    "require-dev": {
-        "pestphp/pest": "^1.0",
-        "orchestra/testbench": "^6.0",
-        "phpunit/phpunit": "^9.4",
-        "spatie/phpunit-watcher": "^1.22",
-        "pestphp/pest-plugin-laravel": "^1.0",
-        "mockery/mockery": "^1.3.3"
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "post-install-cmd": [
+            "@composer normalize"
+        ],
+        "post-update-cmd": [
+            "@composer normalize"
+        ],
+        "psalm": [
+            "vendor/bin/psalm"
+        ]
     }
 }

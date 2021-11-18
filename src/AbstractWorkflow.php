@@ -9,6 +9,7 @@ abstract class AbstractWorkflow
 {
     public static function start(): Workflow
     {
+        /** @psalm-suppress TooManyArguments, UnsafeInstantiation */
         return (new static(...func_get_args()))->run();
     }
 

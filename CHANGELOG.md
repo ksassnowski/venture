@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.1] — 2021-11-18
+
+### Changed
+
+- Clone job instance before serializing it when saving the workflow to the database. This could
+  lead to hard to track down bugs since `serialize` mutates the object in place.
+
+## [3.3.0] — 2021-11-18
+
+### Changed
+
+- Added `StepIdGenerator` interface to abstract id generation for workflow steps (#39).
+
+## [3.2.0] — 2021-11-16
+
+### Changed
+
+- Dropped support for Laravel 7 (#38)
+- Added support for PHP 8.1 (#38)
+
+## [3.1.2] — 2021-11-13
+
+### Changed
+
+- Added missing `int` cast to `jobs_failed` property of `Workflow` model (#36). Credits, @stevebauman.
+- Added `vimeo/psalm` dependency for static type checking during development.
+- Added various missing type hints to get `psalm` to pass at level 2.
+
+### Fixed
+
+- Fixed bug where `WorkflowDefinition::hasWorkflow()` wasn't working properly when checking
+  for the workflow's `$dependencies`, too.
+
 ## [3.1.1] — 2021-05-13
 
 ### Changed
@@ -162,3 +195,25 @@ Please see the documentation's [upgrade guide](https://laravel-venture.netlify.a
 - Added `catch` method to workflow. This method will be called everytime a job inside a workflow is marked as failed.
 - Make it possible to cancel a workflow. A cancelled workflow will not execute any further jobs, but will finish any job
   that was already running before the workflow got cancelled.
+
+[3.3.1]: https://github.com/ksassnowski/venture/compare/3.3.0...3.3.1
+[3.3.0]: https://github.com/ksassnowski/venture/compare/3.2.0...3.3.0
+[3.2.0]: https://github.com/ksassnowski/venture/compare/3.1.2...3.2.0
+[3.1.2]: https://github.com/ksassnowski/venture/compare/3.1.1...3.1.2
+[3.1.1]: https://github.com/ksassnowski/venture/compare/3.1.0...3.1.1
+[3.1.0]: https://github.com/ksassnowski/venture/compare/3.0.1...3.1.0
+[3.0.1]: https://github.com/ksassnowski/venture/compare/3.0.0...3.0.1
+[3.0.0]: https://github.com/ksassnowski/venture/compare/2.1.1...3.0.0
+[2.1.1]: https://github.com/ksassnowski/venture/compare/2.1.0...2.1.1
+[2.1.0]: https://github.com/ksassnowski/venture/compare/2.0.0...2.1.0
+[2.0.0]: https://github.com/ksassnowski/venture/compare/1.2.1...2.0.0
+[1.2.1]: https://github.com/ksassnowski/venture/compare/1.2.0...1.2.1
+[1.2.0]: https://github.com/ksassnowski/venture/compare/1.1.1...1.2.0
+[1.1.1]: https://github.com/ksassnowski/venture/compare/1.1.0...1.1.1
+[1.1.0]: https://github.com/ksassnowski/venture/compare/1.0.0...1.1.0
+[1.0.0]: https://github.com/ksassnowski/venture/compare/0.9.0...1.0.0
+[0.9.0]: https://github.com/ksassnowski/venture/compare/0.8.0...0.9.0
+[0.8.0]: https://github.com/ksassnowski/venture/compare/0.7.0...0.8.0
+[0.7.0]: https://github.com/ksassnowski/venture/compare/0.6.1...0.7.0
+[0.6.1]: https://github.com/ksassnowski/venture/compare/0.6.0...0.6.1
+[0.6.0]: https://github.com/ksassnowski/venture/compare/0.5.2...0.6.0

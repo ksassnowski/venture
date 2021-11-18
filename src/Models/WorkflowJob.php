@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?Carbon $finished_at
  * @property ?Carbon $failed_at
  * @property string[] $edges
+ *
+ * @psalm-suppress PropertyNotSetInConstructor
  */
 class WorkflowJob extends Model
 {
@@ -29,9 +31,10 @@ class WorkflowJob extends Model
         'edges' => 'array',
     ];
 
-    public function __construct($attributes = [])
+    public function __construct(array $attributes = [])
     {
         $this->table = config('venture.jobs_table');
+
         parent::__construct($attributes);
     }
 
