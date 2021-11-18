@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use Carbon\Carbon;
+use Sassnowski\Venture\StepIdGenerator;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
@@ -99,18 +100,40 @@ it('sets the job dependencies on the job instances', function () {
     assertEquals(['::job-2-id::'], $testJob3->dependencies);
 });
 
-it('sets the jobId on the job instance', function () {
-    $testJob1 = new TestJob1();
-    $testJob2 = new TestJob2();
+it('sets the jobId on the job instance if explicitly provided', function () {
+    $testJob = new TestJob1();
 
     (new WorkflowDefinition())
-        ->addJob($testJob1)
-        ->addJob($testJob2, id: '::job-2-id::')
+        ->addJob($testJob, id: '::job-id::')
         ->build();
 
-    assertEquals(TestJob1::class, $testJob1->jobId);
-    assertEquals('::job-2-id::', $testJob2->jobId);
+    expect($testJob)->jobId->toBe('::job-id::');
 });
+
+it('generates a new id for a job if none was provided', function (string $expectedId) {
+    $generator = new class($expectedId) implements StepIdGenerator {
+        public function __construct(private string $id)
+        {
+        }
+
+        public function generateId(object $job): string
+        {
+            return $this->id;
+        }
+    };
+    $testJob = new TestJob1();
+
+    (new WorkflowDefinition(stepIdGenerator: $generator))
+        ->addJob($testJob)
+        ->build();
+
+    expect($testJob)->jobId->toBe($expectedId);
+})->with([
+    ['::id-1::'],
+    ['::id-2::'],
+    ['::id-3::'],
+    ['::id-4::'],
+]);
 
 it('sets the dependants of a job', function () {
     Bus::fake();

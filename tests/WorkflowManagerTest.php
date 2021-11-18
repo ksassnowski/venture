@@ -10,6 +10,7 @@ use function PHPUnit\Framework\assertTrue;
 use Sassnowski\Venture\WorkflowDefinition;
 use function PHPUnit\Framework\assertEquals;
 use Sassnowski\Venture\Manager\WorkflowManager;
+use Sassnowski\Venture\ClassNameStepIdGenerator;
 use function PHPUnit\Framework\assertInstanceOf;
 use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
 
@@ -17,7 +18,10 @@ uses(TestCase::class);
 
 beforeEach(function () {
     $this->dispatcherSpy = Bus::fake();
-    $this->manager = new WorkflowManager($this->dispatcherSpy);
+    $this->manager = new WorkflowManager(
+        $this->dispatcherSpy,
+        new ClassNameStepIdGenerator()
+    );
 });
 
 it('creates a new workflow definition with the provided name', function () {
@@ -37,9 +41,8 @@ it('starts a workflow by dispatching all jobs without dependencies', function ()
                 ->addJob(new TestJob3(), [TestJob1::class]);
         }
     };
-    $manager = new WorkflowManager($this->dispatcherSpy);
 
-    $manager->startWorkflow($definition);
+    $this->manager->startWorkflow($definition);
 
     Bus::assertDispatchedTimes(TestJob1::class, 1);
     Bus::assertDispatchedTimes(TestJob2::class, 1);
@@ -54,9 +57,8 @@ it('returns the created workflow', function () {
                 ->addJob(new TestJob1());
         }
     };
-    $manager = new WorkflowManager($this->dispatcherSpy);
 
-    $workflow = $manager->startWorkflow($definition);
+    $workflow = $this->manager->startWorkflow($definition);
 
     assertInstanceOf(Workflow::class, $workflow);
     assertTrue($workflow->exists);
@@ -76,9 +78,8 @@ it('applies the before create hook if it exists', function () {
             $workflow->name = '::new-name::';
         }
     };
-    $manager = new WorkflowManager($this->dispatcherSpy);
 
-    $workflow = $manager->startWorkflow($definition);
+    $workflow = $this->manager->startWorkflow($definition);
 
     assertEquals($workflow->name, '::new-name::');
 });
