@@ -4,6 +4,7 @@ use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Bus;
+use Sassnowski\Venture\Manager\WorkflowManager;
 
 uses(TestCase::class);
 
@@ -23,4 +24,10 @@ it('can handle old workflows that still saved serialized dependent jobs instead 
     $workflow->onStepFinished($job1);
 
     Bus::assertDispatched(TestJob2::class);
+});
+
+it('can handle missing workflow step id generator class in config', function () {
+    config(['venture.workflow_step_id_generator_class' => null]);
+
+    expect(app('venture.manager'))->toBeInstanceOf(WorkflowManager::class);
 });
