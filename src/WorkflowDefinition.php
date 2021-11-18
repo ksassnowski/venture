@@ -24,9 +24,14 @@ class WorkflowDefinition
     protected ?string $catchCallback = null;
     protected array $nestedWorkflows = [];
 
-    public function __construct(protected string $workflowName = '')
-    {
+    private StepIdGenerator $stepIdGenerator;
+
+    public function __construct(
+        protected string $workflowName = '',
+        StepIdGenerator $stepIdGenerator = null,
+    ) {
         $this->graph = new DependencyGraph();
+        $this->stepIdGenerator = $stepIdGenerator ?: new ClassNameStepIdGenerator();
     }
 
     /**
@@ -53,7 +58,7 @@ class WorkflowDefinition
             throw NonQueueableWorkflowStepException::fromJob($job);
         }
 
-        $id = $this->buildIdentifier($id, $job);
+        $id ??= $this->stepIdGenerator->generateId($job);
 
         $this->graph->addDependantJob($job, $dependencies, $id);
 

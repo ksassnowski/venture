@@ -6,20 +6,20 @@ use Closure;
 use Sassnowski\Venture\Models\Workflow;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\StepIdGenerator;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowManager implements WorkflowManagerInterface
 {
-    private Dispatcher $dispatcher;
-
-    public function __construct(Dispatcher $dispatcher)
-    {
-        $this->dispatcher = $dispatcher;
+    public function __construct(
+        private Dispatcher $dispatcher,
+        private StepIdGenerator $stepIdGenerator,
+    ) {
     }
 
     public function define(string $workflowName): WorkflowDefinition
     {
-        return new WorkflowDefinition($workflowName);
+        return new WorkflowDefinition($workflowName, $this->stepIdGenerator);
     }
 
     public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow

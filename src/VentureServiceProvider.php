@@ -3,7 +3,9 @@
 namespace Sassnowski\Venture;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Contracts\Bus\Dispatcher;
 use Sassnowski\Venture\Manager\WorkflowManager;
+use Illuminate\Contracts\Foundation\Application;
 
 class VentureServiceProvider extends ServiceProvider
 {
@@ -26,8 +28,15 @@ class VentureServiceProvider extends ServiceProvider
             __DIR__ . '/../config/venture.php',
             'venture'
         );
+
         /** @psalm-suppress UndefinedInterfaceMethod */
         $this->app['events']->subscribe(WorkflowEventSubscriber::class);
-        $this->app->bind('venture.manager', WorkflowManager::class);
+
+        $this->app->bind('venture.manager', function (Application $app) {
+            return new WorkflowManager(
+                $app->get(Dispatcher::class),
+                $app->get(config('venture.workflow_step_id_generator_class')),
+            );
+        });
     }
 }
