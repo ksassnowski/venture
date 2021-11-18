@@ -27,7 +27,12 @@ it('can handle old workflows that still saved serialized dependent jobs instead 
 });
 
 it('can handle missing workflow step id generator class in config', function () {
-    config(['venture.workflow_step_id_generator_class' => null]);
+    config([
+        'venture' => [
+            'workflow_table' => 'workflows',
+            'jobs_table' => 'workflow_jobs',
+        ],
+    ]);
 
     expect(app('venture.manager'))->toBeInstanceOf(WorkflowManager::class);
 });
