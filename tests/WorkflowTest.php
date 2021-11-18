@@ -254,6 +254,30 @@ it('does not break a leg if no catch callback is configured', function () {
     assertEquals(0, $_SERVER['__catch.count']);
 });
 
+it('has not run by default', function () {
+    assertFalse(createWorkflow(['job_count' => 1])->hasRan());
+});
+
+it('has ran when job count equals total processed and failed', function () {
+    $workflow = createWorkflow([
+        'job_count' => 4,
+        'jobs_processed' => 3,
+        'jobs_failed' => 1,
+    ]);
+
+    assertTrue($workflow->hasRan());
+});
+
+it('has not ran when job count does not equal total processed and failed', function () {
+    $workflow = createWorkflow([
+        'job_count' => 4,
+        'jobs_processed' => 2,
+        'jobs_failed' => 1,
+    ]);
+
+    assertFalse($workflow->hasRan());
+});
+
 it('is not cancelled by default', function () {
     assertFalse(createWorkflow()->isCancelled());
 });
