@@ -59,7 +59,7 @@ class Workflow extends Model
     public function addJobs(array $jobs): void
     {
         collect($jobs)->map(fn (array $job) => [
-            'job' => serialize($job['job']),
+            'job' => serialize(clone $job['job']),
             'name' => $job['name'],
             'uuid' => $job['job']->stepId,
             'edges' => $job['job']->dependantJobs
