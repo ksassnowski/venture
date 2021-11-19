@@ -21,6 +21,9 @@ class VentureServiceProvider extends ServiceProvider
         ], ['migrations', 'venture-migrations']);
 
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
+        /** @psalm-suppress UndefinedInterfaceMethod */
+        $this->app['events']->subscribe(WorkflowEventSubscriber::class);
     }
 
     public function register(): void
@@ -29,9 +32,6 @@ class VentureServiceProvider extends ServiceProvider
             __DIR__ . '/../config/venture.php',
             'venture'
         );
-
-        /** @psalm-suppress UndefinedInterfaceMethod */
-        $this->app['events']->subscribe(WorkflowEventSubscriber::class);
 
         $this->app->bind('venture.manager', function (Application $app) {
             $generator = config('venture.workflow_step_id_generator_class');
