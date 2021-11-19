@@ -5,8 +5,8 @@ namespace Sassnowski\Venture;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Sassnowski\Venture\Manager\WorkflowManager;
-use Sassnowski\Venture\ClassNameStepIdGenerator;
 use Illuminate\Contracts\Foundation\Application;
+use function config;
 
 class VentureServiceProvider extends ServiceProvider
 {
@@ -33,18 +33,36 @@ class VentureServiceProvider extends ServiceProvider
             'venture'
         );
 
-        $this->app->bind('venture.manager', function (Application $app) {
-            $generator = config('venture.workflow_step_id_generator_class');
+        $this->registerManager();
+        $this->registerJobExtractor();
+        $this->registerStepIdGenerator();
 
-            return new WorkflowManager(
-                $app->get(Dispatcher::class),
-                $app->get($generator ?? ClassNameStepIdGenerator::class),
-            );
-        });
+    }
 
+    private function registerManager(): void
+    {
+        $this->app->bind('venture.manager', WorkflowManager::class);
+    }
+
+    private function registerJobExtractor(): void
+    {
         $this->app->bind(
             JobExtractor::class,
-            config('venture.workflow_job_extractor_class', UnserializeJobExtractor::class)
+            config(
+                'venture.workflow_job_extractor_class',
+                UnserializeJobExtractor::class
+            )
+        );
+    }
+
+    private function registerStepIdGenerator(): void
+    {
+        $this->app->bind(
+            StepIdGenerator::class,
+            config(
+                'venture.workflow_step_id_generator_class',
+                ClassNameStepIdGenerator::class,
+            )
         );
     }
 }

@@ -1,5 +1,7 @@
 <?php declare(strict_types=1);
 
+use Sassnowski\Venture\JobExtractor;
+use Sassnowski\Venture\UnserializeJobExtractor;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Illuminate\Support\Str;
@@ -35,4 +37,15 @@ it('can handle missing workflow step id generator class in config', function () 
     ]);
 
     expect(app('venture.manager'))->toBeInstanceOf(WorkflowManager::class);
+});
+
+it('can handle missing job extractor class in config', function () {
+    config([
+        'venture' => [
+            'workflow_table' => 'workflows',
+            'jobs_table' => 'workflow_jobs',
+        ],
+    ]);
+
+    expect(app(JobExtractor::class))->toBeInstanceOf(UnserializeJobExtractor::class);
 });
