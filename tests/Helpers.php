@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
+use Illuminate\Contracts\Queue\Job;
 use Illuminate\Support\Str;
+use Mockery\MockInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
 
@@ -26,9 +28,27 @@ function createWorkflowJob(Workflow $workflow, array $attributes = []): Workflow
     ], $attributes));
 }
 
-function wrapJobsForWorkflow($jobs) {
+function wrapJobsForWorkflow($jobs)
+{
     return collect($jobs)->map(fn ($job) => [
         'job' => $job->withJobId($job->jobId ?? get_class($job)),
         'name' => get_class($job)
     ])->all();
+}
+
+function createQueueJob(object $command, bool $failed = false, bool $released = false): Job
+{
+    return with(Mockery::mock(Job::class), function (MockInterface $jobMock) use ($command, $failed, $released) {
+        $jobMock->allows('payload')
+            ->andReturns([
+                'data' => [
+                    'command' => serialize($command),
+                ]
+            ]);
+        $jobMock->allows('hasFailed')->andReturn($failed);
+        $jobMock->allows('isReleased')->andReturn($released);
+        $jobMock->allows('delete');
+
+        return $jobMock;
+    });
 }
