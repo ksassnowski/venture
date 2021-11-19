@@ -2,8 +2,7 @@
 
 namespace Sassnowski\Venture;
 
-use function class_uses_recursive;
-use Illuminate\Contracts\Queue\Job;
+use Closure;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
@@ -11,6 +10,10 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 class WorkflowEventSubscriber
 {
+    public function __construct(private JobExtractor $jobExtractor)
+    {
+    }
+
     public function subscribe(Dispatcher $events): void
     {
         $events->listen(
@@ -35,11 +38,12 @@ class WorkflowEventSubscriber
             return;
         }
 
-        $jobInstance = $this->getJobInstance($event->job);
+        $this->withWorkflowJob($event, function (object $jobInstance) {
+            $jobInstance
+                ->workflow()
+                ?->onStepFinished($jobInstance);
+        });
 
-        if ($this->isWorkflowStep($jobInstance)) {
-            optional($jobInstance->workflow())->onStepFinished($jobInstance);
-        }
     }
 
     public function handleJobFailed(JobFailed $event): void
@@ -48,35 +52,33 @@ class WorkflowEventSubscriber
             return;
         }
 
-        $jobInstance = $this->getJobInstance($event->job);
-
-        if ($this->isWorkflowStep($jobInstance)) {
-            optional($jobInstance->workflow())->onStepFailed($jobInstance, $event->exception);
-        }
+        $this->withWorkflowJob($event, function (object $jobInstance) use ($event) {
+            $jobInstance
+                ->workflow()
+                ?->onStepFailed($jobInstance, $event->exception);
+        });
     }
 
     public function onJobProcessing(JobProcessing $event): void
     {
-        $jobInstance = $this->getJobInstance($event->job);
-
-        if (!$this->isWorkflowStep($jobInstance)) {
-            return;
-        }
-
-        if (optional($jobInstance->workflow())->isCancelled()) {
-            $event->job->delete();
-        }
+        $this->withWorkflowJob($event, function (object $jobInstance) use ($event) {
+            if ($jobInstance->workflow()?->isCancelled()) {
+                $event->job->delete();
+            }
+        });
     }
 
-    private function isWorkflowStep(object $job): bool
-    {
-        $uses = class_uses_recursive($job);
+    /**
+     * @param Closure(object): void $callback
+     */
+    private function withWorkflowJob(
+        JobProcessing | JobProcessed | JobFailed $event,
+        Closure $callback,
+    ): void {
+        $jobInstance = $this->jobExtractor->extractWorkflowJob($event->job);
 
-        return in_array(WorkflowStep::class, $uses);
-    }
-
-    private function getJobInstance(Job $job): object
-    {
-        return unserialize($job->payload()['data']['command']);
+        if ($jobInstance !== null) {
+            $callback($jobInstance);
+        }
     }
 }

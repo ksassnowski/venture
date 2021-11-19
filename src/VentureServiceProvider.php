@@ -41,5 +41,10 @@ class VentureServiceProvider extends ServiceProvider
                 $app->get($generator ?? ClassNameStepIdGenerator::class),
             );
         });
+
+        $this->app->bind(
+            JobExtractor::class,
+            config('venture.workflow_job_extractor_class', UnserializeJobExtractor::class)
+        );
     }
 }
