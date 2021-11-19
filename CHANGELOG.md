@@ -5,11 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.4.0] — 2021-11-19
+
+### Added
+
+- Add `hasRan()` method to workflow to check if all jobs have at lease been attempted once (#37). Credits, @stevebauman.
+- Add `JobExtractor` interface to extract a workflow job instance from a Laravel queue job. This gets used by
+  the `WorkflowEventSubscriber` class.
+
 ## [3.3.2] — 2021-11-18
 
 ### Fixed
 
-- Fix BC break if existing config was missing `workflow_step_id_generator_class` key. Credits, @stevebauman.
+- Fix BC break if existing config was missing `workflow_step_id_generator_class` key. Credits, @stevebauman. (#40)
 
 ## [3.3.1] — 2021-11-18
 
@@ -202,6 +210,7 @@ Please see the documentation's [upgrade guide](https://laravel-venture.netlify.a
 - Make it possible to cancel a workflow. A cancelled workflow will not execute any further jobs, but will finish any job
   that was already running before the workflow got cancelled.
 
+[3.4.0]: https://github.com/ksassnowski/venture/compare/3.3.2...3.4.0
 [3.3.2]: https://github.com/ksassnowski/venture/compare/3.3.1...3.3.2
 [3.3.1]: https://github.com/ksassnowski/venture/compare/3.3.0...3.3.1
 [3.3.0]: https://github.com/ksassnowski/venture/compare/3.2.0...3.3.0
