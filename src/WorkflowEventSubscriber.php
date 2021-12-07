@@ -1,12 +1,23 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture;
 
 use Closure;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
-use Illuminate\Contracts\Events\Dispatcher;
 
 class WorkflowEventSubscriber
 {
@@ -38,12 +49,11 @@ class WorkflowEventSubscriber
             return;
         }
 
-        $this->withWorkflowJob($event, function (object $jobInstance) {
+        $this->withWorkflowJob($event, function (object $jobInstance): void {
             $jobInstance
                 ->workflow()
                 ?->onStepFinished($jobInstance);
         });
-
     }
 
     public function handleJobFailed(JobFailed $event): void
@@ -52,7 +62,7 @@ class WorkflowEventSubscriber
             return;
         }
 
-        $this->withWorkflowJob($event, function (object $jobInstance) use ($event) {
+        $this->withWorkflowJob($event, function (object $jobInstance) use ($event): void {
             $jobInstance
                 ->workflow()
                 ?->onStepFailed($jobInstance, $event->exception);
@@ -61,7 +71,7 @@ class WorkflowEventSubscriber
 
     public function onJobProcessing(JobProcessing $event): void
     {
-        $this->withWorkflowJob($event, function (object $jobInstance) use ($event) {
+        $this->withWorkflowJob($event, function (object $jobInstance) use ($event): void {
             if ($jobInstance->workflow()?->isCancelled()) {
                 $event->job->delete();
             }
@@ -72,12 +82,12 @@ class WorkflowEventSubscriber
      * @param Closure(object): void $callback
      */
     private function withWorkflowJob(
-        JobProcessing | JobProcessed | JobFailed $event,
+        JobProcessing|JobProcessed|JobFailed $event,
         Closure $callback,
     ): void {
         $jobInstance = $this->jobExtractor->extractWorkflowJob($event->job);
 
-        if ($jobInstance !== null) {
+        if (null !== $jobInstance) {
             $callback($jobInstance);
         }
     }

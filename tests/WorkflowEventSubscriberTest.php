@@ -1,28 +1,39 @@
-<?php declare(strict_types=1);
+<?php
 
-use Stubs\TestJob1;
-use Stubs\NonWorkflowJob;
-use Opis\Closure\SerializableClosure;
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
+
 use Illuminate\Queue\Events\JobFailed;
-use Sassnowski\Venture\Models\Workflow;
 use Illuminate\Queue\Events\JobProcessed;
-use function PHPUnit\Framework\assertTrue;
 use Illuminate\Queue\Events\JobProcessing;
-use function PHPUnit\Framework\assertFalse;
-use function PHPUnit\Framework\assertEquals;
+use Opis\Closure\SerializableClosure;
+use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\UnserializeJobExtractor;
 use Sassnowski\Venture\WorkflowEventSubscriber;
+use Stubs\NonWorkflowJob;
+use Stubs\TestJob1;
+use function PHPUnit\Framework\assertEquals;
+use function PHPUnit\Framework\assertFalse;
+use function PHPUnit\Framework\assertTrue;
 
 uses(TestCase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $_SERVER['__catch.called'] = false;
     $this->eventSubscriber = new WorkflowEventSubscriber(
-        new UnserializeJobExtractor()
+        new UnserializeJobExtractor(),
     );
 });
 
-it('notifies the workflow if a workflow step has finished', function () {
+it('notifies the workflow if a workflow step has finished', function (): void {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
@@ -38,7 +49,7 @@ it('notifies the workflow if a workflow step has finished', function () {
     assertTrue($workflow->fresh()->isFinished());
 });
 
-it('does not notify the workflow has finished when job is released back into the queue', function () {
+it('does not notify the workflow has finished when job is released back into the queue', function (): void {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
@@ -55,7 +66,7 @@ it('does not notify the workflow has finished when job is released back into the
     assertFalse($workflow->fresh()->isFinished());
 });
 
-it('only cares about jobs that use the WorkflowStep trait', function () {
+it('only cares about jobs that use the WorkflowStep trait', function (): void {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
@@ -69,13 +80,13 @@ it('only cares about jobs that use the WorkflowStep trait', function () {
     assertFalse($workflow->fresh()->isFinished());
 });
 
-it('notifies the workflow if a job fails', function () {
+it('notifies the workflow if a job fails', function (): void {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
         'jobs_failed' => 0,
         'finished_jobs' => [],
-        'catch_callback' => serialize(SerializableClosure::from(function () {
+        'catch_callback' => \serialize(SerializableClosure::from(function (): void {
             $_SERVER['__catch.called'] = true;
         })),
     ]);
@@ -87,13 +98,13 @@ it('notifies the workflow if a job fails', function () {
     assertTrue($_SERVER['__catch.called']);
 });
 
-it('does not notify the workflow is the job is not marked as failed', function () {
+it('does not notify the workflow is the job is not marked as failed', function (): void {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
         'jobs_failed' => 0,
         'finished_jobs' => [],
-        'catch_callback' => serialize(SerializableClosure::from(function () {
+        'catch_callback' => \serialize(SerializableClosure::from(function (): void {
             $_SERVER['__catch.called'] = true;
         })),
     ]);
@@ -105,13 +116,13 @@ it('does not notify the workflow is the job is not marked as failed', function (
     assertFalse($_SERVER['__catch.called']);
 });
 
-it('passes the exception along to the workflow', function () {
+it('passes the exception along to the workflow', function (): void {
     $workflow = Workflow::create([
         'job_count' => 1,
         'jobs_processed' => 0,
         'jobs_failed' => 0,
         'finished_jobs' => [],
-        'catch_callback' => serialize(SerializableClosure::from(function (Workflow $w, Throwable $e) {
+        'catch_callback' => \serialize(SerializableClosure::from(function (Workflow $w, Throwable $e): void {
             assertEquals('::message::', $e->getMessage());
         })),
     ]);
@@ -121,7 +132,7 @@ it('passes the exception along to the workflow', function () {
     $this->eventSubscriber->handleJobFailed($event);
 });
 
-it('will delete the job if the workflow it belongs to has been cancelled', function () {
+it('will delete the job if the workflow it belongs to has been cancelled', function (): void {
     $workflow = createWorkflow(['cancelled_at' => now()]);
     $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
     $laravelJob = createQueueJob($workflowJob);
@@ -132,7 +143,7 @@ it('will delete the job if the workflow it belongs to has been cancelled', funct
     $laravelJob->shouldHaveReceived('delete');
 });
 
-it('only cares about workflow jobs when checking for cancelled workflows', function () {
+it('only cares about workflow jobs when checking for cancelled workflows', function (): void {
     $workflowJob = new NonWorkflowJob();
     $laravelJob = createQueueJob($workflowJob);
     $event = new JobProcessing('::connection::', $laravelJob);
@@ -142,7 +153,7 @@ it('only cares about workflow jobs when checking for cancelled workflows', funct
     $laravelJob->shouldNotHaveReceived('delete');
 });
 
-it('does not delete a job if its workflow has not been cancelled', function () {
+it('does not delete a job if its workflow has not been cancelled', function (): void {
     $workflow = createWorkflow(['cancelled_at' => null]);
     $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
     $laravelJob = createQueueJob($workflowJob);

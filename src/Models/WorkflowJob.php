@@ -1,4 +1,15 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture\Models;
 
@@ -7,26 +18,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property string $uuid
- * @property string $name
- * @property string $exception
- * @property ?Carbon $finished_at
- * @property ?Carbon $failed_at
  * @property string[] $edges
+ * @property string   $exception
+ * @property ?Carbon  $failed_at
+ * @property ?Carbon  $finished_at
+ * @property string   $name
+ * @property string   $uuid
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
 class WorkflowJob extends Model
 {
-    protected $guarded = [];
-
     public $timestamps = false;
-
+    protected $guarded = [];
     protected $dates = [
         'failed_at',
         'finished_at',
     ];
-
     protected $casts = [
         'edges' => 'array',
     ];

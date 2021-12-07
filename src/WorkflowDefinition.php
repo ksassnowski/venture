@@ -1,20 +1,29 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture;
 
 use Closure;
 use DateInterval;
-use function count;
 use DateTimeInterface;
-use function array_diff;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Str;
 use Opis\Closure\SerializableClosure;
-use Sassnowski\Venture\Models\Workflow;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Sassnowski\Venture\Graph\DependencyGraph;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
+use Sassnowski\Venture\Graph\DependencyGraph;
+use Sassnowski\Venture\Models\Workflow;
 
 class WorkflowDefinition
 {
@@ -23,36 +32,32 @@ class WorkflowDefinition
     protected ?string $thenCallback = null;
     protected ?string $catchCallback = null;
     protected array $nestedWorkflows = [];
-
     private StepIdGenerator $stepIdGenerator;
 
     public function __construct(
         protected string $workflowName = '',
-        StepIdGenerator $stepIdGenerator = null,
+        ?StepIdGenerator $stepIdGenerator = null,
     ) {
         $this->graph = new DependencyGraph();
         $this->stepIdGenerator = $stepIdGenerator ?: new ClassNameStepIdGenerator();
     }
 
     /**
-     * @param  object                                  $job
-     * @param  array                                   $dependencies
-     * @param  string|null                             $name
-     * @param  DateTimeInterface|DateInterval|int|null $delay
-     * @param  string|null                             $id
+     * @param null|DateInterval|DateTimeInterface|int $delay
+     *
+     * @throws DuplicateJobException
+     * @throws NonQueueableWorkflowStepException
+     *
      * @return $this
      *
      * @psalm-suppress UndefinedInterfaceMethod
-     *
-     * @throws NonQueueableWorkflowStepException
-     * @throws DuplicateJobException
      */
     public function addJob(
         object $job,
         array $dependencies = [],
         ?string $name = null,
         $delay = null,
-        ?string $id = null
+        ?string $id = null,
     ): self {
         if (!($job instanceof ShouldQueue)) {
             throw NonQueueableWorkflowStepException::fromJob($job);
@@ -62,7 +67,7 @@ class WorkflowDefinition
 
         $this->graph->addDependantJob($job, $dependencies, $id);
 
-        if ($delay !== null) {
+        if (null !== $delay) {
             $job->delay($delay);
         }
 
@@ -70,15 +75,15 @@ class WorkflowDefinition
             'job' => $job
                 ->withJobId($id)
                 ->withStepId(Str::orderedUuid()),
-            'name' => $name ?: get_class($job),
+            'name' => $name ?: \get_class($job),
         ];
 
         return $this;
     }
 
     /**
-     * @throws DuplicateWorkflowException
      * @throws DuplicateJobException
+     * @throws DuplicateWorkflowException
      */
     public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = [], ?string $id = null): self
     {
@@ -117,7 +122,7 @@ class WorkflowDefinition
     {
         $workflow = new Workflow([
             'name' => $this->workflowName,
-            'job_count' => count($this->jobs),
+            'job_count' => \count($this->jobs),
             'jobs_processed' => 0,
             'jobs_failed' => 0,
             'finished_jobs' => [],
@@ -125,7 +130,7 @@ class WorkflowDefinition
             'catch_callback' => $this->catchCallback,
         ]);
 
-        if ($beforeCreate !== null) {
+        if (null !== $beforeCreate) {
             $beforeCreate($workflow);
         }
 
@@ -148,29 +153,20 @@ class WorkflowDefinition
         return $this->workflowName;
     }
 
-    private function serializeCallback(mixed $callback): string
-    {
-        if ($callback instanceof Closure) {
-            $callback = SerializableClosure::from($callback);
-        }
-
-        return serialize($callback);
-    }
-
     /**
-     * @param DateTimeInterface|DateInterval|int|null $delay
+     * @param null|DateInterval|DateTimeInterface|int $delay
      */
     public function hasJob(string $id, ?array $dependencies = null, mixed $delay = null): bool
     {
-        if ($dependencies === null && $delay === null) {
+        if (null === $dependencies && null === $delay) {
             return $this->getJobById($id) !== null;
         }
 
-        if ($dependencies !== null && !$this->hasJobWithDependencies($id, $dependencies)) {
+        if (null !== $dependencies && !$this->hasJobWithDependencies($id, $dependencies)) {
             return false;
         }
 
-        if ($delay !== null && !$this->hasJobWithDelay($id, $delay)) {
+        if (null !== $delay && !$this->hasJobWithDelay($id, $delay)) {
             return false;
         }
 
@@ -179,15 +175,15 @@ class WorkflowDefinition
 
     public function hasJobWithDependencies(string $jobId, array $dependencies): bool
     {
-        return count(array_diff($dependencies, $this->graph->getDependencies($jobId))) === 0;
+        return \count(\array_diff($dependencies, $this->graph->getDependencies($jobId))) === 0;
     }
 
     /**
-     * @param DateTimeInterface|DateInterval|int|null $delay
+     * @param null|DateInterval|DateTimeInterface|int $delay
      */
     public function hasJobWithDelay(string $jobClassName, mixed $delay): bool
     {
-        if (($job = $this->getJobById($jobClassName)) === null) {
+        if (null === ($job = $this->getJobById($jobClassName))) {
             return false;
         }
 
@@ -200,7 +196,7 @@ class WorkflowDefinition
             return false;
         }
 
-        if ($dependencies === null) {
+        if (null === $dependencies) {
             return true;
         }
 
@@ -209,7 +205,7 @@ class WorkflowDefinition
 
     protected function buildIdentifier(?string $id, object $object): string
     {
-        return $id ?: get_class($object);
+        return $id ?: \get_class($object);
     }
 
     protected function getJobById(string $className): ?array
@@ -222,5 +218,14 @@ class WorkflowDefinition
         return collect($this->jobs)
             ->map(fn (array $job): object => $job['job'])
             ->all();
+    }
+
+    private function serializeCallback(mixed $callback): string
+    {
+        if ($callback instanceof Closure) {
+            $callback = SerializableClosure::from($callback);
+        }
+
+        return \serialize($callback);
     }
 }

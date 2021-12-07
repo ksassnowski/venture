@@ -1,5 +1,20 @@
-<?php declare(strict_types=1);
+<?php
 
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
+
+use Sassnowski\Venture\Exceptions\DuplicateJobException;
+use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
+use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
+use Sassnowski\Venture\Graph\DependencyGraph;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
@@ -8,16 +23,12 @@ use Stubs\TestJob5;
 use Stubs\TestJob6;
 use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertEquals;
-use Sassnowski\Venture\Graph\DependencyGraph;
-use Sassnowski\Venture\Exceptions\DuplicateJobException;
-use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
-use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->graph = new DependencyGraph();
 });
 
-it('returns no dependencies if a job has none', function () {
+it('returns no dependencies if a job has none', function (): void {
     $job = new TestJob1();
 
     $this->graph->addDependantJob($job, [], TestJob1::class);
@@ -25,7 +36,7 @@ it('returns no dependencies if a job has none', function () {
     assertEquals([], $this->graph->getDependencies(TestJob1::class));
 });
 
-it('returns the jobs direct dependencies', function () {
+it('returns the jobs direct dependencies', function (): void {
     $job1 = new TestJob1();
     $job2 = new TestJob2();
     $job3 = new TestJob3();
@@ -37,7 +48,7 @@ it('returns the jobs direct dependencies', function () {
     assertEquals([TestJob1::class, TestJob2::class], $this->graph->getDependencies(TestJob3::class));
 });
 
-it('returns the instances of all dependants of a job', function () {
+it('returns the instances of all dependants of a job', function (): void {
     $job1 = new TestJob1();
     $job2 = new TestJob2();
     $job3 = new TestJob3();
@@ -49,7 +60,7 @@ it('returns the instances of all dependants of a job', function () {
     assertEquals([$job1, $job3], $this->graph->getDependantJobs(TestJob2::class));
 });
 
-it('returns all jobs without dependencies', function () {
+it('returns all jobs without dependencies', function (): void {
     $job1 = new TestJob1();
     $job2 = new TestJob2();
 
@@ -59,17 +70,17 @@ it('returns all jobs without dependencies', function () {
     assertEquals([$job1], $this->graph->getJobsWithoutDependencies());
 });
 
-it('throws an exception when trying to add a job with a dependency that does not exist', function () {
+it('throws an exception when trying to add a job with a dependency that does not exist', function (): void {
     test()->expectException(UnresolvableDependenciesException::class);
-    test()->expectExceptionMessage(sprintf(
+    test()->expectExceptionMessage(\sprintf(
         'Unable to resolve dependency [%s]. Make sure it was added before declaring it as a dependency.',
-        TestJob1::class
+        TestJob1::class,
     ));
 
     $this->graph->addDependantJob(new TestJob2(), [TestJob1::class], TestJob2::class);
 });
 
-it('can connect another graph to a single dependency in the current graph', function () {
+it('can connect another graph to a single dependency in the current graph', function (): void {
     $graph1 = new DependencyGraph([
         TestJob1::class => [
             'instance' => new TestJob1(),
@@ -113,7 +124,7 @@ it('can connect another graph to a single dependency in the current graph', func
     assertEquals([$job2, $job4, $job6], $graph1->getDependantJobs(TestJob1::class));
 });
 
-it('can connect a graph to multiple dependencies in the current graph', function () {
+it('can connect a graph to multiple dependencies in the current graph', function (): void {
     $graph1 = new DependencyGraph([
         TestJob1::class => [
             'instance' => new TestJob1(),
@@ -155,7 +166,7 @@ it('can connect a graph to multiple dependencies in the current graph', function
     assertEquals([TestJob2::class, TestJob3::class], $graph1->getDependencies('::id::.' . TestJob6::class));
 });
 
-it('can add a different graph without dependencies', function () {
+it('can add a different graph without dependencies', function (): void {
     $graph1 = new DependencyGraph([
         TestJob1::class => [
             'instance' => $job1 = new TestJob1(),
@@ -176,7 +187,7 @@ it('can add a different graph without dependencies', function () {
     assertEquals([$job1, $job2], $graph1->getJobsWithoutDependencies());
 });
 
-it('can add a job with a dependency on a nested workflow', function () {
+it('can add a job with a dependency on a nested workflow', function (): void {
     $graph1 = new DependencyGraph([
         TestJob1::class => [
             'instance' => new TestJob1(),
@@ -208,7 +219,7 @@ it('can add a job with a dependency on a nested workflow', function () {
     assertEquals(['::workflow-id::.' . TestJob3::class, '::workflow-id::.' . TestJob4::class], $graph1->getDependencies(TestJob5::class));
 });
 
-it('can add a nested workflow with a dependency on another nested workflow', function () {
+it('can add a nested workflow with a dependency on another nested workflow', function (): void {
     $graph1 = new DependencyGraph([]);
     $graph2 = new DependencyGraph([
         TestJob1::class => [
@@ -242,7 +253,7 @@ it('can add a nested workflow with a dependency on another nested workflow', fun
             'instance' => new TestJob6(),
             'in_edges' => [],
             'out_edges' => [],
-        ]
+        ],
     ]);
     $graph1->connectGraph($graph2, '::graph-2-id::', []);
 
@@ -253,7 +264,7 @@ it('can add a nested workflow with a dependency on another nested workflow', fun
     assertEquals(['::graph-2-id::.' . TestJob2::class, '::graph-2-id::.' . TestJob3::class], $graph1->getDependencies('::graph-3-id::.' . TestJob6::class));
 });
 
-it('throws an exception when adding workflows with the same ids', function () {
+it('throws an exception when adding workflows with the same ids', function (): void {
     $graph1 = new DependencyGraph();
     $graph2 = new DependencyGraph([
         TestJob1::class => [
@@ -267,7 +278,7 @@ it('throws an exception when adding workflows with the same ids', function () {
     $graph1->connectGraph($graph2, id: '::id::', dependencies: []);
 })->expectException(DuplicateWorkflowException::class);
 
-it('throws an exception when adding a job with an existing id', function () {
+it('throws an exception when adding a job with an existing id', function (): void {
     $graph = new DependencyGraph([
         TestJob1::class => [
             'instance' => new TestJob1(),
@@ -279,7 +290,7 @@ it('throws an exception when adding a job with an existing id', function () {
     $graph->addDependantJob(new TestJob1(), [], TestJob1::class);
 })->expectException(DuplicateJobException::class);
 
-it('allows adding multiple instances of the same job when providing explicit ids', function () {
+it('allows adding multiple instances of the same job when providing explicit ids', function (): void {
     $graph = new DependencyGraph([
         TestJob1::class => [
             'instance' => new TestJob1(),

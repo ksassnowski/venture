@@ -1,11 +1,20 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Contracts\Bus\Dispatcher;
 use Sassnowski\Venture\Manager\WorkflowManager;
-use Illuminate\Contracts\Foundation\Application;
 use function config;
 
 class VentureServiceProvider extends ServiceProvider
@@ -30,13 +39,12 @@ class VentureServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(
             __DIR__ . '/../config/venture.php',
-            'venture'
+            'venture',
         );
 
         $this->registerManager();
         $this->registerJobExtractor();
         $this->registerStepIdGenerator();
-
     }
 
     private function registerManager(): void
@@ -50,8 +58,8 @@ class VentureServiceProvider extends ServiceProvider
             JobExtractor::class,
             config(
                 'venture.workflow_job_extractor_class',
-                UnserializeJobExtractor::class
-            )
+                UnserializeJobExtractor::class,
+            ),
         );
     }
 
@@ -62,7 +70,7 @@ class VentureServiceProvider extends ServiceProvider
             config(
                 'venture.workflow_step_id_generator_class',
                 ClassNameStepIdGenerator::class,
-            )
+            ),
         );
     }
 }

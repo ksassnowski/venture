@@ -1,11 +1,22 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture\Exceptions;
 
 use Exception;
-use Facade\IgnitionContracts\Solution;
 use Facade\IgnitionContracts\BaseSolution;
 use Facade\IgnitionContracts\ProvidesSolution;
+use Facade\IgnitionContracts\Solution;
 
 class DuplicateJobException extends Exception implements ProvidesSolution
 {
@@ -14,7 +25,7 @@ class DuplicateJobException extends Exception implements ProvidesSolution
         return BaseSolution::create('Duplicate jobs')
             ->setSolutionDescription(
                 'If you tried to add multiple instances of the same job to a workflow, ' .
-                'make sure to provide unique ids for each of them'
+                'make sure to provide unique ids for each of them',
             );
     }
 }

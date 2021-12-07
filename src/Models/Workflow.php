@@ -1,45 +1,55 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copyright (c) 2021 Kai Sassnowski
+ *
+ * For the full copyright and license information, please view
+ * the LICENSE file that was distributed with this source code.
+ *
+ * @see https://github.com/ksassnowski/venture
+ */
 
 namespace Sassnowski\Venture\Models;
 
-use Throwable;
 use Carbon\Carbon;
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Bus\Dispatcher;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Container\Container;
 use Opis\Closure\SerializableClosure;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Bus\Dispatcher;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Throwable;
 
 /**
  * @method Workflow create(array $attributes)
- * @property int $id
- * @property string $name
- * @property array $finished_jobs
- * @property int $jobs_processed
- * @property int $jobs_failed
- * @property int $job_count
- * @property ?string $then_callback
- * @property ?string $catch_callback
- * @property ?Carbon $cancelled_at
- * @property ?Carbon $finished_at
+ *
+ * @property ?Carbon            $cancelled_at
+ * @property ?string            $catch_callback
+ * @property ?Carbon            $finished_at
+ * @property array              $finished_jobs
+ * @property int                $id
+ * @property int                $job_count
  * @property EloquentCollection $jobs
+ * @property int                $jobs_failed
+ * @property int                $jobs_processed
+ * @property string             $name
+ * @property ?string            $then_callback
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
 class Workflow extends Model
 {
     protected $guarded = [];
-
     protected $casts = [
         'finished_jobs' => 'json',
         'job_count' => 'int',
         'jobs_failed' => 'int',
         'jobs_processed' => 'int',
     ];
-
     protected $dates = [
         'finished_at',
         'cancelled_at',
@@ -59,14 +69,14 @@ class Workflow extends Model
     public function addJobs(array $jobs): void
     {
         collect($jobs)->map(fn (array $job) => [
-            'job' => serialize(clone $job['job']),
+            'job' => \serialize(clone $job['job']),
             'name' => $job['name'],
             'uuid' => $job['job']->stepId,
-            'edges' => $job['job']->dependantJobs
+            'edges' => $job['job']->dependantJobs,
         ])
-        ->pipe(function (Collection $jobs) {
-            $this->jobs()->createMany($jobs);
-        });
+            ->pipe(function (Collection $jobs): void {
+                $this->jobs()->createMany($jobs);
+            });
     }
 
     public function onStepFinished(object $job): void
@@ -80,6 +90,7 @@ class Workflow extends Model
         if ($this->isFinished()) {
             $this->update(['finished_at' => Carbon::now()]);
             $this->runThenCallback();
+
             return;
         }
 
@@ -92,7 +103,7 @@ class Workflow extends Model
 
     public function onStepFailed(object $job, Throwable $e): void
     {
-        DB::transaction(function () use ($job, $e) {
+        DB::transaction(function () use ($job, $e): void {
             /** @var self $workflow */
             $workflow = $this->newQuery()
                 ->lockForUpdate()
@@ -117,7 +128,7 @@ class Workflow extends Model
 
     public function isCancelled(): bool
     {
-        return $this->cancelled_at !== null;
+        return null !== $this->cancelled_at;
     }
 
     public function hasRan(): bool
@@ -176,13 +187,13 @@ class Workflow extends Model
 
     private function markJobAsFinished(object $job): void
     {
-        DB::transaction(function () use ($job) {
+        DB::transaction(function () use ($job): void {
             /** @var self $workflow */
             $workflow = $this->newQuery()
                 ->lockForUpdate()
                 ->findOrFail($this->getKey(), ['finished_jobs', 'jobs_processed']);
 
-            $this->finished_jobs = array_merge($workflow->finished_jobs, [$job->jobId ?: get_class($job)]);
+            $this->finished_jobs = \array_merge($workflow->finished_jobs, [$job->jobId ?: \get_class($job)]);
             $this->jobs_processed = $workflow->jobs_processed + 1;
             $this->save();
 
@@ -193,7 +204,7 @@ class Workflow extends Model
     private function canJobRun(object $job): bool
     {
         return collect($job->dependencies)->every(function (string $dependency) {
-            return in_array($dependency, $this->finished_jobs, true);
+            return \in_array($dependency, $this->finished_jobs, true);
         });
     }
 
@@ -209,11 +220,11 @@ class Workflow extends Model
 
     private function runCallback(?string $serializedCallback, mixed ...$args): void
     {
-        if ($serializedCallback === null) {
+        if (null === $serializedCallback) {
             return;
         }
 
-        $callback = unserialize($serializedCallback);
+        $callback = \unserialize($serializedCallback);
 
         if ($callback instanceof SerializableClosure) {
             $callback = $callback->getClosure();
@@ -229,18 +240,18 @@ class Workflow extends Model
         // This is to keep backwards compatibility for workflows
         // that were created when Venture still stored serialized
         // instances of a job's dependencies instead of the step id.
-        if (is_object($job->dependantJobs[0])) {
+        if (\is_object($job->dependantJobs[0])) {
             $dependantJobs = collect($job->dependantJobs);
         } else {
             $dependantJobs = WorkflowJob::whereIn('uuid', $job->dependantJobs)
                 ->get('job')
                 ->pluck('job')
-                ->map(fn (string $job) => unserialize($job));
+                ->map(fn (string $job) => \unserialize($job));
         }
 
         $dependantJobs
             ->filter(fn (object $job) => $this->canJobRun($job))
-            ->each(function (object $job) {
+            ->each(function (object $job): void {
                 $this->dispatchJob($job);
             });
     }
