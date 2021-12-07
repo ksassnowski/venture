@@ -58,12 +58,20 @@
         "post-update-cmd": [
             "@composer normalize"
         ],
+        "check": [
+            "@cs",
+            "@psalm",
+            "@test"
+        ],
         "cs": [
             "mkdir -p .build/php-cs-fixer",
             "vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --diff --verbose"
         ],
         "psalm": [
             "vendor/bin/psalm"
+        ],
+        "test": [
+            "vendor/bin/pest"
         ]
     }
 }
