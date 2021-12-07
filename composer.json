@@ -1,8 +1,8 @@
 {
     "name": "sassnowski/venture",
-    "type": "library",
     "description": "A package to manage complex workflows built on top of Laravel's queue.",
     "license": "MIT",
+    "type": "library",
     "authors": [
         {
             "name": "Kai Sassnowski",
@@ -32,13 +32,8 @@
         "spatie/phpunit-watcher": "^1.22",
         "vimeo/psalm": "^4.12"
     },
-    "extra": {
-        "laravel": {
-            "providers": [
-                "Sassnowski\\Venture\\VentureServiceProvider"
-            ]
-        }
-    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Sassnowski\\Venture\\": "src/"
@@ -49,8 +44,13 @@
             "": "tests"
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Sassnowski\\Venture\\VentureServiceProvider"
+            ]
+        }
+    },
     "scripts": {
         "post-install-cmd": [
             "@composer normalize"
