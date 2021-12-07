@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use Sassnowski\Venture\StepIdGenerator;
+use Stubs\DummyCallback;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
@@ -480,11 +481,3 @@ it('can check if a workflow contains a nested workflow', function (callable $con
         'expected' => true,
     ],
 ]);
-
-class DummyCallback
-{
-    public function __invoke()
-    {
-        echo 'herp';
-    }
-}
