@@ -172,6 +172,9 @@ class Workflow extends Model
             ->get();
     }
 
+    /**
+     * @psalm-suppress ArgumentTypeCoercion
+     */
     public function asAdjacencyList(): array
     {
         return $this->jobs->mapWithKeys(fn (WorkflowJob $job) => [
