@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Models;
 
 use Carbon\Carbon;
+use Sassnowski\Venture\Venture;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Sassnowski\Venture\Venture;
 
 /**
  * @property string[] $edges
