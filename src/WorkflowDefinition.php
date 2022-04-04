@@ -150,7 +150,7 @@ class WorkflowDefinition
 
     protected function makeWorkflow(array $attributes): Workflow
     {
-        return app(Workflow::class, compact('attributes'));
+        return app(Venture::$workflowModel, compact('attributes'));
     }
 
     public function name(): string

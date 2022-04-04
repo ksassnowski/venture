@@ -16,6 +16,7 @@ namespace Sassnowski\Venture\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Sassnowski\Venture\Venture;
 
 /**
  * @property string[] $edges
@@ -48,6 +49,6 @@ class WorkflowJob extends Model
 
     public function workflow(): BelongsTo
     {
-        return $this->belongsTo(Workflow::class);
+        return $this->belongsTo(Venture::$workflowModel);
     }
 }

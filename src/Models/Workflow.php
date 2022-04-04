@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Opis\Closure\SerializableClosure;
+use Sassnowski\Venture\Venture;
 use Throwable;
 
 /**
@@ -63,7 +64,7 @@ class Workflow extends Model
 
     public function jobs(): HasMany
     {
-        return $this->hasMany(WorkflowJob::class);
+        return $this->hasMany(Venture::$workflowJobModel);
     }
 
     public function addJobs(array $jobs): void
@@ -246,7 +247,8 @@ class Workflow extends Model
         if (\is_object($job->dependantJobs[0])) {
             $dependantJobs = collect($job->dependantJobs);
         } else {
-            $dependantJobs = WorkflowJob::whereIn('uuid', $job->dependantJobs)
+            $dependantJobs = app(Venture::$workflowJobModel)
+                ->whereIn('uuid', $job->dependantJobs)
                 ->get('job')
                 ->pluck('job')
                 ->map(fn (string $job) => \unserialize($job));
