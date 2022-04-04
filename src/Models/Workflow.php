@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Models;
 
 use Carbon\Carbon;
+use Sassnowski\Venture\Venture;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -22,7 +23,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Opis\Closure\SerializableClosure;
-use Sassnowski\Venture\Venture;
 use Throwable;
 
 /**
