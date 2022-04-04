@@ -247,6 +247,7 @@ class Workflow extends Model
         if (\is_object($job->dependantJobs[0])) {
             $dependantJobs = collect($job->dependantJobs);
         } else {
+            /** @psalm-suppress PossiblyUndefinedMethod */
             $dependantJobs = app(Venture::$workflowJobModel)
                 ->whereIn('uuid', $job->dependantJobs)
                 ->get('job')
