@@ -148,11 +148,6 @@ class WorkflowDefinition
         return [$workflow, $this->graph->getJobsWithoutDependencies()];
     }
 
-    protected function makeWorkflow(array $attributes): Workflow
-    {
-        return app(Venture::$workflowModel, compact('attributes'));
-    }
-
     public function name(): string
     {
         return $this->workflowName;
@@ -206,6 +201,11 @@ class WorkflowDefinition
         }
 
         return $this->nestedWorkflows[$workflowId] === $dependencies;
+    }
+
+    protected function makeWorkflow(array $attributes): Workflow
+    {
+        return app(Venture::$workflowModel, \compact('attributes'));
     }
 
     protected function buildIdentifier(?string $id, object $object): string
