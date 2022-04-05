@@ -39,7 +39,7 @@ trait WorkflowStep
             return null;
         }
 
-        return Workflow::find($this->workflowId);
+        return app(Venture::$workflowModel)->find($this->workflowId);
     }
 
     public function withDependantJobs(array $jobs): self
@@ -76,6 +76,6 @@ trait WorkflowStep
             return null;
         }
 
-        return WorkflowJob::where('uuid', $this->stepId)->first();
+        return app(Venture::$workflowJobModel)->where('uuid', $this->stepId)->first();
     }
 }

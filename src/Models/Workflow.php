@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Models;
 
 use Carbon\Carbon;
+use Sassnowski\Venture\Venture;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -63,7 +64,7 @@ class Workflow extends Model
 
     public function jobs(): HasMany
     {
-        return $this->hasMany(WorkflowJob::class);
+        return $this->hasMany(Venture::$workflowJobModel);
     }
 
     public function addJobs(array $jobs): void
@@ -246,7 +247,9 @@ class Workflow extends Model
         if (\is_object($job->dependantJobs[0])) {
             $dependantJobs = collect($job->dependantJobs);
         } else {
-            $dependantJobs = WorkflowJob::whereIn('uuid', $job->dependantJobs)
+            /** @psalm-suppress PossiblyUndefinedMethod */
+            $dependantJobs = app(Venture::$workflowJobModel)
+                ->whereIn('uuid', $job->dependantJobs)
                 ->get('job')
                 ->pluck('job')
                 ->map(fn (string $job) => \unserialize($job));

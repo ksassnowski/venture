@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Models;
 
 use Carbon\Carbon;
+use Sassnowski\Venture\Venture;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -48,6 +49,6 @@ class WorkflowJob extends Model
 
     public function workflow(): BelongsTo
     {
-        return $this->belongsTo(Workflow::class);
+        return $this->belongsTo(Venture::$workflowModel);
     }
 }

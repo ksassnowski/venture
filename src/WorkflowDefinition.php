@@ -120,7 +120,7 @@ class WorkflowDefinition
 
     public function build(?Closure $beforeCreate = null): array
     {
-        $workflow = new Workflow([
+        $workflow = $this->makeWorkflow([
             'name' => $this->workflowName,
             'job_count' => \count($this->jobs),
             'jobs_processed' => 0,
@@ -146,6 +146,11 @@ class WorkflowDefinition
         $workflow->addJobs($this->jobs);
 
         return [$workflow, $this->graph->getJobsWithoutDependencies()];
+    }
+
+    protected function makeWorkflow(array $attributes): Workflow
+    {
+        return app(Venture::$workflowModel, compact('attributes'));
     }
 
     public function name(): string
