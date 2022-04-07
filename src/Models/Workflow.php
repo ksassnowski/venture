@@ -146,6 +146,7 @@ class Workflow extends Model
     {
         $children = $this->workflows()->get();
 
+        /** @psalm-suppress ArgumentTypeCoercion */
         $finished = $children->filter(fn (Workflow $workflow): bool => $workflow->isFinished());
 
         return $this->job_count === $this->jobs_processed && $finished->count() === $children->count();
