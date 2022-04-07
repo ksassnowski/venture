@@ -37,6 +37,7 @@ use Throwable;
  * @property int                $job_count
  * @property EloquentCollection $jobs
  * @property ?Workflow          $workflow
+ * @property EloquentCollection $workflows
  * @property int                $jobs_failed
  * @property int                $jobs_processed
  * @property string             $name
