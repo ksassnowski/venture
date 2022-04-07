@@ -18,6 +18,7 @@ use Illuminate\Container\Container;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +36,7 @@ use Throwable;
  * @property int                $id
  * @property int                $job_count
  * @property EloquentCollection $jobs
+ * @property ?Workflow          $workflow
  * @property int                $jobs_failed
  * @property int                $jobs_processed
  * @property string             $name
@@ -62,6 +64,16 @@ class Workflow extends Model
         parent::__construct($attributes);
     }
 
+    public function workflow(): BelongsTo
+    {
+        return $this->belongsTo(Venture::$workflowModel);
+    }
+
+    public function workflows(): HasMany
+    {
+        return $this->hasMany(Venture::$workflowModel);
+    }
+
     public function jobs(): HasMany
     {
         return $this->hasMany(Venture::$workflowJobModel);
@@ -80,6 +92,13 @@ class Workflow extends Model
             });
     }
 
+    public function addWorkflow(Workflow $workflow): Workflow
+    {
+        $workflow->workflow()->associate($this)->save();
+
+        return $this;
+    }
+
     public function onStepFinished(object $job): void
     {
         $this->markJobAsFinished($job);
@@ -89,7 +108,8 @@ class Workflow extends Model
         }
 
         if ($this->isFinished()) {
-            $this->update(['finished_at' => Carbon::now()]);
+            $this->markAsFinished();
+            $this->markParentAsFinished();
             $this->runThenCallback();
 
             return;
@@ -124,7 +144,11 @@ class Workflow extends Model
 
     public function isFinished(): bool
     {
-        return $this->job_count === $this->jobs_processed;
+        $children = $this->workflows()->get();
+
+        $finished = $children->filter(fn (Workflow $workflow) => $workflow->isFinished());
+
+        return $this->job_count === $this->jobs_processed && $finished->count() === $children->count();
     }
 
     public function isCancelled(): bool
@@ -187,6 +211,30 @@ class Workflow extends Model
                 'edges' => $job->edges ?: [],
             ],
         ])->all();
+    }
+
+    private function isMarkedAsFinished(): bool
+    {
+        return ! is_null($this->finished_at);
+    }
+
+    private function markAsFinished(): void
+    {
+        $this->update(['finished_at' => Carbon::now()]);
+    }
+
+    private function markParentAsFinished(): void
+    {
+        optional($this->workflow, function (Workflow $workflow) {
+            if ($workflow->isMarkedAsFinished()) {
+                return;
+            }
+
+            if ($workflow->isFinished()) {
+                $workflow->markAsFinished();
+                $workflow->markParentAsFinished();
+            }
+        });
     }
 
     private function markJobAsFinished(object $job): void

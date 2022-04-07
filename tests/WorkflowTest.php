@@ -37,7 +37,7 @@ afterEach(function (): void {
     Carbon::setTestNow();
 });
 
-it('it increments the finished jobs count when a job finished', function (): void {
+it('increments the finished jobs count when a job finished', function (): void {
     $job1 = new TestJob1();
     $workflow = createWorkflow([
         'job_count' => 1,
@@ -47,6 +47,30 @@ it('it increments the finished jobs count when a job finished', function (): voi
     $workflow->onStepFinished($job1);
 
     assertEquals(1, $workflow->refresh()->jobs_processed);
+});
+
+it('requires child workflows to be finished before reporting finished', function (): void {
+    $job1 = new TestJob1();
+    $workflow1 = createWorkflow([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+    ]);
+
+    $job2 = new TestJob1();
+    $workflow2 = createWorkflow([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+    ]);
+
+    $workflow1->addWorkflow($workflow2);
+
+    $workflow1->onStepFinished($job1);
+
+    assertFalse($workflow1->isFinished());
+
+    $workflow2->onStepFinished($job2);
+
+    assertTrue($workflow1->isFinished());
 });
 
 it('stores a finished job\'s id', function ($job, string $expectedJobId): void {
