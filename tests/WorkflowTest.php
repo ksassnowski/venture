@@ -73,6 +73,39 @@ it('requires child workflows to be finished before reporting finished', function
     assertTrue($workflow1->isFinished());
 });
 
+it('does not report finished when deeply nested workflow is not finished', function (): void {
+    $workflow1 = createWorkflow([
+        'job_count' => 1,
+        'jobs_processed' => 1,
+    ]);
+
+    $workflow2 = createWorkflow([
+        'job_count' => 1,
+        'jobs_processed' => 1,
+    ]);
+
+    $workflow3 = createWorkflow([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+    ]);
+
+    $workflow1->addWorkflow(
+        $workflow2->addWorkflow(
+            $workflow3
+        )
+    );
+
+    assertFalse($workflow1->isFinished());
+    assertFalse($workflow2->isFinished());
+    assertFalse($workflow3->isFinished());
+
+    $workflow3->update(['jobs_processed' => 1]);
+
+    assertTrue($workflow1->isFinished());
+    assertTrue($workflow2->isFinished());
+    assertTrue($workflow3->isFinished());
+});
+
 it('stores a finished job\'s id', function ($job, string $expectedJobId): void {
     $workflow = createWorkflow([
         'job_count' => 1,
