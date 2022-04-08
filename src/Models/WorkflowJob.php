@@ -49,6 +49,6 @@ class WorkflowJob extends Model
 
     public function workflow(): BelongsTo
     {
-        return $this->belongsTo(Venture::$workflowModel);
+        return $this->belongsTo(Venture::$workflowModel, 'workflow_id');
     }
 }
