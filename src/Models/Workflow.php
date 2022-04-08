@@ -89,7 +89,7 @@ class Workflow extends Model
         }
 
         if ($this->isFinished()) {
-            $this->update(['finished_at' => Carbon::now()]);
+            $this->markAsFinished();
             $this->runThenCallback();
 
             return;
@@ -189,7 +189,12 @@ class Workflow extends Model
         ])->all();
     }
 
-    private function markJobAsFinished(object $job): void
+    protected function markAsFinished(): void
+    {
+        $this->update(['finished_at' => Carbon::now()]);
+    }
+
+    protected function markJobAsFinished(object $job): void
     {
         DB::transaction(function () use ($job): void {
             /** @var self $workflow */
