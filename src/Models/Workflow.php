@@ -64,7 +64,7 @@ class Workflow extends Model
 
     public function jobs(): HasMany
     {
-        return $this->hasMany(Venture::$workflowJobModel);
+        return $this->hasMany(Venture::$workflowJobModel, 'workflow_id');
     }
 
     public function addJobs(array $jobs): void
