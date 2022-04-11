@@ -23,18 +23,18 @@ use function PHPUnit\Framework\assertNotInstanceOf;
 
 uses(TestCase::class);
 
-afterEach(function () {
+afterEach(function (): void {
     Venture::useWorkflowModel(Workflow::class);
     Venture::useWorkflowJobModel(WorkflowJob::class);
 });
 
-it('can override workflow model', function () {
+it('can override workflow model', function (): void {
     Venture::useWorkflowModel(CustomWorkflowModel::class);
 
     assertInstanceOf(CustomWorkflowModel::class, WorkflowWithJob::start());
 });
 
-it('can override workflow job model', function () {
+it('can override workflow job model', function (): void {
     Venture::useWorkflowJobModel(CustomWorkflowJobModel::class);
 
     assertInstanceOf(Workflow::class, $workflow = WorkflowWithJob::start());
@@ -44,10 +44,10 @@ it('can override workflow job model', function () {
     assertNotInstanceOf(CustomWorkflowModel::class, $job->workflow);
 });
 
-it('can override workflow and job model', function () {
+it('can override workflow and job model', function (): void {
     Venture::useWorkflowModel(CustomWorkflowModel::class);
     Venture::useWorkflowJobModel(CustomWorkflowJobModel::class);
-    
+
     assertInstanceOf(CustomWorkflowModel::class, $workflow = WorkflowWithJob::start());
     assertCount(1, $jobs = $workflow->jobs()->get());
     assertInstanceOf(CustomWorkflowJobModel::class, $job = $jobs->first());
