@@ -15,13 +15,21 @@ use Illuminate\Support\Facades\DB;
 use Sassnowski\Venture\Models\Workflow;
 use Stubs\TestJobWithNonPublicProperties;
 use Stubs\WorkflowWithDatabaseJob;
+use function Pest\Laravel\artisan;
 use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertInstanceOf;
 
 uses(TestCase::class);
 
-it('can serialize job with protected and private properties', function () {
+beforeEach(function (): void {
+    if (! class_exists(CreateJobsTable::class)) {
+        artisan('queue:table');
+        artisan('migrate');
+    }
+});
+
+it('can serialize job with protected and private properties', function (): void {
     $workflow = WorkflowWithDatabaseJob::start('foo', 'bar');
 
     assertInstanceOf(Workflow::class, $workflow);
