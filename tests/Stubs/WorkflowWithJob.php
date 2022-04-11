@@ -20,8 +20,8 @@ class WorkflowWithJob extends AbstractWorkflow
 {
     public function definition(): WorkflowDefinition
     {
-        return (new WorkflowDefinition)->addJob(
-            new TestJobWithHandle
+        return (new WorkflowDefinition())->addJob(
+            new TestJobWithHandle(),
         );
     }
 }
