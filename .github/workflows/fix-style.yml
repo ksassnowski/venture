@@ -24,13 +24,8 @@ jobs:
       - name: Install dependencies
         run: composer install
 
-      - name: Create php cs fixer cache directory
-        run: |
-          sudo mkdir -p /.build/php-cs-fixer
-          sudo chmod 777 /.build/php-cs-fixer
-
       - name: Fix style
-        run: ./vendor/bin/php-cs-fixer fix --allow-risky=yes
+        run: ./vendor/bin/php-cs-fixer fix --allow-risky=yes --using-cache=no
 
       - name: Commit style fixes
         uses: stefanzweifel/git-auto-commit-action@v4
