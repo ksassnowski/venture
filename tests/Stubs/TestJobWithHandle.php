@@ -22,6 +22,5 @@ class TestJobWithHandle implements ShouldQueue
 
     public function handle()
     {
-        return true;
     }
 }
