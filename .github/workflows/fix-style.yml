@@ -25,7 +25,9 @@ jobs:
         run: composer install
 
       - name: Create php cs fixer cache directory
-        run: mkdir -p /.build/php-cs-fixer
+        run: |
+          sudo mkdir -p /.build/php-cs-fixer
+          sudo chmod 777 /.build/php-cs-fixer
 
       - name: Fix style
         run: ./vendor/bin/php-cs-fixer fix --allow-risky=yes
