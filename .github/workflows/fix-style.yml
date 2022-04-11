@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: composer install
 
+      - name: Create php cs fixer cache directory
+        run: mkdir -p /.build/php-cs-fixer
+
       - name: Fix style
         run: ./vendor/bin/php-cs-fixer fix --allow-risky=yes
 
