@@ -15,6 +15,8 @@ namespace Sassnowski\Venture;
 
 use Illuminate\Support\ServiceProvider;
 use Sassnowski\Venture\Manager\WorkflowManager;
+use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
+use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use function config;
 
 class VentureServiceProvider extends ServiceProvider
@@ -45,6 +47,7 @@ class VentureServiceProvider extends ServiceProvider
         $this->registerManager();
         $this->registerJobExtractor();
         $this->registerStepIdGenerator();
+        $this->registerJobSerializer();
     }
 
     private function registerManager(): void
@@ -70,6 +73,17 @@ class VentureServiceProvider extends ServiceProvider
             config(
                 'venture.workflow_step_id_generator_class',
                 ClassNameStepIdGenerator::class,
+            ),
+        );
+    }
+
+    private function registerJobSerializer(): void
+    {
+        $this->app->bind(
+            WorkflowJobSerializer::class,
+            config(
+                'venture.workflow_job_serializer_class',
+                Base64WorkflowSerializer::class,
             ),
         );
     }
