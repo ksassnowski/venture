@@ -16,6 +16,8 @@ use Illuminate\Support\Str;
 use Sassnowski\Venture\ClassNameStepIdGenerator;
 use Sassnowski\Venture\JobExtractor;
 use Sassnowski\Venture\Manager\WorkflowManager;
+use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
+use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\StepIdGenerator;
 use Sassnowski\Venture\UnserializeJobExtractor;
 use Stubs\TestJob1;
@@ -62,5 +64,9 @@ it('can handle missing class keys in config', function (string $abstract, string
     'workflow step id generator' => [
         StepIdGenerator::class,
         ClassNameStepIdGenerator::class,
+    ],
+    'workflow serializer' => [
+        WorkflowJobSerializer::class,
+        Base64WorkflowSerializer::class,
     ],
 ]);
