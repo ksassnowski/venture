@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
+use Sassnowski\Venture\ClassNameStepIdGenerator;
 use Sassnowski\Venture\JobExtractor;
 use Sassnowski\Venture\Manager\WorkflowManager;
+use Sassnowski\Venture\StepIdGenerator;
 use Sassnowski\Venture\UnserializeJobExtractor;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
@@ -39,7 +41,7 @@ it('can handle old workflows that still saved serialized dependent jobs instead 
     Bus::assertDispatched(TestJob2::class);
 });
 
-it('can handle missing workflow step id generator class in config', function (): void {
+it('can handle missing class keys in config', function (string $abstract, string $defaultClass): void {
     config([
         'venture' => [
             'workflow_table' => 'workflows',
@@ -47,16 +49,18 @@ it('can handle missing workflow step id generator class in config', function ():
         ],
     ]);
 
-    expect(app('venture.manager'))->toBeInstanceOf(WorkflowManager::class);
-});
-
-it('can handle missing job extractor class in config', function (): void {
-    config([
-        'venture' => [
-            'workflow_table' => 'workflows',
-            'jobs_table' => 'workflow_jobs',
-        ],
-    ]);
-
-    expect(app(JobExtractor::class))->toBeInstanceOf(UnserializeJobExtractor::class);
-});
+    expect(app($abstract))->toBeInstanceOf($defaultClass);
+})->with([
+    'workflow manager' => [
+        'venture.manager',
+        WorkflowManager::class,
+    ],
+    'job extractor' => [
+        JobExtractor::class,
+        UnserializeJobExtractor::class,
+    ],
+    'workflow step id generator' => [
+        StepIdGenerator::class,
+        ClassNameStepIdGenerator::class,
+    ],
+]);
