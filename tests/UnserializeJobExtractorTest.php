@@ -11,6 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
+use Sassnowski\Venture\Serializer\DefaultSerializer;
 use Sassnowski\Venture\UnserializeJobExtractor;
 use Stubs\NonWorkflowJob;
 use Stubs\TestJob1;
@@ -18,7 +19,7 @@ use Stubs\TestJob1;
 it('extracts a serialized workflow job from a Laravel queue job', function (): void {
     $workflowJob = new TestJob1();
     $queueJob = createQueueJob($workflowJob);
-    $extractor = new UnserializeJobExtractor();
+    $extractor = new UnserializeJobExtractor(new DefaultSerializer());
 
     $actual = $extractor->extractWorkflowJob($queueJob);
 
@@ -27,7 +28,7 @@ it('extracts a serialized workflow job from a Laravel queue job', function (): v
 
 it('returns null if the command is not a workflow job', function (): void {
     $queueJob = createQueueJob(new NonWorkflowJob());
-    $extractor = new UnserializeJobExtractor();
+    $extractor = new UnserializeJobExtractor(new DefaultSerializer());
 
     $actual = $extractor->extractWorkflowJob($queueJob);
 

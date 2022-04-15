@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
 use Sassnowski\Venture\ClassNameStepIdGenerator;
 use Sassnowski\Venture\UnserializeJobExtractor;
 
@@ -30,4 +31,12 @@ return [
      * Needs to implement `Sassnowski\Venture\JobExtractor`.
      */
     'workflow_job_extractor_class' => UnserializeJobExtractor::class,
+
+    /*
+     * The class that should be used to serialize and unserialize workflow jobs.
+     * In most cases, you won't have to change this.
+     *
+     * Needs to implement `Sassnowski\Venture\Serializer\WorkflowJobSerializer`.
+     */
+    'workflow_job_serializer_class' => Base64WorkflowSerializer::class,
 ];

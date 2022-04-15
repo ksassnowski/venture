@@ -16,6 +16,7 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Serializer\DefaultSerializer;
 use Sassnowski\Venture\UnserializeJobExtractor;
 use Sassnowski\Venture\WorkflowEventSubscriber;
 use Stubs\NonWorkflowJob;
@@ -29,7 +30,7 @@ uses(TestCase::class);
 beforeEach(function (): void {
     $_SERVER['__catch.called'] = false;
     $this->eventSubscriber = new WorkflowEventSubscriber(
-        new UnserializeJobExtractor(),
+        new UnserializeJobExtractor(new DefaultSerializer()),
     );
 });
 

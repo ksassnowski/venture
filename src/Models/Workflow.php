@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Opis\Closure\SerializableClosure;
+use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\Venture;
 use Throwable;
 
@@ -70,7 +71,7 @@ class Workflow extends Model
     public function addJobs(array $jobs): void
     {
         collect($jobs)->map(fn (array $job) => [
-            'job' => \serialize(clone $job['job']),
+            'job' => $this->serializer()->serialize(clone $job['job']),
             'name' => $job['name'],
             'uuid' => $job['job']->stepId,
             'edges' => $job['job']->dependantJobs,
@@ -257,7 +258,7 @@ class Workflow extends Model
                 ->whereIn('uuid', $job->dependantJobs)
                 ->get('job')
                 ->pluck('job')
-                ->map(fn (string $job) => \unserialize($job));
+                ->map(fn (string $job) => $this->serializer()->unserialize($job));
         }
 
         $dependantJobs
@@ -265,5 +266,10 @@ class Workflow extends Model
             ->each(function (object $job): void {
                 $this->dispatchJob($job);
             });
+    }
+
+    private function serializer(): WorkflowJobSerializer
+    {
+        return Container::getInstance()->make(WorkflowJobSerializer::class);
     }
 }
