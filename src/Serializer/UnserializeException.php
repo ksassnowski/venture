@@ -11,7 +11,7 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-namespace Laravel\SerializableClosure\Serializers;
+namespace Sassnowski\Venture\Serializer;
 
 use Exception;
 

@@ -11,8 +11,8 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-use Laravel\SerializableClosure\Serializers\UnserializeException;
 use Sassnowski\Venture\Serializer\DefaultSerializer;
+use Sassnowski\Venture\Serializer\UnserializeException;
 use Stubs\TestJob1;
 
 it('serializes the object', function (): void {

@@ -14,9 +14,9 @@ declare(strict_types=1);
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\MySqlConnection;
 use Illuminate\Database\PostgresConnection;
-use Laravel\SerializableClosure\Serializers\UnserializeException;
 use Mockery as m;
 use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
+use Sassnowski\Venture\Serializer\UnserializeException;
 use Stubs\TestJob1;
 
 it('simply serializes workflow jobs if a non-postgres connection is used', function (): void {

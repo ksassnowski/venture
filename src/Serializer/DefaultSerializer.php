@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Serializer;
 
-use Laravel\SerializableClosure\Serializers\UnserializeException;
-
 final class DefaultSerializer implements WorkflowJobSerializer
 {
     public function serialize(object $job): string

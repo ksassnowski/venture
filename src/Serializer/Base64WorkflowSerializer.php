@@ -16,7 +16,6 @@ namespace Sassnowski\Venture\Serializer;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\PostgresConnection;
 use Illuminate\Support\Str;
-use Laravel\SerializableClosure\Serializers\UnserializeException;
 
 final class Base64WorkflowSerializer implements WorkflowJobSerializer
 {
