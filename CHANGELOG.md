@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.6.3] — 2022-04-16
+
+### Fixed
+
+- Fixed serialization bug that could occur when using Postgres (#51)
+
 ## [3.6.2] — 2022-04-11
 
 ### Changed
@@ -234,6 +240,9 @@ Please see the documentation's [upgrade guide](https://laravel-venture.netlify.a
 - Make it possible to cancel a workflow. A cancelled workflow will not execute any further jobs, but will finish any job
   that was already running before the workflow got cancelled.
 
+[3.6.3]: https://github.com/ksassnowski/venture/compare/3.6.2...3.6.3
+[3.6.2]: https://github.com/ksassnowski/venture/compare/3.6.1...3.6.2
+[3.6.1]: https://github.com/ksassnowski/venture/compare/3.6.0...3.6.1
 [3.6.0]: https://github.com/ksassnowski/venture/compare/3.5.0...3.6.0
 [3.5.0]: https://github.com/ksassnowski/venture/compare/3.4.0...3.5.0
 [3.4.0]: https://github.com/ksassnowski/venture/compare/3.3.2...3.4.0
