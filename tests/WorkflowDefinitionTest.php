@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Bus;
-use Opis\Closure\SerializableClosure;
+use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
 use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
@@ -240,7 +240,7 @@ it('allows configuration of a then callback', function (): void {
         ->then($callback)
         ->build();
 
-    assertEquals($workflow->then_callback, \serialize(SerializableClosure::from($callback)));
+    assertEquals($workflow->then_callback, \serialize(new SerializableClosure($callback)));
 });
 
 it('allows configuration of an invokable class as then callback', function (): void {
@@ -261,7 +261,7 @@ it('allows configuration of a catch callback', function (): void {
         ->catch($callback)
         ->build();
 
-    assertEquals($workflow->catch_callback, \serialize(SerializableClosure::from($callback)));
+    assertEquals($workflow->catch_callback, \serialize(new SerializableClosure($callback)));
 });
 
 it('allows configuration of an invokable class as catch callback', function (): void {

@@ -14,7 +14,7 @@ declare(strict_types=1);
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
-use Opis\Closure\SerializableClosure;
+use Laravel\SerializableClosure\SerializableClosure;
 use Stubs\NestedWorkflow;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
@@ -187,7 +187,7 @@ it('calculates its remaining jobs', function (): void {
 it('runs the "then" callback after every job has been processed', function (): void {
     $workflow = createWorkflow([
         'job_count' => 1,
-        'then_callback' => \serialize(SerializableClosure::from(function (): void {
+        'then_callback' => \serialize(new SerializableClosure(function (): void {
             ++$_SERVER['__then.count'];
         })),
     ]);
@@ -233,7 +233,7 @@ it('does not break a leg if no then callback is configured', function (): void {
 it('can run the "catch" callback if it is configured', function (): void {
     $workflow = createWorkflow([
         'job_count' => 1,
-        'catch_callback' => \serialize(SerializableClosure::from(function (): void {
+        'catch_callback' => \serialize(new SerializableClosure(function (): void {
             ++$_SERVER['__catch.count'];
         })),
     ]);

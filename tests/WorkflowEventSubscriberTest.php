@@ -14,7 +14,7 @@ declare(strict_types=1);
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
-use Opis\Closure\SerializableClosure;
+use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Serializer\DefaultSerializer;
 use Sassnowski\Venture\UnserializeJobExtractor;
@@ -87,7 +87,7 @@ it('notifies the workflow if a job fails', function (): void {
         'jobs_processed' => 0,
         'jobs_failed' => 0,
         'finished_jobs' => [],
-        'catch_callback' => \serialize(SerializableClosure::from(function (): void {
+        'catch_callback' => \serialize(new SerializableClosure(function (): void {
             $_SERVER['__catch.called'] = true;
         })),
     ]);
@@ -105,7 +105,7 @@ it('does not notify the workflow is the job is not marked as failed', function (
         'jobs_processed' => 0,
         'jobs_failed' => 0,
         'finished_jobs' => [],
-        'catch_callback' => \serialize(SerializableClosure::from(function (): void {
+        'catch_callback' => \serialize(new SerializableClosure(function (): void {
             $_SERVER['__catch.called'] = true;
         })),
     ]);
@@ -123,7 +123,7 @@ it('passes the exception along to the workflow', function (): void {
         'jobs_processed' => 0,
         'jobs_failed' => 0,
         'finished_jobs' => [],
-        'catch_callback' => \serialize(SerializableClosure::from(function (Workflow $w, Throwable $e): void {
+        'catch_callback' => \serialize(new SerializableClosure(function (Workflow $w, Throwable $e): void {
             assertEquals('::message::', $e->getMessage());
         })),
     ]);

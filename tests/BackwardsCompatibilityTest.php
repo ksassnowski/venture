@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Str;
+use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\ClassNameStepIdGenerator;
 use Sassnowski\Venture\JobExtractor;
 use Sassnowski\Venture\Manager\WorkflowManager;
@@ -24,6 +25,11 @@ use Stubs\TestJob1;
 use Stubs\TestJob2;
 
 uses(TestCase::class);
+
+beforeEach(function () {
+    $_SERVER['__then_called'] = 0;
+    $_SERVER['__catch_called'] = 0;
+});
 
 it('can handle old workflows that still saved serialized dependent jobs instead of step ids', function (): void {
     Bus::fake();
@@ -70,3 +76,33 @@ it('can handle missing class keys in config', function (string $abstract, string
         Base64WorkflowSerializer::class,
     ],
 ]);
+
+it('can handle old workflows that still use opis/closure for their then_callback', function () {
+    $workflow = createWorkflow([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+        'then_callback' => \serialize(SerializableClosure::from(function () {
+            ++$_SERVER['__then_called'];
+        })),
+    ]);
+    $job = (new TestJob1())->withStepId(Str::orderedUuid());
+    $workflow->addJobs(wrapJobsForWorkflow([$job]));
+
+    $workflow->onStepFinished($job);
+
+    expect($_SERVER['__then_called'])->toBe(1);
+});
+
+it('can handle old workflows that still use opis/closure for their catch_callback', function () {
+    $workflow = createWorkflow([
+        'job_count' => 1,
+        'jobs_processed' => 0,
+        'catch_callback' => \serialize(SerializableClosure::from(function () {
+            ++$_SERVER['__catch_called'];
+        })),
+    ]);
+
+    $workflow->onStepFailed(new TestJob1(), new Exception());
+
+    expect($_SERVER['__catch_called'])->toBe(1);
+});

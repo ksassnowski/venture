@@ -17,7 +17,8 @@
         "illuminate/events": "^8.0 || ^9.0",
         "illuminate/queue": "^8.0 || ^9.0",
         "illuminate/support": "^8.0 || ^9.0",
-        "opis/closure": "^3.5",
+        "laravel/serializable-closure": "^1.1",
+        "opis/closure": "^3.6",
         "ramsey/uuid": "^4.0"
     },
     "require-dev": {
