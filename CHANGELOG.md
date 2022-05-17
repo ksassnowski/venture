@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.6.5] — 2022-05-17
+
+### Changed
+
+- Replaced `opis/closure` with `laravel/serializable-closure` (#52). Keep `opis/closure` around
+  as a dependency to preserve backwards compatibility with existing jobs that still used 
+  `Opis\Closure\SerializableClosure` for their callbacks.
+
 ## [3.6.4] — 2022-04-16
 
 ### Fixed
@@ -246,6 +254,7 @@ Please see the documentation's [upgrade guide](https://laravel-venture.netlify.a
 - Make it possible to cancel a workflow. A cancelled workflow will not execute any further jobs, but will finish any job
   that was already running before the workflow got cancelled.
 
+[3.6.5]: https://github.com/ksassnowski/venture/compare/3.6.4...3.6.5
 [3.6.4]: https://github.com/ksassnowski/venture/compare/3.6.3...3.6.4
 [3.6.3]: https://github.com/ksassnowski/venture/compare/3.6.2...3.6.3
 [3.6.2]: https://github.com/ksassnowski/venture/compare/3.6.1...3.6.2
