@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Opis\Closure\SerializableClosure;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\Venture;
 use Throwable;
@@ -235,10 +234,6 @@ class Workflow extends Model
         }
 
         $callback = \unserialize($serializedCallback);
-
-        if ($callback instanceof SerializableClosure) {
-            $callback = $callback->getClosure();
-        }
 
         $callback(...$args);
     }

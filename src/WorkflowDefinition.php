@@ -18,7 +18,7 @@ use DateInterval;
 use DateTimeInterface;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Str;
-use Opis\Closure\SerializableClosure;
+use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
@@ -228,7 +228,7 @@ class WorkflowDefinition
     private function serializeCallback(mixed $callback): string
     {
         if ($callback instanceof Closure) {
-            $callback = SerializableClosure::from($callback);
+            $callback = new SerializableClosure($callback);
         }
 
         return \serialize($callback);
