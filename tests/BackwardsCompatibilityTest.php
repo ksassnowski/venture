@@ -26,7 +26,7 @@ use Stubs\TestJob2;
 
 uses(TestCase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $_SERVER['__then_called'] = 0;
     $_SERVER['__catch_called'] = 0;
 });
@@ -77,11 +77,11 @@ it('can handle missing class keys in config', function (string $abstract, string
     ],
 ]);
 
-it('can handle old workflows that still use opis/closure for their then_callback', function () {
+it('can handle old workflows that still use opis/closure for their then_callback', function (): void {
     $workflow = createWorkflow([
         'job_count' => 1,
         'jobs_processed' => 0,
-        'then_callback' => \serialize(SerializableClosure::from(function () {
+        'then_callback' => \serialize(SerializableClosure::from(function (): void {
             ++$_SERVER['__then_called'];
         })),
     ]);
@@ -93,11 +93,11 @@ it('can handle old workflows that still use opis/closure for their then_callback
     expect($_SERVER['__then_called'])->toBe(1);
 });
 
-it('can handle old workflows that still use opis/closure for their catch_callback', function () {
+it('can handle old workflows that still use opis/closure for their catch_callback', function (): void {
     $workflow = createWorkflow([
         'job_count' => 1,
         'jobs_processed' => 0,
-        'catch_callback' => \serialize(SerializableClosure::from(function () {
+        'catch_callback' => \serialize(SerializableClosure::from(function (): void {
             ++$_SERVER['__catch_called'];
         })),
     ]);
