@@ -18,6 +18,7 @@ use DateInterval;
 use DateTimeInterface;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Str;
+use Illuminate\Support\Traits\Conditionable;
 use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
@@ -27,6 +28,7 @@ use Sassnowski\Venture\Models\Workflow;
 
 class WorkflowDefinition
 {
+    use Conditionable;
     protected array $jobs = [];
     protected DependencyGraph $graph;
     protected ?string $thenCallback = null;
