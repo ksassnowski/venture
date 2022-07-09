@@ -19,6 +19,6 @@ jobs:
       - name: "Create release"
         uses: softprops/action-gh-release@v1
         with:
-          token: ${{ secrets.PHPSTAN_BOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           discussion_category_name: "General"
