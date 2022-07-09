@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.7.0] — 2022-07-09
+
+### Added
+
+- Added `when` and `unless` methods to `WorkflowDefinition` to conditionally add jobs to a workflow (#53)
+
 ## [3.6.5] — 2022-05-17
 
 ### Changed
@@ -254,6 +260,7 @@ Please see the documentation's [upgrade guide](https://laravel-venture.netlify.a
 - Make it possible to cancel a workflow. A cancelled workflow will not execute any further jobs, but will finish any job
   that was already running before the workflow got cancelled.
 
+[3.7.0]: https://github.com/ksassnowski/venture/compare/3.6.5...3.7.0
 [3.6.5]: https://github.com/ksassnowski/venture/compare/3.6.4...3.6.5
 [3.6.4]: https://github.com/ksassnowski/venture/compare/3.6.3...3.6.4
 [3.6.3]: https://github.com/ksassnowski/venture/compare/3.6.2...3.6.3
