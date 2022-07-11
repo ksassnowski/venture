@@ -35,7 +35,10 @@ final class Core implements Plugin
     public function onJobAdding(JobAdding $event): void
     {
         $job = $event->job;
-        $event->name ??= $job::class;
+
+        if (!$event->name) {
+            $event->name = $job::class;
+        }
 
         if (null === $job->jobId) {
             $jobID = $event->jobID ?: $this->stepIdGenerator->generateId($event->job);
@@ -53,9 +56,11 @@ final class Core implements Plugin
 
     public function onWorkflowAdding(WorkflowAdding $event): void
     {
-        $event->workflowID ??= $this->stepIdGenerator->generateId(
-            $event->nestedDefinition->workflow(),
-        );
+        if (!$event->workflowID) {
+            $event->workflowID = $this->stepIdGenerator->generateId(
+                $event->nestedDefinition->workflow(),
+            );
+        }
 
         foreach ($event->nestedDefinition->jobs() as $jobID => $job) {
             $job['job']->withJobId($event->workflowID . '.' . $jobID);

@@ -21,9 +21,13 @@ use Sassnowski\Venture\Models\WorkflowJob;
 trait WorkflowStep
 {
     public array $dependantJobs = [];
+
     public array $dependencies = [];
+
     public ?int $workflowId = null;
+
     public ?string $stepId = null;
+
     public ?string $jobId = null;
 
     public function withWorkflowId(int $workflowId): self

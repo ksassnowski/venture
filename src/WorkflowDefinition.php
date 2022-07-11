@@ -39,8 +39,11 @@ class WorkflowDefinition
      * @var array<string, array{job: object, name: string}>
      */
     protected array $jobs = [];
+
     protected DependencyGraph $graph;
+
     protected ?string $thenCallback = null;
+
     protected ?string $catchCallback = null;
 
     /**
@@ -77,17 +80,20 @@ class WorkflowDefinition
             throw NonQueueableWorkflowStepException::fromJob($job);
         }
 
-        [$job, $name, $dependencies] =
-            $this->onJobAdding($job, $dependencies, $name, $delay, $id);
+        $event = $this->onJobAdding($job, $dependencies, $name, $delay, $id);
 
-        $this->graph->addDependantJob($job, $dependencies, $job->jobId);
+        $this->graph->addDependantJob(
+            $event->job,
+            $event->dependencies,
+            $event->job->jobId,
+        );
 
-        $this->jobs[$job->jobId] = [
-            'job' => $job,
-            'name' => $name,
+        $this->jobs[$event->job->jobId] = [
+            'job' => $event->job,
+            'name' => $event->name,
         ];
 
-        event(new JobAdded($this, $job, $dependencies, $name));
+        event(new JobAdded($this, $event->job, $event->dependencies, $event->name));
 
         return $this;
     }
@@ -263,8 +269,6 @@ class WorkflowDefinition
     /**
      * @param array<int, string>                      $dependencies
      * @param null|DateInterval|DateTimeInterface|int $delay
-     *
-     * @return array{0: object, 1: string, 2: array<int, string>}
      */
     private function onJobAdding(
         object $job,
@@ -272,12 +276,12 @@ class WorkflowDefinition
         ?string $name,
         mixed $delay,
         ?string $id,
-    ): array {
-        $event = new JobAdding($this, $job, $dependencies, $name, $delay, $id);
+    ): JobAdding {
+        $event = new JobAdding($this, $job, $dependencies, $name ?: '', $delay, $id ?: '');
 
         \event($event);
 
-        return [$event->job, $event->name ?: '', $event->dependencies];
+        return $event;
     }
 
     /**
@@ -288,7 +292,7 @@ class WorkflowDefinition
         array $dependencies,
         ?string $id,
     ): WorkflowAdding {
-        $event = new WorkflowAdding($this, $definition, $dependencies, $id);
+        $event = new WorkflowAdding($this, $definition, $dependencies, $id ?: '');
 
         \event($event);
 

@@ -24,7 +24,7 @@ final class WorkflowAdding
         public WorkflowDefinition $parentDefinition,
         public WorkflowDefinition $nestedDefinition,
         public array $dependencies,
-        public ?string $workflowID,
+        public string $workflowID,
     ) {
     }
 }

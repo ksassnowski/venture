@@ -30,9 +30,9 @@ final class JobAdding
         public WorkflowDefinition $definition,
         public object $job,
         public array $dependencies,
-        public ?string $name,
+        public string $name,
         public mixed $delay,
-        public ?string $jobID,
+        public string $jobID,
     ) {
     }
 }

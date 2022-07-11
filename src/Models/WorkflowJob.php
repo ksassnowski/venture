@@ -31,11 +31,14 @@ use Sassnowski\Venture\Venture;
 class WorkflowJob extends Model
 {
     public $timestamps = false;
+
     protected $guarded = [];
+
     protected $dates = [
         'failed_at',
         'finished_at',
     ];
+
     protected $casts = [
         'edges' => 'array',
     ];

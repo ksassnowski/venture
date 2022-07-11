@@ -47,12 +47,14 @@ use Throwable;
 class Workflow extends Model
 {
     protected $guarded = [];
+
     protected $casts = [
         'finished_jobs' => 'json',
         'job_count' => 'int',
         'jobs_failed' => 'int',
         'jobs_processed' => 'int',
     ];
+
     protected $dates = [
         'finished_at',
         'cancelled_at',

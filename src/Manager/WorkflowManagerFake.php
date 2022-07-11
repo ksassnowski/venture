@@ -22,6 +22,7 @@ use Sassnowski\Venture\WorkflowDefinition;
 class WorkflowManagerFake implements WorkflowManagerInterface
 {
     private array $started = [];
+
     private WorkflowManager $manager;
 
     public function __construct(WorkflowManager $manager)

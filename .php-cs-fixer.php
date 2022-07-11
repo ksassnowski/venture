@@ -22,6 +22,14 @@ $config = Config\Factory::fromRuleSet(new Config\RuleSet\Php80($header), [
     'protected_to_private' => false,
     'strict_comparison' => false,
     'static_lambda' => false,
+    'class_attributes_separation' => [
+        'elements' => [
+            'const' => 'only_if_meta',
+            'method' => 'one',
+            'property' => 'one',
+            'trait_import' => 'none',
+        ],
+    ],
 ]);
 
 $config->getFinder()
