@@ -14,6 +14,7 @@ EOF;
 $config = Config\Factory::fromRuleSet(new Config\RuleSet\Php80($header), [
     'php_unit_test_class_requires_covers' => false,
     'php_unit_internal_class' => false,
+    'phpdoc_to_property_type' => false,
     'error_suppression' => [
         'noise_remaining_usages' => false,
     ],

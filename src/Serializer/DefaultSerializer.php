@@ -28,7 +28,7 @@ final class DefaultSerializer implements WorkflowJobSerializer
     {
         $result = @\unserialize($serializedJob);
 
-        if (false === $result) {
+        if (!\is_object($result)) {
             throw new UnserializeException('Unable to unserialize job');
         }
 

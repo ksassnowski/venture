@@ -1,44 +1,13 @@
 includes:
     - ./vendor/nunomaduro/larastan/extension.neon
+    - ./phpstan-baseline.neon
 
 parameters:
-
     paths:
         - src
 
-    # The level 9 is the highest level
-    level: 8
+    level: 9
 
-    ignoreErrors:
-        - message: '#Call to an undefined method object::withWorkflowId\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::workflow\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::withDependantJobs\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::getDependantJobs\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::withDependencies\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::getDependencies\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::withJobId\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::getJobId\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::withStepId\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::getStepId\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::step\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::withName\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::getName\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::withDelay\(\)#'
-          path: src/WorkflowStepAdapter.php
-        - message: '#Call to an undefined method object::getDelay\(\)#'
-          path: src/WorkflowStepAdapter.php
+    ignoreErrors: []
 
     excludePaths: []

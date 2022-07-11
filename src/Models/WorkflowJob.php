@@ -20,11 +20,11 @@ use Sassnowski\Venture\Venture;
 
 /**
  * @property array<int, string> $edges
- * @property string   $exception
- * @property ?Carbon  $failed_at
- * @property ?Carbon  $finished_at
- * @property string   $name
- * @property string   $uuid
+ * @property string             $exception
+ * @property ?Carbon            $failed_at
+ * @property ?Carbon            $finished_at
+ * @property string             $name
+ * @property string             $uuid
  */
 class WorkflowJob extends Model
 {

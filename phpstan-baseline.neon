@@ -1,0 +1,111 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method Sassnowski\\\\Venture\\\\Graph\\\\DependencyGraph\\:\\:resolveDependencies\\(\\) should return array\\<int, string\\> but returns array\\<int, mixed\\>\\.$#"
+			count: 1
+			path: src/Graph/DependencyGraph.php
+
+		-
+			message: "#^Cannot call method dispatch\\(\\) on mixed\\.$#"
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: "#^Method Sassnowski\\\\Venture\\\\Models\\\\Workflow\\:\\:serializer\\(\\) should return Sassnowski\\\\Venture\\\\Serializer\\\\WorkflowJobSerializer but returns mixed\\.$#"
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: "#^Parameter \\#1 \\$callback of method Illuminate\\\\Support\\\\Collection\\<int,mixed\\>\\:\\:map\\(\\) expects callable\\(mixed, int\\)\\: Sassnowski\\\\Venture\\\\WorkflowStepInterface\\|null, Closure\\(string\\)\\: Sassnowski\\\\Venture\\\\WorkflowStepInterface\\|null given\\.$#"
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: "#^Property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$table \\(string\\) does not accept mixed\\.$#"
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: "#^Property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$table \\(string\\) does not accept mixed\\.$#"
+			count: 1
+			path: src/Models/WorkflowJob.php
+
+		-
+			message: "#^Parameter \\#2 \\$concrete of method Illuminate\\\\Contracts\\\\Container\\\\Container\\:\\:bind\\(\\) expects Closure\\|string\\|null, mixed given\\.$#"
+			count: 3
+			path: src/VentureServiceProvider.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:getDelay\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:getDependantJobs\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:getDependencies\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:getJobId\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:getName\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:getStepId\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:step\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:withDelay\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:withDependantJobs\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:withDependencies\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:withJobId\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:withName\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:withStepId\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:withWorkflowId\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:workflow\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php

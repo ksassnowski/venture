@@ -40,14 +40,14 @@ final class Base64WorkflowSerializer implements WorkflowJobSerializer
         if ($this->isPostgresConnection() && !Str::contains($serializedJob, [':', ';'])) {
             $serializedJob = \base64_decode($serializedJob, true);
 
-            if ($serializedJob === false) {
+            if (false === $serializedJob) {
                 throw new UnserializeException('Unable to base64 decode job');
             }
         }
 
         $result = @\unserialize($serializedJob);
 
-        if (false === $result) {
+        if (!\is_object($result)) {
             throw new UnserializeException('Unable to unserialize job');
         }
 

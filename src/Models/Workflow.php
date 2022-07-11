@@ -31,17 +31,17 @@ use Throwable;
 /**
  * @method Workflow create(array $attributes)
  *
- * @property ?Carbon            $cancelled_at
- * @property ?string            $catch_callback
- * @property ?Carbon            $finished_at
- * @property array<int, string>              $finished_jobs
- * @property int                $id
- * @property int                $job_count
+ * @property ?Carbon                              $cancelled_at
+ * @property ?string                              $catch_callback
+ * @property ?Carbon                              $finished_at
+ * @property array<int, string>                   $finished_jobs
+ * @property int                                  $id
+ * @property int                                  $job_count
  * @property EloquentCollection<int, WorkflowJob> $jobs
- * @property int                $jobs_failed
- * @property int                $jobs_processed
- * @property string             $name
- * @property ?string            $then_callback
+ * @property int                                  $jobs_failed
+ * @property int                                  $jobs_processed
+ * @property string                               $name
+ * @property ?string                              $then_callback
  *
  * @psalm-suppress PropertyNotSetInConstructor
  */
@@ -92,21 +92,22 @@ class Workflow extends Model
      */
     public function addJobs(array $jobs): void
     {
-        collect($jobs)
+        $c = (new Collection($jobs))
             ->map(function (WorkflowStepInterface $job): WorkflowJob {
-                return app(Venture::$workflowJobModel, [
-                    'attributes' => [
-                        'job' => $this->serializer()->serialize(clone $job),
-                        'name' => $job->getName(),
-                        'uuid' => $job->getStepId(),
-                        'edges' => $job->getDependantJobs(),
-                    ],
+                /** @var class-string<WorkflowJob> $modelClass */
+                $modelClass = Venture::$workflowJobModel;
+
+                return new $modelClass([
+                    'job' => $this->serializer()->serialize(clone $job),
+                    'name' => $job->getName(),
+                    'uuid' => $job->getStepId(),
+                    'edges' => $job->getDependantJobs(),
                 ]);
             })
             ->each(function (WorkflowJob $job): void {
                 event(new JobCreating($this, $job));
             })
-            ->pipe(function (Collection $jobs): Collection {
+            ->pipe(function ($jobs) {
                 $this->jobs()->saveMany($jobs);
 
                 return $jobs;
@@ -149,7 +150,7 @@ class Workflow extends Model
             $this->jobs_failed = $workflow->jobs_failed + 1;
             $this->save();
 
-            optional($job->step())->update([
+            $job->step()?->update([
                 'failed_at' => now(),
                 'exception' => (string) $e,
             ]);
@@ -280,6 +281,7 @@ class Workflow extends Model
             return;
         }
 
+        /** @var callable $callback */
         $callback = \unserialize($serializedCallback);
 
         $callback(...$args);

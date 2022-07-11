@@ -26,9 +26,9 @@ class WorkflowManagerFake implements WorkflowManagerInterface
      */
     private array $started = [];
 
-    private WorkflowManager $manager;
+    private WorkflowManagerInterface $manager;
 
-    public function __construct(WorkflowManager $manager)
+    public function __construct(WorkflowManagerInterface $manager)
     {
         $this->manager = $manager;
     }

@@ -64,9 +64,9 @@ class DependencyGraph
      */
     public function getDependantJobs(string $jobId): array
     {
-        return collect($this->graph[$jobId]['out_edges'])
+        return (new Collection($this->graph[$jobId]['out_edges']))
             ->map(fn (string $dependantJob): WorkflowStepInterface => $this->graph[$dependantJob]['instance'])
-            ->toArray();
+            ->all();
     }
 
     /**
@@ -86,7 +86,7 @@ class DependencyGraph
             ->filter(fn (array $node): bool => \count($node['in_edges']) === 0)
             ->map(fn (array $node): WorkflowStepInterface => $node['instance'])
             ->values()
-            ->toArray();
+            ->all();
     }
 
     /**
@@ -115,7 +115,9 @@ class DependencyGraph
                 if (!$isAlreadyPrefixed) {
                     // All dependencies inside the nested graph get namespaced
                     // to avoid any ambiguity with the jobs from the outer workflow.
-                    $node['in_edges'] = collect($node['in_edges'])->map(fn (string $edgeId) => $id . '.' . $edgeId)->toArray();
+                    $node['in_edges'] = collect($node['in_edges'])
+                        ->map(fn (string $edgeId): string => $id . '.' . $edgeId)
+                        ->all();
                 }
             }
 
@@ -134,9 +136,11 @@ class DependencyGraph
      */
     private function resolveDependencies(array $dependencies): array
     {
-        return collect($dependencies)->flatMap(function (string $dependency) {
-            return $this->resolveDependency($dependency);
-        })->all();
+        return (new Collection($dependencies))
+            ->flatMap(
+                fn (string $dependency) => $this->resolveDependency($dependency),
+            )
+            ->all();
     }
 
     /**
