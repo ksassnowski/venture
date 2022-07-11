@@ -269,7 +269,7 @@ class Workflow extends Model
             $dependantJobs = app(Venture::$workflowJobModel)
                 ->whereIn('uuid', $job->getDependantJobs())
                 ->get('job')
-        o       ->pluck('job')
+                ->pluck('job')
                 ->map(fn (string $job): WorkflowStepInterface => $this->serializer()->unserialize($job));
         }
 
