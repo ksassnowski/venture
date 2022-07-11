@@ -14,8 +14,6 @@ declare(strict_types=1);
 namespace Sassnowski\Venture;
 
 use Closure;
-use DateInterval;
-use DateTimeInterface;
 use Illuminate\Support\Traits\Conditionable;
 use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\Events\JobAdded;
@@ -58,8 +56,8 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string>                      $dependencies
-     * @param null|DateInterval|DateTimeInterface|int $delay
+     * @param array<int, string> $dependencies
+     * @param Delay              $delay
      *
      * @throws DuplicateJobException
      */
@@ -193,8 +191,8 @@ class WorkflowDefinition
     }
 
     /**
-     * @param null|DateInterval|DateTimeInterface|int $delay
-     * @param null|array<int, string>                 $dependencies
+     * @param Delay                   $delay
+     * @param null|array<int, string> $dependencies
      */
     public function hasJob(string $id, ?array $dependencies = null, mixed $delay = null): bool
     {
@@ -222,7 +220,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param null|DateInterval|DateTimeInterface|int $delay
+     * @param Delay $delay
      */
     public function hasJobWithDelay(string $jobClassName, mixed $delay): bool
     {
@@ -263,8 +261,8 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string>                      $dependencies
-     * @param null|DateInterval|DateTimeInterface|int $delay
+     * @param array<int, string> $dependencies
+     * @param Delay              $delay
      */
     private function onJobAdding(
         WorkflowStepInterface $job,

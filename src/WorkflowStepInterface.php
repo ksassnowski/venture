@@ -59,12 +59,12 @@ interface WorkflowStepInterface extends ShouldQueue
     public function getName(): string;
 
     /**
-     * @param null|\DateInterval|\DateTimeInterface|int $delay
+     * @param Delay $delay
      */
     public function withDelay(mixed $delay): self;
 
     /**
-     * @return null|\DateInterval|\DateTimeInterface|int
+     * @return Delay
      */
     public function getDelay(): mixed;
 }

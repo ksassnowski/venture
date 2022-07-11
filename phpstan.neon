@@ -6,6 +6,9 @@ parameters:
     paths:
         - src
 
+    typeAliases:
+        Delay: '\DateTimeInterface|\DateInterval|int|null'
+
     level: 9
 
     ignoreErrors: []
