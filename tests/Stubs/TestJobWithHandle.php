@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Stubs;
 
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Sassnowski\Venture\WorkflowStep;
+use Sassnowski\Venture\WorkflowStepInterface;
 
-class TestJobWithHandle implements ShouldQueue
+class TestJobWithHandle implements WorkflowStepInterface
 {
     use WorkflowStep;
 

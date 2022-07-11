@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
+use Illuminate\Bus\Queueable;
 use Illuminate\Support\Arr;
 use Ramsey\Uuid\UuidInterface;
 use Sassnowski\Venture\Models\Workflow;
@@ -20,6 +21,8 @@ use Sassnowski\Venture\Models\WorkflowJob;
 
 trait WorkflowStep
 {
+    use Queueable;
+
     public array $dependantJobs = [];
 
     public array $dependencies = [];
@@ -29,6 +32,8 @@ trait WorkflowStep
     public ?string $stepId = null;
 
     public ?string $jobId = null;
+
+    public ?string $name = null;
 
     public function withWorkflowId(int $workflowId): self
     {
@@ -53,11 +58,21 @@ trait WorkflowStep
         return $this;
     }
 
+    public function getDependantJobs(): array
+    {
+        return $this->dependantJobs;
+    }
+
     public function withDependencies(array $jobNames): self
     {
         $this->dependencies = $jobNames;
 
         return $this;
+    }
+
+    public function getDependencies(): array
+    {
+        return $this->dependencies;
     }
 
     public function withStepId(UuidInterface $uuid): self
@@ -67,11 +82,9 @@ trait WorkflowStep
         return $this;
     }
 
-    public function withJobId(string $jobId): self
+    public function getStepId(): ?string
     {
-        $this->jobId = $jobId;
-
-        return $this;
+        return $this->stepId;
     }
 
     public function step(): ?WorkflowJob
@@ -81,5 +94,45 @@ trait WorkflowStep
         }
 
         return app(Venture::$workflowJobModel)->where('uuid', $this->stepId)->first();
+    }
+
+    public function withJobId(string $jobId): self
+    {
+        $this->jobId = $jobId;
+
+        return $this;
+    }
+
+    public function getJobId(): string
+    {
+        return $this->jobId ?: static::class;
+    }
+
+    public function withName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getName(): string
+    {
+        return $this->name ?: static::class;
+    }
+
+    /**
+     * @param null|\DateInterval|\DateTimeInterface|int $delay
+     */
+    public function withDelay(mixed $delay): self
+    {
+        return $this->delay($delay);
+    }
+
+    /**
+     * @return null|\DateInterval|\DateTimeInterface|int
+     */
+    public function getDelay(): mixed
+    {
+        return $this->delay;
     }
 }

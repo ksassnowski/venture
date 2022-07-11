@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Events;
 
 use Sassnowski\Venture\WorkflowDefinition;
+use Sassnowski\Venture\WorkflowStepInterface;
 
 final class JobAdded
 {
@@ -22,7 +23,7 @@ final class JobAdded
      */
     public function __construct(
         public WorkflowDefinition $definition,
-        public object $job,
+        public WorkflowStepInterface $job,
         public array $dependencies,
         public string $name,
     ) {

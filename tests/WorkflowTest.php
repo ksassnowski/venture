@@ -131,7 +131,7 @@ it('runs a finished job\'s dependency if no other dependencies exist', function 
         'job_count' => 2,
     ]);
 
-    $workflow->addJobs(wrapJobsForWorkflow([$job1, $job2]));
+    $workflow->addJobs([$job1, $job2]);
 
     $workflow->onStepFinished($job1);
 
@@ -170,7 +170,7 @@ it('runs a job if all of its dependencies have finished', function (): void {
     $job2->withDependencies([TestJob1::class, '::job-3-id::']);
     $job3->withDependantJobs([$job2]);
 
-    $workflow->addJobs(wrapJobsForWorkflow([$job1, $job2, $job3]));
+    $workflow->addJobs([$job1, $job2, $job3]);
 
     $workflow->onStepFinished($job1);
     $workflow->onStepFinished($job3);
@@ -469,14 +469,8 @@ it('returns the dependency graph as an adjacency list', function (): void {
 it('fires an event for each job that gets added', function (): void {
     Event::fake([JobCreating::class]);
     $workflow = createWorkflow();
-    $job1 = [
-        'job' => (new TestJob1())->withStepId(Str::orderedUuid()),
-        'name' => '::name-1::',
-    ];
-    $job2 = [
-        'job' => (new TestJob2())->withStepId(Str::orderedUuid()),
-        'name' => '::name-2::',
-    ];
+    $job1 = (new TestJob1())->withStepId(Str::orderedUuid());
+    $job2 = (new TestJob2())->withStepId(Str::orderedUuid());
 
     $workflow->addJobs([$job1, $job2]);
 
@@ -486,14 +480,8 @@ it('fires an event for each job that gets added', function (): void {
 it('fires an event for each job that was created', function (): void {
     Event::fake([JobCreated::class]);
     $workflow = createWorkflow();
-    $job1 = [
-        'job' => (new TestJob1())->withStepId(Str::orderedUuid()),
-        'name' => '::name-1::',
-    ];
-    $job2 = [
-        'job' => (new TestJob2())->withStepId(Str::orderedUuid()),
-        'name' => '::name-2::',
-    ];
+    $job1 = (new TestJob1())->withStepId(Str::orderedUuid());
+    $job2 = (new TestJob2())->withStepId(Str::orderedUuid());
 
     $workflow->addJobs([$job1, $job2]);
 

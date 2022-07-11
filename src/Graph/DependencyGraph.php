@@ -16,20 +16,32 @@ namespace Sassnowski\Venture\Graph;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
+use Sassnowski\Venture\WorkflowStepInterface;
 use function collect;
 
+/**
+ * @psalm-type Graph array<string, array{instance: WorkflowStepInterface, in_edges: array<int, string>, out_edges: array<int, string>}>
+ */
 class DependencyGraph
 {
+    /**
+     * @var array<string, Graph>
+     */
     private array $nestedGraphs = [];
 
+    /**
+     * @param Graph $graph
+     */
     public function __construct(protected array $graph = [])
     {
     }
 
     /**
+     * @param array<int, string> $dependencies
+     *
      * @throws DuplicateJobException
      */
-    public function addDependantJob(object $job, array $dependencies, string $id): void
+    public function addDependantJob(WorkflowStepInterface $job, array $dependencies, string $id): void
     {
         if (isset($this->graph[$id])) {
             throw new DuplicateJobException(\sprintf('A job with id "%s" already exists in this workflow.', $id));
@@ -47,12 +59,12 @@ class DependencyGraph
     }
 
     /**
-     * @return array<int, object>
+     * @return array<int, WorkflowStepInterface>
      */
     public function getDependantJobs(string $jobId): array
     {
         return collect($this->graph[$jobId]['out_edges'])
-            ->map(fn (string $dependantJob): object => $this->graph[$dependantJob]['instance'])
+            ->map(fn (string $dependantJob): WorkflowStepInterface => $this->graph[$dependantJob]['instance'])
             ->toArray();
     }
 
@@ -65,18 +77,20 @@ class DependencyGraph
     }
 
     /**
-     * @return array<int, object>
+     * @return array<int, WorkflowStepInterface>
      */
     public function getJobsWithoutDependencies(): array
     {
         return collect($this->graph)
             ->filter(fn (array $node): bool => \count($node['in_edges']) === 0)
-            ->map(fn (array $node): object => $node['instance'])
+            ->map(fn (array $node): WorkflowStepInterface => $node['instance'])
             ->values()
             ->toArray();
     }
 
     /**
+     * @param array<int, string> $dependencies
+     *
      * @throws DuplicateJobException
      * @throws DuplicateWorkflowException
      */

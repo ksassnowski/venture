@@ -16,6 +16,9 @@ namespace Sassnowski\Venture\Serializer;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\PostgresConnection;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
+use Sassnowski\Venture\WorkflowStepAdapter;
+use Sassnowski\Venture\WorkflowStepInterface;
 
 final class Base64WorkflowSerializer implements WorkflowJobSerializer
 {
@@ -23,7 +26,7 @@ final class Base64WorkflowSerializer implements WorkflowJobSerializer
     {
     }
 
-    public function serialize(object $job): string
+    public function serialize(WorkflowStepInterface $job): string
     {
         if ($this->isPostgresConnection()) {
             return \base64_encode(\serialize($job));
@@ -32,7 +35,7 @@ final class Base64WorkflowSerializer implements WorkflowJobSerializer
         return \serialize($job);
     }
 
-    public function unserialize(string $serializedJob): object
+    public function unserialize(string $serializedJob): ?WorkflowStepInterface
     {
         if ($this->isPostgresConnection() && !Str::contains($serializedJob, [':', ';'])) {
             $serializedJob = \base64_decode($serializedJob, true);
@@ -44,7 +47,11 @@ final class Base64WorkflowSerializer implements WorkflowJobSerializer
             throw new UnserializeException('Unable to unserialize job');
         }
 
-        return $result;
+        try {
+            return WorkflowStepAdapter::make($result);
+        } catch (InvalidArgumentException) {
+            return null;
+        }
     }
 
     private function isPostgresConnection(): bool

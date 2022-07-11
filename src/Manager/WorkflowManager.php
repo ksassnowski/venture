@@ -19,6 +19,7 @@ use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Events\WorkflowStarted;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
+use Sassnowski\Venture\WorkflowStepInterface;
 
 class WorkflowManager implements WorkflowManagerInterface
 {
@@ -40,7 +41,7 @@ class WorkflowManager implements WorkflowManagerInterface
             Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
         );
 
-        collect($initialJobs)->each(function (object $job): void {
+        collect($initialJobs)->each(function (WorkflowStepInterface $job): void {
             $this->dispatcher->dispatch($job);
         });
 

@@ -15,11 +15,12 @@ namespace Sassnowski\Venture\Events;
 
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\WorkflowStepInterface;
 
 final class WorkflowStarted
 {
     /**
-     * @param array<int, object> $initialJobs
+     * @param array<int, WorkflowStepInterface> $initialJobs
      */
     public function __construct(
         public AbstractWorkflow $workflow,

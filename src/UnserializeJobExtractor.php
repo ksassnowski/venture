@@ -15,7 +15,6 @@ namespace Sassnowski\Venture;
 
 use Illuminate\Contracts\Queue\Job;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
-use function class_uses_recursive;
 
 final class UnserializeJobExtractor implements JobExtractor
 {
@@ -23,18 +22,10 @@ final class UnserializeJobExtractor implements JobExtractor
     {
     }
 
-    public function extractWorkflowJob(Job $queueJob): ?object
+    public function extractWorkflowJob(Job $queueJob): ?WorkflowStepInterface
     {
-        $instance = $this->serializer->unserialize(
+        return $this->serializer->unserialize(
             $queueJob->payload()['data']['command'],
         );
-
-        $uses = class_uses_recursive($instance);
-
-        if (!\in_array(WorkflowStep::class, $uses, true)) {
-            return null;
-        }
-
-        return $instance;
     }
 }

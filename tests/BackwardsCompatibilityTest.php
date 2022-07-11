@@ -42,7 +42,7 @@ it('can handle old workflows that still saved serialized dependent jobs instead 
     $job2 = (new TestJob2())->withStepId(Str::orderedUuid());
     $job1->dependantJobs = [$job2];
     $job2->withDependencies([TestJob1::class]);
-    $workflow->addJobs(wrapJobsForWorkflow([$job1, $job2]));
+    $workflow->addJobs([$job1, $job2]);
 
     $workflow->onStepFinished($job1);
 
@@ -86,7 +86,7 @@ it('can handle old workflows that still use opis/closure for their then_callback
         })),
     ]);
     $job = (new TestJob1())->withStepId(Str::orderedUuid());
-    $workflow->addJobs(wrapJobsForWorkflow([$job]));
+    $workflow->addJobs([$job]);
 
     $workflow->onStepFinished($job);
 

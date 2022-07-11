@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 use Sassnowski\Venture\Serializer\DefaultSerializer;
 use Sassnowski\Venture\Serializer\UnserializeException;
+use Sassnowski\Venture\WorkflowStepAdapter;
+use Stubs\LegacyWorkflowJob;
 use Stubs\TestJob1;
 
 it('serializes the object', function (): void {
@@ -36,3 +38,12 @@ it('unserializes the object', function (): void {
 it('throws an exception if the provided string could not be unserialized', function (): void {
     (new DefaultSerializer())->unserialize('::not-a-valid-serialized-string::');
 })->throws(UnserializeException::class);
+
+it('wraps jobs that don\'t yet implement the WorkflowStepInterface with WorkflowStepAdapter', function (): void {
+    $serializer = new DefaultSerializer();
+    $job = new LegacyWorkflowJob();
+
+    $result = $serializer->unserialize(\serialize($job));
+
+    expect($result)->toBeInstanceOf(WorkflowStepAdapter::class);
+});

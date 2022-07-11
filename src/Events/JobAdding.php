@@ -17,6 +17,7 @@ use DateInterval;
 use DateTimeInterface;
 use Illuminate\Foundation\Events\Dispatchable;
 use Sassnowski\Venture\WorkflowDefinition;
+use Sassnowski\Venture\WorkflowStepInterface;
 
 final class JobAdding
 {
@@ -28,11 +29,11 @@ final class JobAdding
      */
     public function __construct(
         public WorkflowDefinition $definition,
-        public object $job,
+        public WorkflowStepInterface $job,
         public array $dependencies,
-        public string $name,
+        public ?string $name,
         public mixed $delay,
-        public string $jobID,
+        public ?string $jobID,
     ) {
     }
 }

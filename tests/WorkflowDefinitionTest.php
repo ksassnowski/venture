@@ -19,12 +19,10 @@ use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Events\JobAdded;
 use Sassnowski\Venture\Events\WorkflowAdded;
 use Sassnowski\Venture\Events\WorkflowCreating;
-use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
 use Stubs\DummyCallback;
 use Stubs\NestedWorkflow;
-use Stubs\NonQueueableJob;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
@@ -392,10 +390,6 @@ it('adding another workflow updates the job id on nested job instances', functio
 
     assertEquals(NestedWorkflow::class . '.' . TestJob1::class, $job->jobId);
 });
-
-it('throws an exception when trying to add a job without the ShouldQueue interface', function (): void {
-    createDefinition()->addJob(new NonQueueableJob());
-})->expectException(NonQueueableWorkflowStepException::class);
 
 it('allows multiple instances of the same job with explicit ids', function (): void {
     $definition = createDefinition()

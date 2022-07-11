@@ -21,5 +21,5 @@ interface JobExtractor
      * Extracts a workflow job instance from a queue job. Should return
      * null if the job instance is not a workflow job.
      */
-    public function extractWorkflowJob(Job $queueJob): ?object;
+    public function extractWorkflowJob(Job $queueJob): ?WorkflowStepInterface;
 }

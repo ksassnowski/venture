@@ -17,6 +17,8 @@ use Illuminate\Database\PostgresConnection;
 use Mockery as m;
 use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
 use Sassnowski\Venture\Serializer\UnserializeException;
+use Sassnowski\Venture\WorkflowStepAdapter;
+use Stubs\LegacyWorkflowJob;
 use Stubs\TestJob1;
 
 it('simply serializes workflow jobs if a non-postgres connection is used', function (): void {
@@ -76,3 +78,12 @@ it('throws an exception if the job could not be unserialized', function (): void
     $serializer = new Base64WorkflowSerializer(m::mock(ConnectionInterface::class));
     $serializer->unserialize('::not-a-valid-serialized-string::');
 })->throws(UnserializeException::class);
+
+it('wraps jobs that don\'t yet implement the WorkflowStepInterface with WorkflowStepAdapter', function (): void {
+    $serializer = new Base64WorkflowSerializer(m::mock(ConnectionInterface::class));
+    $job = new LegacyWorkflowJob();
+
+    $result = $serializer->unserialize(\serialize($job));
+
+    expect($result)->toBeInstanceOf(WorkflowStepAdapter::class);
+});

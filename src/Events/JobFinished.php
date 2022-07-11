@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Events;
 
+use Sassnowski\Venture\WorkflowStepInterface;
+
 final class JobFinished
 {
-    public function __construct(public object $job)
+    public function __construct(public WorkflowStepInterface $job)
     {
     }
 }

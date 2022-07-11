@@ -36,22 +36,16 @@ final class Core implements Plugin
     {
         $job = $event->job;
 
-        if (!$event->name) {
-            $event->name = $job::class;
-        }
+        $job->withName($event->name ?: $job::class);
 
-        if (null === $job->jobId) {
-            $jobID = $event->jobID ?: $this->stepIdGenerator->generateId($event->job);
-            $job->withJobId($jobID);
-        }
+        $jobID = $event->jobID ?: $this->stepIdGenerator->generateId($event->job);
+        $job->withJobId($jobID);
 
-        if (null === $job->stepId) {
+        if (null === $job->getStepId()) {
             $job->withStepId(Str::orderedUuid());
         }
 
-        if (\method_exists($job, 'delay')) {
-            $job->delay($event->delay);
-        }
+        $job->withDelay($event->delay);
     }
 
     public function onWorkflowAdding(WorkflowAdding $event): void
@@ -63,7 +57,7 @@ final class Core implements Plugin
         }
 
         foreach ($event->nestedDefinition->jobs() as $jobID => $job) {
-            $job['job']->withJobId($event->workflowID . '.' . $jobID);
+            $job->withJobId($event->workflowID . '.' . $jobID);
         }
     }
 
@@ -72,7 +66,7 @@ final class Core implements Plugin
         $graph = $event->definition->graph();
 
         foreach ($event->definition->jobs() as $jobID => $job) {
-            $job['job']
+            $job
                 ->withWorkflowId($event->model->id)
                 ->withDependantJobs($graph->getDependantJobs($jobID))
                 ->withDependencies($graph->getDependencies($jobID));

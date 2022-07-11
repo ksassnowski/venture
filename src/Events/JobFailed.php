@@ -13,12 +13,13 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Events;
 
+use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
 
 final class JobFailed
 {
     public function __construct(
-        public object $job,
+        public WorkflowStepInterface $job,
         public Throwable $exception,
     ) {
     }

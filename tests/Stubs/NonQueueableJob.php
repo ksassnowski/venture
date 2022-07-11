@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace Stubs;
 
 use Sassnowski\Venture\WorkflowStep;
+use Sassnowski\Venture\WorkflowStepInterface;
 
-class NonQueueableJob
+class NonQueueableJob implements WorkflowStepInterface
 {
     use WorkflowStep;
 }
