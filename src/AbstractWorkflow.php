@@ -20,7 +20,7 @@ abstract class AbstractWorkflow
 {
     public static function start(): Workflow
     {
-        /** @psalm-suppress TooManyArguments, UnsafeInstantiation */
+        /** @phpstan-ignore-next-line */
         return (new static(...\func_get_args()))->run();
     }
 
@@ -30,6 +30,9 @@ abstract class AbstractWorkflow
     {
     }
 
+    /**
+     * @param array<string, WorkflowStepInterface> $jobs
+     */
     public function beforeNesting(array $jobs): void
     {
     }

@@ -34,10 +34,10 @@ use Throwable;
  * @property ?Carbon            $cancelled_at
  * @property ?string            $catch_callback
  * @property ?Carbon            $finished_at
- * @property array              $finished_jobs
+ * @property array<int, string>              $finished_jobs
  * @property int                $id
  * @property int                $job_count
- * @property EloquentCollection $jobs
+ * @property EloquentCollection<int, WorkflowJob> $jobs
  * @property int                $jobs_failed
  * @property int                $jobs_processed
  * @property string             $name
@@ -47,8 +47,14 @@ use Throwable;
  */
 class Workflow extends Model
 {
+    /**
+     * @var array<int, string>
+     */
     protected $guarded = [];
 
+    /**
+     * @var array<string, string>
+     */
     protected $casts = [
         'finished_jobs' => 'json',
         'job_count' => 'int',
@@ -56,17 +62,26 @@ class Workflow extends Model
         'jobs_processed' => 'int',
     ];
 
+    /**
+     * @var array<int, string>
+     */
     protected $dates = [
         'finished_at',
         'cancelled_at',
     ];
 
+    /**
+     * @param array<string, mixed> $attributes
+     */
     public function __construct(array $attributes = [])
     {
         $this->table = config('venture.workflow_table');
         parent::__construct($attributes);
     }
 
+    /**
+     * @return HasMany<WorkflowJob>
+     */
     public function jobs(): HasMany
     {
         return $this->hasMany(Venture::$workflowJobModel, 'workflow_id');
@@ -172,6 +187,9 @@ class Workflow extends Model
         return $this->job_count - $this->jobs_processed;
     }
 
+    /**
+     * @return EloquentCollection<int, WorkflowJob>
+     */
     public function failedJobs(): EloquentCollection
     {
         return $this->jobs()
@@ -179,6 +197,9 @@ class Workflow extends Model
             ->get();
     }
 
+    /**
+     * @return EloquentCollection<int, WorkflowJob>
+     */
     public function pendingJobs(): EloquentCollection
     {
         return $this->jobs()
@@ -187,6 +208,9 @@ class Workflow extends Model
             ->get();
     }
 
+    /**
+     * @return EloquentCollection<int, WorkflowJob>
+     */
     public function finishedJobs(): EloquentCollection
     {
         return $this->jobs()
@@ -195,7 +219,13 @@ class Workflow extends Model
     }
 
     /**
-     * @psalm-suppress ArgumentTypeCoercion
+     * @return array<string, array{
+     *     name: string,
+     *     failed_at: Carbon|null,
+     *     finished_at: Carbon|null,
+     *     exception: string|null,
+     *     edges: array<int, string>,
+     * }>
      */
     public function asAdjacencyList(): array
     {
@@ -257,20 +287,19 @@ class Workflow extends Model
 
     private function runDependantJobs(WorkflowStepInterface $job): void
     {
-        // @TODO: Should be removed in the next major version.
-        //
-        // This is to keep backwards compatibility for workflows
-        // that were created when Venture still stored serialized
-        // instances of a job's dependencies instead of the step id.
+        /** @phpstan-ignore-next-line */
         if (\is_object($job->getDependantJobs()[0])) {
             $dependantJobs = collect($job->getDependantJobs());
         } else {
-            /** @psalm-suppress PossiblyUndefinedMethod */
-            $dependantJobs = app(Venture::$workflowJobModel)
+            /** @var WorkflowJob $jobModel */
+            $jobModel = app(Venture::$workflowJobModel);
+
+            $dependantJobs = $jobModel::query()
                 ->whereIn('uuid', $job->getDependantJobs())
                 ->get('job')
                 ->pluck('job')
-                ->map(fn (string $job): WorkflowStepInterface => $this->serializer()->unserialize($job));
+                ->map(fn (string $job): ?WorkflowStepInterface => $this->serializer()->unserialize($job))
+                ->filter();
         }
 
         $dependantJobs

@@ -19,7 +19,7 @@ use Sassnowski\Venture\Plugin\Core;
 use Sassnowski\Venture\Plugin\Plugin;
 use Sassnowski\Venture\Plugin\PluginContext;
 
-class Venture
+final class Venture
 {
     /**
      * @var class-string<Workflow>
@@ -41,7 +41,7 @@ class Venture
      */
     public static function useWorkflowModel(string $workflowModel): void
     {
-        static::$workflowModel = $workflowModel;
+        self::$workflowModel = $workflowModel;
     }
 
     /**
@@ -49,7 +49,7 @@ class Venture
      */
     public static function useWorkflowJobModel(string $workflowJobModel): void
     {
-        static::$workflowJobModel = $workflowJobModel;
+        self::$workflowJobModel = $workflowJobModel;
     }
 
     /**
@@ -58,11 +58,11 @@ class Venture
     public static function registerPlugin(string ...$plugin): void
     {
         foreach ($plugin as $plug) {
-            if (\in_array($plug, static::$plugins, true)) {
+            if (\in_array($plug, self::$plugins, true)) {
                 continue;
             }
 
-            static::$plugins[] = $plug;
+            self::$plugins[] = $plug;
         }
     }
 
@@ -70,7 +70,7 @@ class Venture
     {
         // We want to ensure that the Core plugin always runs last, so we're
         // adding it to the front of the list here.
-        $plugins = [...static::$plugins, Core::class];
+        $plugins = [...self::$plugins, Core::class];
 
         $context = new PluginContext(app('events'));
 

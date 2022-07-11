@@ -33,7 +33,7 @@ class VentureServiceProvider extends ServiceProvider
 
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
-        /** @psalm-suppress UndefinedInterfaceMethod */
+        /** @phpstan-ignore-next-line */
         $this->app['events']->subscribe(WorkflowEventSubscriber::class);
 
         Venture::bootPlugins();

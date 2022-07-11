@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Graph;
 
+use Illuminate\Support\Collection;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
@@ -81,7 +82,7 @@ class DependencyGraph
      */
     public function getJobsWithoutDependencies(): array
     {
-        return collect($this->graph)
+        return (new Collection($this->graph))
             ->filter(fn (array $node): bool => \count($node['in_edges']) === 0)
             ->map(fn (array $node): WorkflowStepInterface => $node['instance'])
             ->values()
@@ -150,7 +151,7 @@ class DependencyGraph
         // Depending on a nested graph means depending on each of the graph's
         // leaf nodes, i.e. nodes with an out-degree of 0.
         if (\array_key_exists($dependency, $this->nestedGraphs)) {
-            return collect($this->nestedGraphs[$dependency])
+            return (new Collection($this->nestedGraphs[$dependency]))
                 ->filter(fn (array $node) => \count($node['out_edges']) === 0)
                 ->keys()
                 ->map(fn (string $key) => $dependency . '.' . $key)

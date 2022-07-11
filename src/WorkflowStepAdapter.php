@@ -29,6 +29,9 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->{$name};
     }
 
+    /**
+     * @param array<int, mixed> $arguments
+     */
     public function __call(string $name, array $arguments): mixed
     {
         return $this->job->{$name}(...$arguments);
@@ -61,7 +64,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
 
     public function withDependantJobs(array $jobs): WorkflowStepInterface
     {
-        return $this->job->withDependantJob($jobs);
+        return $this->job->withDependantJobs($jobs);
     }
 
     public function getDependantJobs(): array
@@ -86,7 +89,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
 
     public function getJobId(): string
     {
-        return $this->job->withJobId();
+        return $this->job->getJobId();
     }
 
     public function withStepId(UuidInterface $stepID): WorkflowStepInterface

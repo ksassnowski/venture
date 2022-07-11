@@ -21,6 +21,9 @@ use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowManagerFake implements WorkflowManagerInterface
 {
+    /**
+     * @var array<class-string<AbstractWorkflow>, AbstractWorkflow>
+     */
     private array $started = [];
 
     private WorkflowManager $manager;
@@ -48,6 +51,9 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         return $workflow;
     }
 
+    /**
+     * @param null|callable(AbstractWorkflow): bool $callback
+     */
     public function hasStarted(string $workflowClass, ?callable $callback = null): bool
     {
         if (!\array_key_exists($workflowClass, $this->started)) {
@@ -61,6 +67,9 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         return $callback($this->started[$workflowClass]);
     }
 
+    /**
+     * @param null|callable(AbstractWorkflow): bool $callback
+     */
     public function assertStarted(string $workflowDefinition, ?callable $callback = null): void
     {
         PHPUnit::assertTrue(
@@ -69,6 +78,9 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         );
     }
 
+    /**
+     * @param null|callable(AbstractWorkflow): bool $callback
+     */
     public function assertNotStarted(string $workflowDefinition, ?callable $callback = null): void
     {
         PHPUnit::assertFalse(

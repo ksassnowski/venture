@@ -19,30 +19,40 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Sassnowski\Venture\Venture;
 
 /**
- * @property string[] $edges
+ * @property array<int, string> $edges
  * @property string   $exception
  * @property ?Carbon  $failed_at
  * @property ?Carbon  $finished_at
  * @property string   $name
  * @property string   $uuid
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 class WorkflowJob extends Model
 {
     public $timestamps = false;
 
+    /**
+     * @var array<int, string>
+     */
     protected $guarded = [];
 
+    /**
+     * @var array<int, string>
+     */
     protected $dates = [
         'failed_at',
         'finished_at',
     ];
 
+    /**
+     * @var array<string, string>
+     */
     protected $casts = [
         'edges' => 'array',
     ];
 
+    /**
+     * @param array<string, mixed> $attributes
+     */
     public function __construct(array $attributes = [])
     {
         $this->table = config('venture.jobs_table');
@@ -50,6 +60,9 @@ class WorkflowJob extends Model
         parent::__construct($attributes);
     }
 
+    /**
+     * @return BelongsTo<Workflow, WorkflowJob>
+     */
     public function workflow(): BelongsTo
     {
         return $this->belongsTo(Venture::$workflowModel, 'workflow_id');
