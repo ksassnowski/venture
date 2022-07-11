@@ -194,7 +194,7 @@ class WorkflowDefinition
 
     /**
      * @param null|DateInterval|DateTimeInterface|int $delay
-     * @param array<int, string>|null $dependencies
+     * @param null|array<int, string>                 $dependencies
      */
     public function hasJob(string $id, ?array $dependencies = null, mixed $delay = null): bool
     {
@@ -234,7 +234,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string>|null $dependencies
+     * @param null|array<int, string> $dependencies
      */
     public function hasWorkflow(string $workflowId, ?array $dependencies = null): bool
     {
