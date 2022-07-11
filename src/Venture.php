@@ -69,7 +69,7 @@ final class Venture
     public static function bootPlugins(): void
     {
         // We want to ensure that the Core plugin always runs last, so we're
-        // adding it to the front of the list here.
+        // adding it to the end of the list here.
         $plugins = [...self::$plugins, Core::class];
 
         $context = new PluginContext(app('events'));
