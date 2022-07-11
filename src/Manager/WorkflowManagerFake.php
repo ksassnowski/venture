@@ -29,9 +29,9 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         $this->manager = $manager;
     }
 
-    public function define(string $workflowName): WorkflowDefinition
+    public function define(AbstractWorkflow $workflow, string $workflowName): WorkflowDefinition
     {
-        return $this->manager->define($workflowName);
+        return $this->manager->define($workflow, $workflowName);
     }
 
     public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow

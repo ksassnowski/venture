@@ -17,9 +17,14 @@ use Closure;
 use DateInterval;
 use DateTimeInterface;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Conditionable;
 use Laravel\SerializableClosure\SerializableClosure;
+use Sassnowski\Venture\Events\JobAdded;
+use Sassnowski\Venture\Events\JobAdding;
+use Sassnowski\Venture\Events\WorkflowAdded;
+use Sassnowski\Venture\Events\WorkflowAdding;
+use Sassnowski\Venture\Events\WorkflowCreated;
+use Sassnowski\Venture\Events\WorkflowCreating;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
@@ -29,22 +34,29 @@ use Sassnowski\Venture\Models\Workflow;
 class WorkflowDefinition
 {
     use Conditionable;
+
+    /**
+     * @var array<string, array{job: object, name: string}>
+     */
     protected array $jobs = [];
     protected DependencyGraph $graph;
     protected ?string $thenCallback = null;
     protected ?string $catchCallback = null;
+
+    /**
+     * @var array<string, array<int, string>>
+     */
     protected array $nestedWorkflows = [];
-    private StepIdGenerator $stepIdGenerator;
 
     public function __construct(
+        protected AbstractWorkflow $workflow,
         protected string $workflowName = '',
-        ?StepIdGenerator $stepIdGenerator = null,
     ) {
         $this->graph = new DependencyGraph();
-        $this->stepIdGenerator = $stepIdGenerator ?: new ClassNameStepIdGenerator();
     }
 
     /**
+     * @param array<int, string>                      $dependencies
      * @param null|DateInterval|DateTimeInterface|int $delay
      *
      * @throws DuplicateJobException
@@ -65,43 +77,49 @@ class WorkflowDefinition
             throw NonQueueableWorkflowStepException::fromJob($job);
         }
 
-        $id ??= $this->stepIdGenerator->generateId($job);
+        [$job, $name, $dependencies] =
+            $this->onJobAdding($job, $dependencies, $name, $delay, $id);
 
-        $this->graph->addDependantJob($job, $dependencies, $id);
+        $this->graph->addDependantJob($job, $dependencies, $job->jobId);
 
-        if (null !== $delay) {
-            $job->delay($delay);
-        }
-
-        $this->jobs[$id] = [
-            'job' => $job
-                ->withJobId($id)
-                ->withStepId(Str::orderedUuid()),
-            'name' => $name ?: \get_class($job),
+        $this->jobs[$job->jobId] = [
+            'job' => $job,
+            'name' => $name,
         ];
+
+        event(new JobAdded($this, $job, $dependencies, $name));
 
         return $this;
     }
 
     /**
+     * @param array<int, string> $dependencies
+     *
      * @throws DuplicateJobException
      * @throws DuplicateWorkflowException
      */
     public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = [], ?string $id = null): self
     {
         $definition = $workflow->definition();
-        $workflowId = $this->buildIdentifier($id, $workflow);
+
+        $event = $this->onWorkflowAdding($definition, $dependencies, $id);
 
         $workflow->beforeNesting($definition->getJobInstances());
 
-        $this->graph->connectGraph($definition->graph, $workflowId, $dependencies);
+        /** @psalm-suppress PossiblyNullArgument */
+        $this->graph->connectGraph(
+            $definition->graph,
+            $event->workflowID,
+            $event->dependencies,
+        );
 
-        foreach ($definition->jobs as $jobId => $job) {
-            $job['job'] = $job['job']->withJobId($workflowId . '.' . $jobId);
-            $this->jobs[$workflowId . '.' . $jobId] = $job;
+        foreach ($definition->jobs as $job) {
+            $this->jobs[$job['job']->jobId] = $job;
         }
 
-        $this->nestedWorkflows[$workflowId] = $dependencies;
+        $this->nestedWorkflows[$event->workflowID] = $dependencies;
+
+        event(new WorkflowAdded($this, $definition, $event->dependencies, $event->workflowID));
 
         return $this;
     }
@@ -120,6 +138,11 @@ class WorkflowDefinition
         return $this;
     }
 
+    /**
+     * @param null|Closure(Workflow, array<string, array{job: object, name:string}>): void $beforeCreate
+     *
+     * @return array{0: Workflow, 1: array<int, object>}
+     */
     public function build(?Closure $beforeCreate = null): array
     {
         $workflow = $this->makeWorkflow([
@@ -132,18 +155,15 @@ class WorkflowDefinition
             'catch_callback' => $this->catchCallback,
         ]);
 
+        event(new WorkflowCreating($this, $workflow));
+
         if (null !== $beforeCreate) {
-            $beforeCreate($workflow);
+            $beforeCreate($workflow, $this->jobs);
         }
 
         $workflow->save();
 
-        foreach ($this->jobs as $id => $job) {
-            $job['job']
-                ->withWorkflowId($workflow->id)
-                ->withDependantJobs($this->graph->getDependantJobs($id))
-                ->withDependencies($this->graph->getDependencies($id));
-        }
+        event(new WorkflowCreated($this, $workflow));
 
         $workflow->addJobs($this->jobs);
 
@@ -153,6 +173,24 @@ class WorkflowDefinition
     public function name(): string
     {
         return $this->workflowName;
+    }
+
+    /**
+     * @return array<string, array{job: object, name: string}>
+     */
+    public function jobs(): array
+    {
+        return $this->jobs;
+    }
+
+    public function graph(): DependencyGraph
+    {
+        return $this->graph;
+    }
+
+    public function workflow(): AbstractWorkflow
+    {
+        return $this->workflow;
     }
 
     /**
@@ -210,11 +248,6 @@ class WorkflowDefinition
         return app(Venture::$workflowModel, \compact('attributes'));
     }
 
-    protected function buildIdentifier(?string $id, object $object): string
-    {
-        return $id ?: \get_class($object);
-    }
-
     protected function getJobById(string $className): ?array
     {
         return $this->jobs[$className] ?? null;
@@ -225,6 +258,41 @@ class WorkflowDefinition
         return collect($this->jobs)
             ->map(fn (array $job): object => $job['job'])
             ->all();
+    }
+
+    /**
+     * @param array<int, string>                      $dependencies
+     * @param null|DateInterval|DateTimeInterface|int $delay
+     *
+     * @return array{0: object, 1: string, 2: array<int, string>}
+     */
+    private function onJobAdding(
+        object $job,
+        array $dependencies,
+        ?string $name,
+        mixed $delay,
+        ?string $id,
+    ): array {
+        $event = new JobAdding($this, $job, $dependencies, $name, $delay, $id);
+
+        \event($event);
+
+        return [$event->job, $event->name ?: '', $event->dependencies];
+    }
+
+    /**
+     * @param array<int, string> $dependencies
+     */
+    private function onWorkflowAdding(
+        self $definition,
+        array $dependencies,
+        ?string $id,
+    ): WorkflowAdding {
+        $event = new WorkflowAdding($this, $definition, $dependencies, $id);
+
+        \event($event);
+
+        return $event;
     }
 
     private function serializeCallback(mixed $callback): string

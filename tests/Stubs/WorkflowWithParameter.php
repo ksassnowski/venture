@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Stubs;
 
 use Sassnowski\Venture\AbstractWorkflow;
-use Sassnowski\Venture\Facades\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowWithParameter extends AbstractWorkflow
@@ -28,7 +27,7 @@ class WorkflowWithParameter extends AbstractWorkflow
 
     public function definition(): WorkflowDefinition
     {
-        return Workflow::define('Star Wars is fantasy, change my mind.')
+        return $this->define('Star Wars is fantasy, change my mind.')
             ->addJob(new TestJob1());
     }
 }

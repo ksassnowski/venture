@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Sassnowski\Venture\Events\JobCreated;
+use Sassnowski\Venture\Events\JobCreating;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\Venture;
 use Throwable;
@@ -69,14 +71,27 @@ class Workflow extends Model
 
     public function addJobs(array $jobs): void
     {
-        collect($jobs)->map(fn (array $job) => [
-            'job' => $this->serializer()->serialize(clone $job['job']),
-            'name' => $job['name'],
-            'uuid' => $job['job']->stepId,
-            'edges' => $job['job']->dependantJobs,
-        ])
-            ->pipe(function (Collection $jobs): void {
-                $this->jobs()->createMany($jobs);
+        collect($jobs)
+            ->map(function (array $job): WorkflowJob {
+                return app(Venture::$workflowJobModel, [
+                    'attributes' => [
+                        'job' => $this->serializer()->serialize(clone $job['job']),
+                        'name' => $job['name'],
+                        'uuid' => $job['job']->stepId,
+                        'edges' => $job['job']->dependantJobs,
+                    ],
+                ]);
+            })
+            ->each(function (WorkflowJob $job): void {
+                event(new JobCreating($this, $job));
+            })
+            ->pipe(function (Collection $jobs): Collection {
+                $this->jobs()->saveMany($jobs);
+
+                return $jobs;
+            })
+            ->each(function (WorkflowJob $job): void {
+                event(new JobCreated($job));
             });
     }
 

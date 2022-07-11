@@ -14,7 +14,11 @@ declare(strict_types=1);
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
+use Illuminate\Support\Facades\Event;
 use Laravel\SerializableClosure\SerializableClosure;
+use Sassnowski\Venture\Events\JobFailed as JobFailedEvent;
+use Sassnowski\Venture\Events\JobFinished;
+use Sassnowski\Venture\Events\JobProcessing as JobProcessingEvent;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Serializer\DefaultSerializer;
 use Sassnowski\Venture\UnserializeJobExtractor;
@@ -28,6 +32,11 @@ use function PHPUnit\Framework\assertTrue;
 uses(TestCase::class);
 
 beforeEach(function (): void {
+    Event::fake([
+        JobProcessingEvent::class,
+        JobFailedEvent::class,
+        JobFinished::class,
+    ]);
     $_SERVER['__catch.called'] = false;
     $this->eventSubscriber = new WorkflowEventSubscriber(
         new UnserializeJobExtractor(new DefaultSerializer()),
@@ -163,4 +172,112 @@ it('does not delete a job if its workflow has not been cancelled', function (): 
     $this->eventSubscriber->onJobProcessing($event);
 
     $laravelJob->shouldNotHaveReceived('delete');
+});
+
+it('fires an event when a workflow step gets processed and the job has not been cancelled', function (): void {
+    $workflow = createWorkflow(['cancelled_at' => null]);
+    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $laravelJob = createQueueJob($workflowJob);
+    $event = new JobProcessing('::connection::', $laravelJob);
+
+    $this->eventSubscriber->onJobProcessing($event);
+
+    Event::assertDispatched(
+        JobProcessingEvent::class,
+        fn (JobProcessingEvent $event): bool => $event->job == $workflowJob,
+    );
+});
+
+it('does not fire an event when a job is processing but the job has been cancelled', function (): void {
+    $workflow = createWorkflow(['cancelled_at' => now()]);
+    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $laravelJob = createQueueJob($workflowJob);
+    $event = new JobProcessing('::connection::', $laravelJob);
+
+    $this->eventSubscriber->onJobProcessing($event);
+
+    Event::assertNotDispatched(JobProcessingEvent::class);
+});
+
+it('does not fire an event when a job is processing but it\'s not a workflow step', function (): void {
+    $laravelJob = createQueueJob(new NonWorkflowJob());
+    $event = new JobProcessing('::connection::', $laravelJob);
+
+    $this->eventSubscriber->onJobProcessing($event);
+
+    Event::assertNotDispatched(JobProcessingEvent::class);
+});
+
+it('fires an event after a job has been processed', function (): void {
+    $workflow = createWorkflow();
+    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $laravelJob = createQueueJob($workflowJob);
+    $event = new JobProcessed('::connection::', $laravelJob);
+
+    $this->eventSubscriber->handleJobProcessed($event);
+
+    Event::assertDispatched(
+        JobFinished::class,
+        fn (JobFinished $event): bool => $event->job == $workflowJob,
+    );
+});
+
+it('does not fire an event after a job has been processed if the job has been released', function (): void {
+    $workflow = createWorkflow();
+    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $laravelJob = createQueueJob($workflowJob, released: true);
+    $event = new JobProcessed('::connection::', $laravelJob);
+
+    $this->eventSubscriber->handleJobProcessed($event);
+
+    Event::assertNotDispatched(JobFinished::class);
+});
+
+it('does not fire an event after a job has been processed if the job is not a workflow job', function (): void {
+    $laravelJob = createQueueJob(new NonWorkflowJob());
+    $event = new JobProcessed('::connection::', $laravelJob);
+
+    $this->eventSubscriber->handleJobProcessed($event);
+
+    Event::assertNotDispatched(JobFinished::class);
+});
+
+it('fires an event after a job has failed', function (): void {
+    $workflow = createWorkflow();
+    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $exception = new Exception();
+    $laravelJob = createQueueJob($workflowJob, failed: true);
+    $event = new JobFailed('::connection::', $laravelJob, $exception);
+
+    $this->eventSubscriber->handleJobFailed($event);
+
+    Event::assertDispatched(
+        JobFailedEvent::class,
+        function (JobFailedEvent $event) use ($workflowJob, $exception): bool {
+            return $event->job == $workflowJob
+                && $event->exception === $exception;
+        },
+    );
+});
+
+it('does not fire an event after a job has failed if the job has not been marked as failed', function (): void {
+    $workflow = createWorkflow();
+    $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
+    $exception = new Exception();
+    $laravelJob = createQueueJob($workflowJob);
+    $event = new JobFailed('::connection::', $laravelJob, $exception);
+
+    $this->eventSubscriber->handleJobFailed($event);
+
+    Event::assertNotDispatched(JobFailedEvent::class);
+});
+
+it('does not fire an event after a job has failed if the job is not a workflow job', function (): void {
+    $exception = new Exception();
+    $laravelJob = createQueueJob(new NonWorkflowJob());
+    $event = new JobFailed('::connection::', $laravelJob, $exception);
+
+    $this->eventSubscriber->handleJobFailed($event);
+
+    Event::assertNotDispatched(JobFailedEvent::class);
 });

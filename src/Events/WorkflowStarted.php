@@ -11,15 +11,20 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-namespace Sassnowski\Venture\Manager;
+namespace Sassnowski\Venture\Events;
 
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
-use Sassnowski\Venture\WorkflowDefinition;
 
-interface WorkflowManagerInterface
+final class WorkflowStarted
 {
-    public function define(AbstractWorkflow $workflow, string $workflowName): WorkflowDefinition;
-
-    public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow;
+    /**
+     * @param array<int, object> $initialJobs
+     */
+    public function __construct(
+        public AbstractWorkflow $workflow,
+        public Workflow $model,
+        public array $initialJobs,
+    ) {
+    }
 }

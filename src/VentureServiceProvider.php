@@ -35,6 +35,8 @@ class VentureServiceProvider extends ServiceProvider
 
         /** @psalm-suppress UndefinedInterfaceMethod */
         $this->app['events']->subscribe(WorkflowEventSubscriber::class);
+
+        Venture::bootPlugins();
     }
 
     public function register(): void

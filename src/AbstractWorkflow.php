@@ -34,6 +34,11 @@ abstract class AbstractWorkflow
     {
     }
 
+    protected function define(string $workflowName = ''): WorkflowDefinition
+    {
+        return new WorkflowDefinition($this, $workflowName);
+    }
+
     private function run(): Workflow
     {
         return Container::getInstance()

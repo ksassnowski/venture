@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Stubs;
 
 use Sassnowski\Venture\AbstractWorkflow;
-use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowWithWorkflow extends AbstractWorkflow
@@ -25,7 +24,7 @@ class WorkflowWithWorkflow extends AbstractWorkflow
 
     public function definition(): WorkflowDefinition
     {
-        return WorkflowFacade::define('::name::')
+        return $this->define('::name::')
             ->addWorkflow($this->workflow);
     }
 }

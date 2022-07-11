@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
 use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\Events\JobAdded;
+use Sassnowski\Venture\Events\WorkflowAdded;
+use Sassnowski\Venture\Events\WorkflowCreating;
 use Sassnowski\Venture\Exceptions\NonQueueableWorkflowStepException;
-use Sassnowski\Venture\Facades\Workflow as WorkflowFacade;
 use Sassnowski\Venture\Models\Workflow;
-use Sassnowski\Venture\StepIdGenerator;
 use Sassnowski\Venture\WorkflowDefinition;
 use Stubs\DummyCallback;
 use Stubs\NestedWorkflow;
@@ -29,6 +31,8 @@ use Stubs\TestJob3;
 use Stubs\TestJob4;
 use Stubs\TestJob5;
 use Stubs\TestJob6;
+use Stubs\TestWorkflow;
+use Stubs\WorkflowWithJob;
 use function Pest\Laravel\assertDatabaseHas;
 use function PHPUnit\Framework\assertEquals;
 use function PHPUnit\Framework\assertFalse;
@@ -42,7 +46,7 @@ beforeEach(function (): void {
 });
 
 it('creates a workflow', function (): void {
-    (new WorkflowDefinition())
+    createDefinition()
         ->addJob(new TestJob1())
         ->addJob(new TestJob2(), dependencies: [TestJob1::class])
         ->build();
@@ -59,7 +63,7 @@ it('returns the workflow\'s initial batch of jobs', function (): void {
     $job1 = new TestJob1();
     $job2 = new TestJob2();
 
-    [$workflow, $initialBatch] = (new WorkflowDefinition())
+    [$workflow, $initialBatch] = createDefinition()
         ->addJob($job1)
         ->addJob($job2)
         ->addJob(new TestJob3(), dependencies: [TestJob1::class])
@@ -72,7 +76,7 @@ it('returns the workflow', function (): void {
     $job1 = new TestJob1();
     $job2 = new TestJob2();
 
-    [$workflow, $initialBatch] = (new WorkflowDefinition())
+    [$workflow, $initialBatch] = createDefinition()
         ->addJob($job1)
         ->addJob($job2)
         ->addJob(new TestJob3(), dependencies: [TestJob1::class])
@@ -86,7 +90,7 @@ it('sets a reference to the workflow on each job', function (): void {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 
-    (new WorkflowDefinition())
+    createDefinition()
         ->addJob($testJob1)
         ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
@@ -101,7 +105,7 @@ it('sets the job dependencies on the job instances', function (): void {
     $testJob2 = new TestJob2();
     $testJob3 = new TestJob2();
 
-    (new WorkflowDefinition())
+    createDefinition()
         ->addJob($testJob1)
         ->addJob($testJob2, dependencies: [TestJob1::class], id: '::job-2-id::')
         ->addJob($testJob3, dependencies: ['::job-2-id::'])
@@ -115,44 +119,19 @@ it('sets the job dependencies on the job instances', function (): void {
 it('sets the jobId on the job instance if explicitly provided', function (): void {
     $testJob = new TestJob1();
 
-    (new WorkflowDefinition())
+    createDefinition()
         ->addJob($testJob, id: '::job-id::')
         ->build();
 
     expect($testJob)->jobId->toBe('::job-id::');
 });
 
-it('generates a new id for a job if none was provided', function (string $expectedId): void {
-    $generator = new class($expectedId) implements StepIdGenerator {
-        public function __construct(private string $id)
-        {
-        }
-
-        public function generateId(object $job): string
-        {
-            return $this->id;
-        }
-    };
-    $testJob = new TestJob1();
-
-    (new WorkflowDefinition(stepIdGenerator: $generator))
-        ->addJob($testJob)
-        ->build();
-
-    expect($testJob)->jobId->toBe($expectedId);
-})->with([
-    ['::id-1::'],
-    ['::id-2::'],
-    ['::id-3::'],
-    ['::id-4::'],
-]);
-
 it('sets the dependants of a job', function (): void {
     Bus::fake();
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 
-    (new WorkflowDefinition())
+    createDefinition()
         ->addJob($testJob1)
         ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
@@ -165,7 +144,7 @@ it('saves the workflow steps to the database', function (): void {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 
-    (new WorkflowDefinition())
+    createDefinition()
         ->addJob($testJob1)
         ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
@@ -178,7 +157,7 @@ it('saves the list of edges for each job', function (): void {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 
-    [$workflow, $initialBatch] = (new WorkflowDefinition())
+    [$workflow, $initialBatch] = createDefinition()
         ->addJob($testJob1)
         ->addJob($testJob2, dependencies: [TestJob1::class])
         ->build();
@@ -195,7 +174,7 @@ it('saves the list of edges for each job', function (): void {
 });
 
 it('uses the class name as the jobs name if no name was provided', function (): void {
-    (new WorkflowDefinition())
+    createDefinition()
         ->addJob(new TestJob1())
         ->build();
 
@@ -203,7 +182,7 @@ it('uses the class name as the jobs name if no name was provided', function (): 
 });
 
 it('uses the nice name if it was provided', function (): void {
-    (new WorkflowDefinition())
+    createDefinition()
         ->addJob(new TestJob1())
         ->addJob(new TestJob2(), dependencies: [TestJob1::class], name: '::job-name::')
         ->build();
@@ -215,7 +194,7 @@ it('creates workflow step records that use the jobs uuid', function (): void {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 
-    (new WorkflowDefinition())
+    createDefinition()
         ->addJob($testJob1)
         ->addJob($testJob2, dependencies: [TestJob1::class], name: '::job-name::')
         ->build();
@@ -225,7 +204,7 @@ it('creates workflow step records that use the jobs uuid', function (): void {
 });
 
 it('creates a workflow with the provided name', function (): void {
-    [$workflow, $initialBatch] = WorkflowFacade::define('::workflow-name::')
+    [$workflow, $initialBatch] = createDefinition('::workflow-name::')
         ->addJob(new TestJob1())
         ->build();
 
@@ -236,7 +215,7 @@ it('allows configuration of a then callback', function (): void {
     $callback = function (Workflow $wf): void {
         echo 'derp';
     };
-    [$workflow, $initialBatch] = WorkflowFacade::define('::name::')
+    [$workflow, $initialBatch] = createDefinition('::name::')
         ->then($callback)
         ->build();
 
@@ -246,7 +225,7 @@ it('allows configuration of a then callback', function (): void {
 it('allows configuration of an invokable class as then callback', function (): void {
     $callback = new DummyCallback();
 
-    [$workflow, $initialBatch] = WorkflowFacade::define('::name::')
+    [$workflow, $initialBatch] = createDefinition('::name::')
         ->then($callback)
         ->build();
 
@@ -257,7 +236,7 @@ it('allows configuration of a catch callback', function (): void {
     $callback = function (Workflow $wf): void {
         echo 'derp';
     };
-    [$workflow, $initialBatch] = WorkflowFacade::define('::name::')
+    [$workflow, $initialBatch] = createDefinition('::name::')
         ->catch($callback)
         ->build();
 
@@ -267,7 +246,7 @@ it('allows configuration of a catch callback', function (): void {
 it('allows configuration of an invokable class as catch callback', function (): void {
     $callback = new DummyCallback();
 
-    [$workflow, $initialBatch] = WorkflowFacade::define('::name::')
+    [$workflow, $initialBatch] = createDefinition('::name::')
         ->catch($callback)
         ->build();
 
@@ -277,9 +256,9 @@ it('allows configuration of an invokable class as catch callback', function (): 
 it('can add a job with a delay', function ($delay): void {
     Carbon::setTestNow(now());
 
-    $workflow1 = WorkflowFacade::define('::name-1::')
+    $workflow1 = createDefinition('::name-1::')
         ->addJob(new TestJob1(), delay: $delay);
-    $workflow2 = WorkflowFacade::define('::name-2::')
+    $workflow2 = createDefinition('::name-2::')
         ->addJob(new TestJob2(), delay: $delay);
 
     assertTrue($workflow1->hasJobWithDelay(TestJob1::class, $delay));
@@ -287,21 +266,21 @@ it('can add a job with a delay', function ($delay): void {
 })->with('delay provider');
 
 it('returns true if job is part of the workflow', function (): void {
-    $definition = WorkflowFacade::define('::name::')
+    $definition = createDefinition('::name::')
         ->addJob(new TestJob1());
 
     assertTrue($definition->hasJob(TestJob1::class));
 });
 
 it('returns false if job is not part of the workflow', function (): void {
-    $definition = WorkflowFacade::define('::name::')
+    $definition = createDefinition('::name::')
         ->addJob(new TestJob2());
 
     assertFalse($definition->hasJob(TestJob1::class));
 });
 
 it('returns true if job exists with the correct dependencies', function (): void {
-    $definition = WorkflowFacade::define('::name::')
+    $definition = createDefinition('::name::')
         ->addJob(new TestJob1())
         ->addJob(new TestJob2(), dependencies: [TestJob1::class]);
 
@@ -309,7 +288,7 @@ it('returns true if job exists with the correct dependencies', function (): void
 });
 
 it('returns false if job exists, but with incorrect dependencies', function (): void {
-    $definition = WorkflowFacade::define('::name::')
+    $definition = createDefinition('::name::')
         ->addJob(new TestJob1())
         ->addJob(new TestJob2())
         ->addJob(new TestJob3(), dependencies: [TestJob2::class]);
@@ -320,7 +299,7 @@ it('returns false if job exists, but with incorrect dependencies', function (): 
 it('returns false if job exists without delay', function (): void {
     Carbon::setTestNow(now());
 
-    $definition = WorkflowFacade::define('::name::')
+    $definition = createDefinition('::name::')
         ->addJob(new TestJob1());
 
     assertFalse($definition->hasJob(TestJob1::class, [], now()->addDay()));
@@ -329,7 +308,7 @@ it('returns false if job exists without delay', function (): void {
 it('returns true if job exists with correct delay', function ($delay): void {
     Carbon::setTestNow(now());
 
-    $definition = WorkflowFacade::define('::name::')
+    $definition = createDefinition('::name::')
         ->addJob(new TestJob1(), delay: $delay);
 
     assertTrue($definition->hasJob(TestJob1::class, [], $delay));
@@ -346,7 +325,7 @@ it('calls the before create hook before saving the workflow if provided', functi
         $workflow->name = '::new-name::';
     };
 
-    [$workflow, $initialBatch] = WorkflowFacade::define('::old-name::')
+    [$workflow, $initialBatch] = createDefinition('::old-name::')
         ->addJob(new TestJob1(), dependencies: [])
         ->build($callback);
 
@@ -357,7 +336,7 @@ it('calls the before connecting hook before adding a nested workflow', function 
     $workflow = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
-            return WorkflowFacade::define('::name::')
+            return createDefinition('::name::')
                 ->addJob(new TestJob2());
         }
 
@@ -367,7 +346,7 @@ it('calls the before connecting hook before adding a nested workflow', function 
         }
     };
 
-    WorkflowFacade::define('::name::')
+    createDefinition('::name::')
         ->addWorkflow(new $workflow(), []);
 
     assertEquals(1, $_SERVER['__before_connect_callback']);
@@ -377,13 +356,13 @@ it('can add another workflow', function (): void {
     $workflow = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
-            return WorkflowFacade::define('::name::')
+            return $this->define('::name::')
                 ->addJob(new TestJob4())
                 ->addJob(new TestJob5())
                 ->addJob(new TestJob6(), dependencies: [TestJob4::class]);
         }
     };
-    $definition = (new WorkflowDefinition())
+    $definition = createDefinition()
         ->addJob(new TestJob1())
         ->addJob(new TestJob2())
         ->addJob(new TestJob3(), dependencies: [TestJob1::class])
@@ -395,7 +374,7 @@ it('can add another workflow', function (): void {
 });
 
 it('adding another workflow namespaces the nested workflow\'s job ids', function (): void {
-    $definition = (new WorkflowDefinition())
+    $definition = createDefinition()
         ->addJob(new TestJob1())
         ->addJob(new TestJob2(), [TestJob1::class])
         ->addWorkflow(new NestedWorkflow());
@@ -406,7 +385,7 @@ it('adding another workflow namespaces the nested workflow\'s job ids', function
 });
 
 it('adding another workflow updates the job id on nested job instances', function (): void {
-    $definition = (new WorkflowDefinition())
+    $definition = createDefinition()
         ->addJob(new TestJob1())
         ->addJob(new TestJob2(), [TestJob1::class])
         ->addWorkflow(new NestedWorkflow($job = new TestJob1()));
@@ -415,11 +394,11 @@ it('adding another workflow updates the job id on nested job instances', functio
 });
 
 it('throws an exception when trying to add a job without the ShouldQueue interface', function (): void {
-    (new WorkflowDefinition())->addJob(new NonQueueableJob());
+    createDefinition()->addJob(new NonQueueableJob());
 })->expectException(NonQueueableWorkflowStepException::class);
 
 it('allows multiple instances of the same job with explicit ids', function (): void {
-    $definition = (new WorkflowDefinition())
+    $definition = createDefinition()
         ->addJob(new TestJob1(), id: '::id-1::')
         ->addJob(new TestJob1(), id: '::id-2::');
 
@@ -428,7 +407,7 @@ it('allows multiple instances of the same job with explicit ids', function (): v
 });
 
 it('can allows FQCN and explicit id when declaring dependencies', function (): void {
-    $definition = (new WorkflowDefinition())
+    $definition = createDefinition()
         ->addJob(new TestJob1())
         ->addJob(new TestJob1(), id: '::id::')
         ->addJob(new TestJob2(), dependencies: [TestJob1::class])
@@ -442,11 +421,11 @@ it('can add multiple instances of the same workflow if they have different ids',
     $workflow = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
-            return WorkflowFacade::define('::name::')
+            return createDefinition('::name::')
                 ->addJob(new TestJob2(), id: '::job-2-id::');
         }
     };
-    $definition = (new WorkflowDefinition())
+    $definition = createDefinition()
         ->addJob(new TestJob1(), id: '::job-1-id::')
         ->addWorkflow($workflow, dependencies: ['::job-1-id::'], id: '::workflow-1-id::')
         ->addWorkflow($workflow, dependencies: ['::job-1-id::'], id: '::workflow-2-id::');
@@ -456,7 +435,7 @@ it('can add multiple instances of the same workflow if they have different ids',
 });
 
 it('can check if a workflow contains a nested workflow', function (callable $configureWorkflow, ?array $dependencies, bool $expected): void {
-    $definition = new WorkflowDefinition();
+    $definition = createDefinition();
 
     $configureWorkflow($definition);
 
@@ -493,3 +472,51 @@ it('can check if a workflow contains a nested workflow', function (callable $con
         'expected' => true,
     ],
 ]);
+
+it('fires an event after a job was added', function (): void {
+    Event::fake([JobAdded::class]);
+    $job = new TestJob1();
+
+    $definition = createDefinition()
+        ->addJob($job, [], '::job-name::', 300, '::job-id::');
+
+    Event::assertDispatched(JobAdded::class, function (JobAdded $event) use ($definition, $job): bool {
+        return $event->definition === $definition
+            && $event->job === $job
+            && '::job-name::' === $event->name
+            && [] === $event->dependencies;
+    });
+});
+
+it('fires an event after a workflow was added', function (): void {
+    Event::fake([WorkflowAdded::class]);
+
+    $nestedWorkflow = new WorkflowWithJob();
+    $definition = createDefinition()->addWorkflow($nestedWorkflow, [], '::id::');
+
+    Event::assertDispatched(
+        WorkflowAdded::class,
+        function (WorkflowAdded $event) use ($definition, $nestedWorkflow) {
+            return $event->parentDefinition === $definition
+                && $event->nestedDefinition->workflow() === $nestedWorkflow
+                && '::id::' === $event->id
+                && [] === $event->dependencies;
+        },
+    );
+});
+
+it('fires an event before a workflow gets saved', function (): void {
+    Event::fake([WorkflowCreating::class]);
+    $workflow = new TestWorkflow();
+    $definition = createDefinition(workflow: $workflow);
+
+    [$model, $initialJobs] = $definition->build();
+
+    Event::assertDispatched(
+        WorkflowCreating::class,
+        function (WorkflowCreating $event) use ($definition, $model): bool {
+            return $event->definition === $definition
+                && $event->model === $model;
+        },
+    );
+});

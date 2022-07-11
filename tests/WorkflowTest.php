@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Laravel\SerializableClosure\SerializableClosure;
+use Sassnowski\Venture\Events\JobCreated;
+use Sassnowski\Venture\Events\JobCreating;
 use Stubs\NestedWorkflow;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
@@ -461,6 +464,40 @@ it('returns the dependency graph as an adjacency list', function (): void {
             'edges' => [],
         ],
     ], $adjacencyList);
+});
+
+it('fires an event for each job that gets added', function (): void {
+    Event::fake([JobCreating::class]);
+    $workflow = createWorkflow();
+    $job1 = [
+        'job' => (new TestJob1())->withStepId(Str::orderedUuid()),
+        'name' => '::name-1::',
+    ];
+    $job2 = [
+        'job' => (new TestJob2())->withStepId(Str::orderedUuid()),
+        'name' => '::name-2::',
+    ];
+
+    $workflow->addJobs([$job1, $job2]);
+
+    Event::assertDispatched(JobCreating::class, 2);
+});
+
+it('fires an event for each job that was created', function (): void {
+    Event::fake([JobCreated::class]);
+    $workflow = createWorkflow();
+    $job1 = [
+        'job' => (new TestJob1())->withStepId(Str::orderedUuid()),
+        'name' => '::name-1::',
+    ];
+    $job2 = [
+        'job' => (new TestJob2())->withStepId(Str::orderedUuid()),
+        'name' => '::name-2::',
+    ];
+
+    $workflow->addJobs([$job1, $job2]);
+
+    Event::assertDispatched(JobCreated::class, 2);
 });
 
 class ThenCallback

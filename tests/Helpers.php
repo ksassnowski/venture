@@ -14,8 +14,11 @@ declare(strict_types=1);
 use Illuminate\Contracts\Queue\Job;
 use Illuminate\Support\Str;
 use Mockery\MockInterface;
+use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
+use Sassnowski\Venture\WorkflowDefinition;
+use Stubs\TestWorkflow;
 
 function createWorkflow(array $attributes = []): Workflow
 {
@@ -62,4 +65,12 @@ function createQueueJob(object $command, bool $failed = false, bool $released = 
 
         return $jobMock;
     });
+}
+
+function createDefinition(string $name = '', ?AbstractWorkflow $workflow = null): WorkflowDefinition
+{
+    return new WorkflowDefinition(
+        $workflow ?: new TestWorkflow(),
+        $name,
+    );
 }

@@ -16,6 +16,7 @@ namespace Sassnowski\Venture\Graph;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
+use function collect;
 
 class DependencyGraph
 {
@@ -45,6 +46,9 @@ class DependencyGraph
         }
     }
 
+    /**
+     * @return array<int, object>
+     */
     public function getDependantJobs(string $jobId): array
     {
         return collect($this->graph[$jobId]['out_edges'])
@@ -52,11 +56,17 @@ class DependencyGraph
             ->toArray();
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getDependencies(string $jobId): array
     {
         return $this->graph[$jobId]['in_edges'];
     }
 
+    /**
+     * @return array<int, object>
+     */
     public function getJobsWithoutDependencies(): array
     {
         return collect($this->graph)
@@ -79,21 +89,34 @@ class DependencyGraph
         $this->nestedGraphs[$id] = $otherGraph->graph;
 
         foreach ($otherGraph->graph as $nodeId => $node) {
+            $isAlreadyPrefixed = \str_starts_with($nodeId, $id);
+
             if (\count($node['in_edges']) === 0) {
                 // The root nodes of the nested graph should be connected to
                 // the provided dependencies. If the dependency happens to be
                 // another graph, it will be resolved inside `addDependantJob`.
                 $node['in_edges'] = $dependencies;
             } else {
-                // All dependencies inside the nested graph get namespaced
-                // to avoid any ambiguity with the jobs from the outer workflow.
-                $node['in_edges'] = collect($node['in_edges'])->map(fn (string $edgeId) => $id . '.' . $edgeId)->toArray();
+                if (!$isAlreadyPrefixed) {
+                    // All dependencies inside the nested graph get namespaced
+                    // to avoid any ambiguity with the jobs from the outer workflow.
+                    $node['in_edges'] = collect($node['in_edges'])->map(fn (string $edgeId) => $id . '.' . $edgeId)->toArray();
+                }
             }
 
-            $this->addDependantJob($node['instance'], $node['in_edges'], $id . '.' . $nodeId);
+            if (!$isAlreadyPrefixed) {
+                $nodeId = $id . '.' . $nodeId;
+            }
+
+            $this->addDependantJob($node['instance'], $node['in_edges'], $nodeId);
         }
     }
 
+    /**
+     * @param array<int, string> $dependencies
+     *
+     * @return array<int, string>
+     */
     private function resolveDependencies(array $dependencies): array
     {
         return collect($dependencies)->flatMap(function (string $dependency) {
@@ -101,6 +124,9 @@ class DependencyGraph
         })->all();
     }
 
+    /**
+     * @return array<int, string>
+     */
     private function resolveDependency(string $dependency): array
     {
         if (\array_key_exists($dependency, $this->graph)) {

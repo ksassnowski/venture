@@ -16,15 +16,10 @@ namespace Stubs;
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\WorkflowDefinition;
 
-class NestedWorkflow extends AbstractWorkflow
+final class TestWorkflow extends AbstractWorkflow
 {
-    public function __construct(public $job = null)
-    {
-        $this->job ??= new TestJob1();
-    }
-
     public function definition(): WorkflowDefinition
     {
-        return $this->define('::name::')->addJob($this->job);
+        return $this->define('::workflow-name::');
     }
 }

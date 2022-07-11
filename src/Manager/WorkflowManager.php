@@ -16,21 +16,20 @@ namespace Sassnowski\Venture\Manager;
 use Closure;
 use Illuminate\Contracts\Bus\Dispatcher;
 use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\Events\WorkflowStarted;
 use Sassnowski\Venture\Models\Workflow;
-use Sassnowski\Venture\StepIdGenerator;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowManager implements WorkflowManagerInterface
 {
     public function __construct(
         private Dispatcher $dispatcher,
-        private StepIdGenerator $stepIdGenerator,
     ) {
     }
 
-    public function define(string $workflowName): WorkflowDefinition
+    public function define(AbstractWorkflow $workflow, string $workflowName): WorkflowDefinition
     {
-        return new WorkflowDefinition($workflowName, $this->stepIdGenerator);
+        return new WorkflowDefinition($workflow, $workflowName);
     }
 
     public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow
@@ -44,6 +43,8 @@ class WorkflowManager implements WorkflowManagerInterface
         collect($initialJobs)->each(function (object $job): void {
             $this->dispatcher->dispatch($job);
         });
+
+        event(new WorkflowStarted($abstractWorkflow, $workflow, $initialJobs));
 
         return $workflow;
     }

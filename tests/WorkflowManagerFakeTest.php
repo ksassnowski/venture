@@ -116,7 +116,8 @@ it('runs the beforeCreate hook', function (): void {
     $workflow = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
-            return Workflow::define('::name::');
+            return createDefinition();
+            ('::name::');
         }
 
         public function beforeCreate(Sassnowski\Venture\Models\Workflow $workflow): void

@@ -11,17 +11,16 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-namespace Stubs;
+namespace Sassnowski\Venture\Events;
 
-use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
 
-class WorkflowWithJob extends AbstractWorkflow
+final class WorkflowCreating
 {
-    public function definition(): WorkflowDefinition
-    {
-        return $this->define()->addJob(
-            new TestJobWithHandle(),
-        );
+    public function __construct(
+        public WorkflowDefinition $definition,
+        public Workflow $model,
+    ) {
     }
 }

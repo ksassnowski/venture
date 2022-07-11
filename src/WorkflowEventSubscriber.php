@@ -18,6 +18,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
+use function event;
 
 class WorkflowEventSubscriber
 {
@@ -50,6 +51,8 @@ class WorkflowEventSubscriber
         }
 
         $this->withWorkflowJob($event, function (object $jobInstance): void {
+            event(new Events\JobFinished($jobInstance));
+
             $jobInstance
                 ->workflow()
                 ?->onStepFinished($jobInstance);
@@ -63,6 +66,8 @@ class WorkflowEventSubscriber
         }
 
         $this->withWorkflowJob($event, function (object $jobInstance) use ($event): void {
+            event(new Events\JobFailed($jobInstance, $event->exception));
+
             $jobInstance
                 ->workflow()
                 ?->onStepFailed($jobInstance, $event->exception);
@@ -74,6 +79,8 @@ class WorkflowEventSubscriber
         $this->withWorkflowJob($event, function (object $jobInstance) use ($event): void {
             if ($jobInstance->workflow()?->isCancelled()) {
                 $event->job->delete();
+            } else {
+                event(new Events\JobProcessing($jobInstance));
             }
         });
     }
