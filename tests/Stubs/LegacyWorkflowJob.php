@@ -18,4 +18,11 @@ use Sassnowski\Venture\WorkflowStep;
 final class LegacyWorkflowJob
 {
     use WorkflowStep;
+
+    public string $foo = 'bar';
+
+    public function baz(): string
+    {
+        return 'qux';
+    }
 }

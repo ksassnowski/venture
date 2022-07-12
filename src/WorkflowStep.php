@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sassnowski\Venture;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Support\Arr;
 use Ramsey\Uuid\UuidInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
@@ -51,9 +50,15 @@ trait WorkflowStep
         return app(Venture::$workflowModel)->find($this->workflowId);
     }
 
+    /**
+     * @param array<int, WorkflowStepInterface> $jobs
+     */
     public function withDependantJobs(array $jobs): self
     {
-        $this->dependantJobs = Arr::pluck($jobs, 'stepId');
+        $this->dependantJobs = \array_map(
+            fn (WorkflowStepInterface $job) => $job->getStepId(),
+            $jobs,
+        );
 
         return $this;
     }

@@ -18,6 +18,15 @@ use Ramsey\Uuid\UuidInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
 
+/**
+ * @property Delay              $delay
+ * @property array<int, string> $dependantJobs
+ * @property array<int, string> $dependencies
+ * @property ?string            $jobId
+ * @property ?string            $name
+ * @property ?string            $stepId
+ * @property ?int               $workflowId
+ */
 final class WorkflowStepAdapter implements WorkflowStepInterface
 {
     private function __construct(private object $job)
@@ -27,6 +36,11 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
     public function __get(string $name): mixed
     {
         return $this->job->{$name};
+    }
+
+    public function __set(string $name, mixed $value): void
+    {
+        $this->job->{$name} = $value;
     }
 
     /**
@@ -54,7 +68,9 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
 
     public function withWorkflowId(int $workflowID): WorkflowStepInterface
     {
-        return $this->job->withWorkflowId($workflowID);
+        $this->job->withWorkflowId($workflowID);
+
+        return $this;
     }
 
     public function workflow(): ?Workflow
@@ -64,7 +80,9 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
 
     public function withDependantJobs(array $jobs): WorkflowStepInterface
     {
-        return $this->job->withDependantJobs($jobs);
+        $this->job->withDependantJobs($jobs);
+
+        return $this;
     }
 
     public function getDependantJobs(): array
@@ -74,7 +92,9 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
 
     public function withDependencies(array $jobNames): WorkflowStepInterface
     {
-        return $this->job->withDependencies($jobNames);
+        $this->job->withDependencies($jobNames);
+
+        return $this;
     }
 
     public function getDependencies(): array
@@ -84,7 +104,9 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
 
     public function withJobId(string $jobID): WorkflowStepInterface
     {
-        return $this->job->withJobId($jobID);
+        $this->job->withJobId($jobID);
+
+        return $this;
     }
 
     public function getJobId(): string
@@ -94,7 +116,9 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
 
     public function withStepId(UuidInterface $stepID): WorkflowStepInterface
     {
-        return $this->job->withStepId($stepID);
+        $this->job->withStepId($stepID);
+
+        return $this;
     }
 
     public function getStepId(): ?string
@@ -109,7 +133,9 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
 
     public function withName(string $name): WorkflowStepInterface
     {
-        return $this->job->withName($name);
+        $this->job->withName($name);
+
+        return $this;
     }
 
     public function getName(): string
@@ -119,7 +145,9 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
 
     public function withDelay(mixed $delay): WorkflowStepInterface
     {
-        return $this->job->withDelay($delay);
+        $this->job->withDelay($delay);
+
+        return $this;
     }
 
     public function getDelay(): mixed
