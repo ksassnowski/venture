@@ -19,6 +19,7 @@ use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Events\JobAdded;
 use Sassnowski\Venture\Events\WorkflowAdded;
 use Sassnowski\Venture\Events\WorkflowCreating;
+use Sassnowski\Venture\Exceptions\InvalidJobException;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
 use Stubs\DummyCallback;
@@ -262,6 +263,23 @@ it('can add a job with a delay', function ($delay): void {
     assertTrue($workflow1->hasJobWithDelay(TestJob1::class, $delay));
     assertTrue($workflow2->hasJobWithDelay(TestJob2::class, $delay));
 })->with('delay provider');
+
+it('allows adding a job as a closure', function (): void {
+    $definition = createDefinition()
+        ->addJob(
+            fn () => 'foo',
+            [],
+            '::job-name::',
+            500,
+            '::job-id::',
+        );
+
+    expect($definition->hasJob('::job-id::', [], 500))->toBeTrue();
+});
+
+it('throws an exception when adding a closure job without an explicit id', function (): void {
+    createDefinition()->addJob(fn () => 'foo', id: null);
+})->throws(InvalidJobException::class);
 
 it('returns true if job is part of the workflow', function (): void {
     $definition = createDefinition('::name::')

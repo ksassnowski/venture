@@ -24,6 +24,7 @@ use Sassnowski\Venture\Events\WorkflowCreated;
 use Sassnowski\Venture\Events\WorkflowCreating;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
+use Sassnowski\Venture\Exceptions\InvalidJobException;
 use Sassnowski\Venture\Graph\DependencyGraph;
 use Sassnowski\Venture\Models\Workflow;
 use Throwable;
@@ -62,12 +63,20 @@ class WorkflowDefinition
      * @throws DuplicateJobException
      */
     public function addJob(
-        WorkflowStepInterface $job,
+        WorkflowStepInterface|Closure $job,
         array $dependencies = [],
         ?string $name = null,
         mixed $delay = null,
         ?string $id = null,
     ): self {
+        if ($job instanceof Closure) {
+            if (null === $id) {
+                throw new InvalidJobException('Closure jobs need an explicit id');
+            }
+
+            $job = new ClosureWorkflowStep($job);
+        }
+
         $event = $this->onJobAdding($job, $dependencies, $name, $delay, $id);
 
         $this->graph->addDependantJob(
