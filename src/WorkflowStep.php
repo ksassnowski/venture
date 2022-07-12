@@ -22,8 +22,14 @@ trait WorkflowStep
 {
     use Queueable;
 
+    /**
+     * @var array<int, string>
+     */
     public array $dependantJobs = [];
 
+    /**
+     * @var array<int, string>
+     */
     public array $dependencies = [];
 
     public ?int $workflowId = null;
@@ -47,7 +53,10 @@ trait WorkflowStep
             return null;
         }
 
-        return app(Venture::$workflowModel)->find($this->workflowId);
+        /** @var Workflow $workflow */
+        $workflow = app(Venture::$workflowModel);
+
+        return $workflow->newQuery()->find($this->workflowId);
     }
 
     /**
@@ -63,11 +72,17 @@ trait WorkflowStep
         return $this;
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getDependantJobs(): array
     {
         return $this->dependantJobs;
     }
 
+    /**
+     * @param array<int, string> $jobNames
+     */
     public function withDependencies(array $jobNames): self
     {
         $this->dependencies = $jobNames;
@@ -75,6 +90,9 @@ trait WorkflowStep
         return $this;
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function getDependencies(): array
     {
         return $this->dependencies;
@@ -98,7 +116,13 @@ trait WorkflowStep
             return null;
         }
 
-        return app(Venture::$workflowJobModel)->where('uuid', $this->stepId)->first();
+        /** @var WorkflowJob $workflowJob */
+        $workflowJob = app(Venture::$workflowJobModel);
+
+        return $workflowJob
+            ->newQuery()
+            ->where('uuid', $this->stepId)
+            ->first();
     }
 
     public function withJobId(string $jobId): self
@@ -126,7 +150,7 @@ trait WorkflowStep
     }
 
     /**
-     * @param null|\DateInterval|\DateTimeInterface|int $delay
+     * @param Delay $delay
      */
     public function withDelay(mixed $delay): self
     {
@@ -134,7 +158,7 @@ trait WorkflowStep
     }
 
     /**
-     * @return null|\DateInterval|\DateTimeInterface|int
+     * @return Delay
      */
     public function getDelay(): mixed
     {
