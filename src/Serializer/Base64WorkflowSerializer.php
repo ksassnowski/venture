@@ -52,7 +52,7 @@ final class Base64WorkflowSerializer implements WorkflowJobSerializer
         }
 
         try {
-            return WorkflowStepAdapter::make($result);
+            return WorkflowStepAdapter::fromJob($result);
         } catch (InvalidArgumentException) {
             return null;
         }

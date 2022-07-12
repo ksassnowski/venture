@@ -33,7 +33,7 @@ final class DefaultSerializer implements WorkflowJobSerializer
         }
 
         try {
-            return WorkflowStepAdapter::make($result);
+            return WorkflowStepAdapter::fromJob($result);
         } catch (InvalidArgumentException) {
             return null;
         }

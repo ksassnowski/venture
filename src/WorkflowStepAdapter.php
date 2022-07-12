@@ -51,7 +51,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->{$name}(...$arguments);
     }
 
-    public static function make(object $job): WorkflowStepInterface
+    public static function fromJob(object $job): WorkflowStepInterface
     {
         if ($job instanceof WorkflowStepInterface) {
             return $job;

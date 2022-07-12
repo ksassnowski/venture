@@ -25,7 +25,7 @@ uses(TestCase::class);
 it('returns the original object if it already implements WorkflowStepInterface', function (): void {
     $job = new TestJob1();
 
-    $result = WorkflowStepAdapter::make($job);
+    $result = WorkflowStepAdapter::fromJob($job);
 
     expect($result)->toBe($job);
 });
@@ -33,18 +33,18 @@ it('returns the original object if it already implements WorkflowStepInterface',
 it('returns a wrapped object if it uses the WorkflowStep trait but does not implement the interface', function (): void {
     $job = new LegacyWorkflowJob();
 
-    $result = WorkflowStepAdapter::make($job);
+    $result = WorkflowStepAdapter::fromJob($job);
 
     expect($result)->toBeInstanceOf(WorkflowStepAdapter::class);
 });
 
 it('throws an exception if the object does not implement the interface or use the trait', function (): void {
-    WorkflowStepAdapter::make(new NonWorkflowJob());
+    WorkflowStepAdapter::fromJob(new NonWorkflowJob());
 })->throws(InvalidArgumentException::class);
 
 it('proxies all interface methods to the underlying object', function (): void {
     $job = new LegacyWorkflowJob();
-    $adapter = WorkflowStepAdapter::make($job);
+    $adapter = WorkflowStepAdapter::fromJob($job);
 
     $adapter->withName('::name::');
     expect($adapter)->getName()->toBe('::name::');
@@ -84,21 +84,21 @@ it('proxies all interface methods to the underlying object', function (): void {
 
 it('proxies all property accesses to the underlying object', function (): void {
     $job = new LegacyWorkflowJob();
-    $adapter = WorkflowStepAdapter::make($job);
+    $adapter = WorkflowStepAdapter::fromJob($job);
 
     expect($adapter)->foo->toBe('bar');
 });
 
 it('proxies all unknown method calls to the underlying object', function (): void {
     $job = new LegacyWorkflowJob();
-    $adapter = WorkflowStepAdapter::make($job);
+    $adapter = WorkflowStepAdapter::fromJob($job);
 
     expect($adapter)->baz()->toBe('qux');
 });
 
 it('proxies all property writes to the underlying object', function (): void {
     $job = new LegacyWorkflowJob();
-    $adapter = WorkflowStepAdapter::make($job);
+    $adapter = WorkflowStepAdapter::fromJob($job);
 
     $adapter->foo = '::value::';
 
