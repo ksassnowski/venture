@@ -53,10 +53,7 @@ trait WorkflowStep
             return null;
         }
 
-        /** @var Workflow $workflow */
-        $workflow = app(Venture::$workflowModel);
-
-        return $workflow->newQuery()->find($this->workflowId);
+        return app(Venture::$workflowModel)->find($this->workflowId);
     }
 
     /**
@@ -64,10 +61,10 @@ trait WorkflowStep
      */
     public function withDependantJobs(array $jobs): self
     {
-        $this->dependantJobs = \array_map(
-            fn (WorkflowStepInterface $job) => $job->getStepId(),
-            $jobs,
-        );
+        $this->dependantJobs = collect($jobs)
+            ->map(fn (WorkflowStepInterface $job) => $job->getStepId())
+            ->filter()
+            ->all();
 
         return $this;
     }
@@ -116,11 +113,7 @@ trait WorkflowStep
             return null;
         }
 
-        /** @var WorkflowJob $workflowJob */
-        $workflowJob = app(Venture::$workflowJobModel);
-
-        return $workflowJob
-            ->newQuery()
+        return app(Venture::$workflowJobModel)
             ->where('uuid', $this->stepId)
             ->first();
     }
