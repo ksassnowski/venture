@@ -16,6 +16,7 @@ use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\Venture;
 use Stubs\CustomWorkflowJobModel;
 use Stubs\CustomWorkflowModel;
+use Stubs\TestPlugin;
 use Stubs\WorkflowWithJob;
 use function PHPUnit\Framework\assertCount;
 use function PHPUnit\Framework\assertInstanceOf;
@@ -52,4 +53,12 @@ it('can override workflow and job model', function (): void {
     assertCount(1, $jobs = $workflow->jobs()->get());
     assertInstanceOf(CustomWorkflowJobModel::class, $job = $jobs->first());
     assertInstanceOf(CustomWorkflowModel::class, $job->workflow);
+});
+
+it('can register plugins', function (): void {
+    Venture::registerPlugin(TestPlugin::class);
+
+    Venture::bootPlugins();
+
+    expect(TestPlugin::$installCalled)->toBe(1);
 });
