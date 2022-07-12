@@ -19,6 +19,7 @@ use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
 use Sassnowski\Venture\Serializer\UnserializeException;
 use Sassnowski\Venture\WorkflowStepAdapter;
 use Stubs\LegacyWorkflowJob;
+use Stubs\NonWorkflowJob;
 use Stubs\TestJob1;
 
 it('simply serializes workflow jobs if a non-postgres connection is used', function (): void {
@@ -87,3 +88,19 @@ it('wraps jobs that don\'t yet implement the WorkflowStepInterface with Workflow
 
     expect($result)->toBeInstanceOf(WorkflowStepAdapter::class);
 });
+
+it('returns null if the unserialized job is not a valid workflow step', function (): void {
+    $serializer = new Base64WorkflowSerializer(m::mock(ConnectionInterface::class));
+    $job = new NonWorkflowJob();
+
+    $result = $serializer->unserialize(\serialize($job));
+
+    expect($result)->toBeNull();
+});
+
+it('throws an exception if the job could not be base64 decoded', function (): void {
+    $connection = m::mock(PostgresConnection::class);
+    $serializer = new Base64WorkflowSerializer($connection);
+
+    $serializer->unserialize('not-valid-base-64');
+})->throws(UnserializeException::class, 'Unable to base64 decode job');
