@@ -82,8 +82,8 @@ it('can configure the workflow before calling the catch-callback', function (): 
         new TestJob1(),
         new Exception(),
         function (Workflow $workflow): void {
-                $workflow->jobs_processed = 200;
-            },
+            $workflow->jobs_processed = 200;
+        },
     );
 
     expect($_SERVER['__workflow'])->jobs_processed->toBe(200);
