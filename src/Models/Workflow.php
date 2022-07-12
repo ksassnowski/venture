@@ -23,6 +23,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Sassnowski\Venture\Events\JobCreated;
 use Sassnowski\Venture\Events\JobCreating;
+use Sassnowski\Venture\Events\WorkflowFinished;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\Venture;
 use Sassnowski\Venture\WorkflowStepInterface;
@@ -128,6 +129,8 @@ class Workflow extends Model
         if ($this->isFinished()) {
             $this->markAsFinished();
             $this->runThenCallback();
+
+            event(new WorkflowFinished($this));
 
             return;
         }

@@ -22,6 +22,7 @@ use Sassnowski\Venture\Events\WorkflowAdded;
 use Sassnowski\Venture\Events\WorkflowAdding;
 use Sassnowski\Venture\Events\WorkflowCreated;
 use Sassnowski\Venture\Events\WorkflowCreating;
+use Sassnowski\Venture\Events\WorkflowFinished;
 use Sassnowski\Venture\Events\WorkflowStarted;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
@@ -116,5 +117,9 @@ it('registers an event listener', function (string $method, object $event): void
             new Workflow(),
             [],
         ),
+    ],
+    'WorkflowFinished' => [
+        'onWorkflowFinished',
+        fn () => new WorkflowFinished(new Workflow()),
     ],
 ]);

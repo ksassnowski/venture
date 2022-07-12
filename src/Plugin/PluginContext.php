@@ -26,6 +26,7 @@ use Sassnowski\Venture\Events\WorkflowAdded;
 use Sassnowski\Venture\Events\WorkflowAdding;
 use Sassnowski\Venture\Events\WorkflowCreated;
 use Sassnowski\Venture\Events\WorkflowCreating;
+use Sassnowski\Venture\Events\WorkflowFinished;
 use Sassnowski\Venture\Events\WorkflowStarted;
 
 final class PluginContext
@@ -128,6 +129,14 @@ final class PluginContext
     public function onWorkflowStarted(callable $listener): self
     {
         return $this->registerListener(WorkflowStarted::class, $listener);
+    }
+
+    /**
+     * @param callable(WorkflowFinished): void $listener
+     */
+    public function onWorkflowFinished(callable $listener): self
+    {
+        return $this->registerListener(WorkflowFinished::class, $listener);
     }
 
     /**

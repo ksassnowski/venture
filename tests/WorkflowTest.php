@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\Events\JobCreated;
 use Sassnowski\Venture\Events\JobCreating;
+use Sassnowski\Venture\Events\WorkflowFinished;
 use Stubs\NestedWorkflow;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
@@ -486,6 +487,20 @@ it('fires an event for each job that was created', function (): void {
     $workflow->addJobs([$job1, $job2]);
 
     Event::assertDispatched(JobCreated::class, 2);
+});
+
+it('fires an event after a workflow has finished', function (): void {
+    Event::fake([WorkflowFinished::class]);
+    $workflow = createWorkflow([
+        'job_count' => 1,
+    ]);
+
+    $workflow->onStepFinished(new TestJob1());
+
+    Event::assertDispatched(
+        WorkflowFinished::class,
+        fn (WorkflowFinished $event): bool => $event->workflow->is($workflow),
+    );
 });
 
 class ThenCallback
