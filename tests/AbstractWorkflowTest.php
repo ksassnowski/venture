@@ -12,10 +12,11 @@ declare(strict_types=1);
  */
 
 use Sassnowski\Venture\Facades\Workflow;
-use Sassnowski\Venture\Models\Workflow as WorkflowModel;
+use Sassnowski\Venture\Models;
+use Sassnowski\Venture\Testing\WorkflowTester;
 use Stubs\TestAbstractWorkflow;
+use Stubs\TestWorkflow;
 use Stubs\WorkflowWithParameter;
-use function PHPUnit\Framework\assertInstanceOf;
 
 uses(TestCase::class);
 
@@ -24,7 +25,7 @@ it('can be started', function (): void {
 
     $workflow = TestAbstractWorkflow::start();
 
-    assertInstanceOf(WorkflowModel::class, $workflow);
+    expect($workflow)->toBeInstanceOf(Models\Workflow::class);
     Workflow::assertStarted(TestAbstractWorkflow::class);
 });
 
@@ -33,7 +34,12 @@ it('passes the parameters to the constructor of the workflow', function (): void
 
     WorkflowWithParameter::start('::param::');
 
-    Workflow::assertStarted(WorkflowWithParameter::class, function (WorkflowWithParameter $workflow) {
-        return '::param::' === $workflow->something;
-    });
+    Workflow::assertStarted(
+        WorkflowWithParameter::class,
+        fn (WorkflowWithParameter $workflow): bool => '::param::' === $workflow->something,
+    );
+});
+
+it('can create a WorkflowTester for the workflow class', function (): void {
+    expect(TestWorkflow::test())->toBeInstanceOf(WorkflowTester::class);
 });

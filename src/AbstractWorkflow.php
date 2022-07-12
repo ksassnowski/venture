@@ -16,6 +16,7 @@ namespace Sassnowski\Venture;
 use Illuminate\Container\Container;
 use Sassnowski\Venture\Manager\WorkflowManagerInterface;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Testing\WorkflowTester;
 
 abstract class AbstractWorkflow
 {
@@ -23,6 +24,12 @@ abstract class AbstractWorkflow
     {
         /** @phpstan-ignore-next-line */
         return (new static(...\func_get_args()))->run();
+    }
+
+    public static function test(mixed ...$arguments): WorkflowTester
+    {
+        /** @phpstan-ignore-next-line */
+        return new WorkflowTester(new static(...$arguments));
     }
 
     abstract public function definition(): WorkflowDefinition;
