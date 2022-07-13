@@ -22,7 +22,7 @@ use Sassnowski\Venture\WorkflowDefinition;
 class WorkflowManagerFake implements WorkflowManagerInterface
 {
     /**
-     * @var array<class-string<AbstractWorkflow>, AbstractWorkflow>
+     * @var array<class-string<AbstractWorkflow>, array{workflow: AbstractWorkflow, connection: string|null}>
      */
     private array $started = [];
 
@@ -38,21 +38,26 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         return $this->manager->define($workflow, $workflowName);
     }
 
-    public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow
-    {
+    public function startWorkflow(
+        AbstractWorkflow $abstractWorkflow,
+        ?string $connection = null,
+    ): Workflow {
         $pendingWorkflow = $abstractWorkflow->definition();
 
         [$workflow, $initialBatch] = $pendingWorkflow->build(
             Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
         );
 
-        $this->started[\get_class($abstractWorkflow)] = $abstractWorkflow;
+        $this->started[\get_class($abstractWorkflow)] = [
+            'workflow' => $abstractWorkflow,
+            'connection' => $connection,
+        ];
 
         return $workflow;
     }
 
     /**
-     * @param null|callable(AbstractWorkflow): bool $callback
+     * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
     public function hasStarted(string $workflowClass, ?callable $callback = null): bool
     {
@@ -64,11 +69,14 @@ class WorkflowManagerFake implements WorkflowManagerInterface
             return true;
         }
 
-        return $callback($this->started[$workflowClass]);
+        return $callback(
+            $this->started[$workflowClass]['workflow'],
+            $this->started[$workflowClass]['connection'],
+        );
     }
 
     /**
-     * @param null|callable(AbstractWorkflow): bool $callback
+     * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
     public function assertStarted(string $workflowDefinition, ?callable $callback = null): void
     {
@@ -79,13 +87,32 @@ class WorkflowManagerFake implements WorkflowManagerInterface
     }
 
     /**
-     * @param null|callable(AbstractWorkflow): bool $callback
+     * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
     public function assertNotStarted(string $workflowDefinition, ?callable $callback = null): void
     {
         PHPUnit::assertFalse(
             $this->hasStarted($workflowDefinition, $callback),
             "The unexpected [{$workflowDefinition}] workflow was started.",
+        );
+    }
+
+    /**
+     * @param null|callable(AbstractWorkflow, ?string): bool $callback
+     */
+    public function assertStartedOnConnection(
+        string $workflowDefinition,
+        string $connection,
+        ?callable $callback = null,
+    ): void {
+        $this->assertStarted($workflowDefinition, $callback);
+
+        $actualConnection = $this->started[$workflowDefinition]['connection'];
+
+        PHPUnit::assertSame(
+            $connection,
+            $actualConnection,
+            "The workflow [{$workflowDefinition}] was started, but on unexpected connection [{$actualConnection}]",
         );
     }
 }

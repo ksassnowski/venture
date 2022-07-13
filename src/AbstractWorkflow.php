@@ -26,6 +26,18 @@ abstract class AbstractWorkflow
         return (new static(...\func_get_args()))->run();
     }
 
+    public static function startOnConnection(string $connection, mixed ...$args): Workflow
+    {
+        /** @phpstan-ignore-next-line */
+        return (new static(...$args))->run($connection);
+    }
+
+    public static function startSync(mixed ...$args): Workflow
+    {
+        /** @phpstan-ignore-next-line */
+        return (new static(...$args))->run('sync');
+    }
+
     public static function test(mixed ...$arguments): WorkflowTester
     {
         /** @phpstan-ignore-next-line */
@@ -50,11 +62,11 @@ abstract class AbstractWorkflow
         return new WorkflowDefinition($this, $workflowName);
     }
 
-    private function run(): Workflow
+    private function run(?string $connection = null): Workflow
     {
         /** @var WorkflowManagerInterface $manager */
         $manager = Container::getInstance()->make('venture.manager');
 
-        return $manager->startWorkflow($this);
+        return $manager->startWorkflow($this, $connection);
     }
 }

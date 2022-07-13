@@ -49,11 +49,20 @@ class WorkflowDefinition
      */
     protected array $nestedWorkflows = [];
 
+    protected ?string $connection = null;
+
     public function __construct(
         protected AbstractWorkflow $workflow,
         protected string $workflowName = '',
     ) {
         $this->graph = new DependencyGraph();
+    }
+
+    public function allOnConnection(string $connection): self
+    {
+        $this->connection = $connection;
+
+        return $this;
     }
 
     /**
@@ -151,6 +160,8 @@ class WorkflowDefinition
      */
     public function build(?Closure $beforeCreate = null): array
     {
+        $this->setConnectionOnJobs();
+
         $workflow = $this->makeWorkflow([
             'name' => $this->workflowName,
             'job_count' => \count($this->jobs),
@@ -314,5 +325,16 @@ class WorkflowDefinition
     private function pushJob(WorkflowStepInterface $job): void
     {
         $this->jobs[$job->getJobId()] = $job;
+    }
+
+    private function setConnectionOnJobs(): void
+    {
+        if (null === $this->connection) {
+            return;
+        }
+
+        foreach ($this->jobs as $job) {
+            $job->withConnection($this->connection);
+        }
     }
 }

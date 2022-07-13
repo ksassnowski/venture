@@ -67,4 +67,8 @@ interface WorkflowStepInterface extends ShouldQueue
      * @return Delay
      */
     public function getDelay(): mixed;
+
+    public function withConnection(?string $connection): self;
+
+    public function getConnection(): ?string;
 }

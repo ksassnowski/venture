@@ -21,5 +21,5 @@ interface WorkflowManagerInterface
 {
     public function define(AbstractWorkflow $workflow, string $workflowName): WorkflowDefinition;
 
-    public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow;
+    public function startWorkflow(AbstractWorkflow $abstractWorkflow, ?string $connection): Workflow;
 }

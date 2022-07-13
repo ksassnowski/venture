@@ -33,9 +33,15 @@ class WorkflowManager implements WorkflowManagerInterface
         return new WorkflowDefinition($workflow, $workflowName);
     }
 
-    public function startWorkflow(AbstractWorkflow $abstractWorkflow): Workflow
-    {
+    public function startWorkflow(
+        AbstractWorkflow $abstractWorkflow,
+        ?string $connection = null,
+    ): Workflow {
         $definition = $abstractWorkflow->definition();
+
+        if (null !== $connection) {
+            $definition->allOnConnection($connection);
+        }
 
         [$workflow, $initialJobs] = $definition->build(
             Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),

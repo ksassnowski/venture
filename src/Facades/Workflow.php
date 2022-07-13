@@ -22,6 +22,7 @@ use Sassnowski\Venture\WorkflowDefinition;
 /**
  * @method static void assertNotStarted(string $workflowDefinition, ?callable $callback = null)
  * @method static void assertStarted(string $workflowDefinition, ?callable $callback = null)
+ * @method static void assertStartedOnConnection(string $workflowDefinition, string $connection, ?callable $callback = null)
  * @method static WorkflowDefinition define(string $workflowName)
  * @method static bool hasStarted(string $workflowClass, ?callable $callback = null)
  * @method static WorkflowDefinition startWorkflow(AbstractWorkflow $abstractWorkflow)

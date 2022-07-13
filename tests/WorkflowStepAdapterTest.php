@@ -80,6 +80,10 @@ it('proxies all interface methods to the underlying object', function (): void {
     $adapter->withDependencies([TestJob2::class, TestJob3::class]);
     expect($adapter)->getDependencies()->toEqual([TestJob2::class, TestJob3::class]);
     expect($job)->dependencies->toEqual([TestJob2::class, TestJob3::class]);
+
+    $adapter->withConnection('::connection::');
+    expect($adapter)->getConnection()->toBe('::connection::');
+    expect($job)->connection->toBe('::connection::');
 });
 
 it('proxies all property accesses to the underlying object', function (): void {

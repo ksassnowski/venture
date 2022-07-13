@@ -22,9 +22,6 @@ use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
 use Stubs\TestWorkflow;
-use function PHPUnit\Framework\assertEquals;
-use function PHPUnit\Framework\assertInstanceOf;
-use function PHPUnit\Framework\assertTrue;
 
 uses(TestCase::class);
 
@@ -74,9 +71,10 @@ it('returns the created workflow', function (): void {
 
     $workflow = $this->manager->startWorkflow($definition);
 
-    assertInstanceOf(Workflow::class, $workflow);
-    assertTrue($workflow->exists);
-    assertTrue($workflow->wasRecentlyCreated);
+    expect($workflow)->toBeInstanceOf(Workflow::class);
+    expect($workflow)
+        ->exists->toBeTrue()
+        ->wasRecentlyCreated->toBeTrue();
 });
 
 it('applies the before create hook if it exists', function (): void {
@@ -95,7 +93,7 @@ it('applies the before create hook if it exists', function (): void {
 
     $workflow = $this->manager->startWorkflow($definition);
 
-    assertEquals($workflow->name, '::new-name::');
+    expect($workflow->name)->toBe('::new-name::');
 });
 
 it('fires an event after a workflow was started', function (): void {
@@ -110,5 +108,72 @@ it('fires an event after a workflow was started', function (): void {
             return $event->model === $model
                 && $event->workflow === $workflow;
         },
+    );
+});
+
+it('sets the provided connection on all jobs', function (): void {
+    $workflow = new class() extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return $this->define('::name::')
+                ->addJob((new TestJob1())->onConnection('::connection-1::'))
+                ->addJob((new TestJob2())->onConnection('::connection-2::'));
+        }
+    };
+
+    $this->manager->startWorkflow($workflow, '::new-connection::');
+
+    Bus::assertDispatched(
+        TestJob1::class,
+        fn (TestJob1 $job): bool => '::new-connection::' === $job->connection,
+    );
+    Bus::assertDispatched(
+        TestJob2::class,
+        fn (TestJob2 $job): bool => '::new-connection::' === $job->connection,
+    );
+});
+
+it('overrides the global workflow connection if an explicit connection was provided', function (): void {
+    $workflow = new class() extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return $this->define('::name::')
+                ->allOnConnection('::old-connection::')
+                ->addJob(new TestJob1())
+                ->addJob(new TestJob2());
+        }
+    };
+
+    $this->manager->startWorkflow($workflow, '::new-connection::');
+
+    Bus::assertDispatched(
+        TestJob1::class,
+        fn (TestJob1 $job): bool => '::new-connection::' === $job->connection,
+    );
+    Bus::assertDispatched(
+        TestJob2::class,
+        fn (TestJob2 $job): bool => '::new-connection::' === $job->connection,
+    );
+});
+
+it('does not change the job connections if no explicit connection was provided', function (): void {
+    $workflow = new class() extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return $this->define('::name::')
+                ->addJob((new TestJob1())->onConnection('::connection-1::'))
+                ->addJob((new TestJob2())->onConnection('::connection-2::'));
+        }
+    };
+
+    $this->manager->startWorkflow($workflow);
+
+    Bus::assertDispatched(
+        TestJob1::class,
+        fn (TestJob1 $job): bool => '::connection-1::' === $job->connection,
+    );
+    Bus::assertDispatched(
+        TestJob2::class,
+        fn (TestJob2 $job): bool => '::connection-2::' === $job->connection,
     );
 });

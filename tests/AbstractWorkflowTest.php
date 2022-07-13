@@ -43,3 +43,27 @@ it('passes the parameters to the constructor of the workflow', function (): void
 it('can create a WorkflowTester for the workflow class', function (): void {
     expect(TestWorkflow::test())->toBeInstanceOf(WorkflowTester::class);
 });
+
+it('can start a workflow on a specific connection', function (): void {
+    Workflow::fake();
+
+    WorkflowWithParameter::startOnConnection('::connection::', '::param::');
+
+    Workflow::assertStartedOnConnection(
+        WorkflowWithParameter::class,
+        '::connection::',
+        fn (WorkflowWithParameter $workflow) => '::param::' === $workflow->something,
+    );
+});
+
+it('can start a workflow synchronously', function (): void {
+    Workflow::fake();
+
+    WorkflowWithParameter::startSync('::param::');
+
+    Workflow::assertStartedOnConnection(
+        WorkflowWithParameter::class,
+        'sync',
+        fn (WorkflowWithParameter $workflow) => '::param::' === $workflow->something,
+    );
+});

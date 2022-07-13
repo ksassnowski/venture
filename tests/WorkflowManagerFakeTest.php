@@ -17,11 +17,8 @@ use Sassnowski\Venture\Facades\Workflow;
 use Sassnowski\Venture\Manager\WorkflowManagerInterface;
 use Sassnowski\Venture\WorkflowDefinition;
 use Stubs\TestAbstractWorkflow;
+use Stubs\TestWorkflow;
 use Stubs\WorkflowWithParameter;
-use function PHPUnit\Framework\assertEquals;
-use function PHPUnit\Framework\assertFalse;
-use function PHPUnit\Framework\assertInstanceOf;
-use function PHPUnit\Framework\assertTrue;
 
 uses(TestCase::class);
 
@@ -30,94 +27,143 @@ beforeEach(function (): void {
 });
 
 it('implements the correct interface', function (): void {
-    assertInstanceOf(WorkflowManagerInterface::class, $this->managerFake);
+    expect($this->managerFake)->toBeInstanceOf(WorkflowManagerInterface::class);
 });
 
 it('records all started workflows', function (): void {
-    assertFalse($this->managerFake->hasStarted(TestAbstractWorkflow::class));
+    expect($this->managerFake)
+        ->hasStarted(TestAbstractWorkflow::class)
+        ->toBeFalse();
     $this->managerFake->startWorkflow(new TestAbstractWorkflow());
 
-    assertTrue($this->managerFake->hasStarted(TestAbstractWorkflow::class));
+    expect($this->managerFake)
+        ->hasStarted(TestAbstractWorkflow::class)
+        ->toBeTrue();
 });
 
 it('stores the workflow to the database', function (): void {
     $workflow = $this->managerFake->startWorkflow(new TestAbstractWorkflow());
 
-    assertTrue($workflow->exists);
-    assertTrue($workflow->wasRecentlyCreated);
+    expect($workflow)
+        ->exists->toBeTrue()
+        ->wasRecentlyCreated->toBeTrue();
 });
 
-it('passes if a workflow was started', function (): void {
+test('assertStarted passes if a workflow was started', function (): void {
     $this->managerFake->startWorkflow(new TestAbstractWorkflow());
 
     $this->managerFake->assertStarted(TestAbstractWorkflow::class);
 });
 
-it('fails if the expected workflow was not started', function (): void {
-    $expectedWorkflow = TestAbstractWorkflow::class;
+test('assertStarted fails if the expected workflow was not started', function (): void {
+    $this->managerFake->assertStarted(TestAbstractWorkflow::class);
+})->throws(
+    AssertionFailedError::class,
+    'The expected workflow [Stubs\TestAbstractWorkflow] was not started',
+);
 
-    test()->expectException(AssertionFailedError::class);
-    test()->expectExceptionMessage("The expected workflow [{$expectedWorkflow}] was not started");
+test('assertStartedOnConnection passes if the workflow was started on the correct connection', function (): void {
+    $this->managerFake->startWorkflow(new TestWorkflow(), '::connection::');
 
-    $this->managerFake->assertStarted($expectedWorkflow);
+    $this->managerFake->assertStartedOnConnection(
+        TestWorkflow::class,
+        '::connection::',
+    );
 });
 
-it('fails if the provided callback returns false', function (): void {
-    $expectedWorkflow = WorkflowWithParameter::class;
+test('assertStartedOnConnection fails if the workflow was not started on the correct connection', function (): void {
+    $this->managerFake->startWorkflow(new TestWorkflow(), '::connection::');
 
+    $this->managerFake->assertStartedOnConnection(
+        TestWorkflow::class,
+        '::different-connection::',
+    );
+})->throws(
+    AssertionFailedError::class,
+    'The workflow [Stubs\TestWorkflow] was started, but on unexpected connection [::connection::]',
+);
+
+test('assertStartedOnConnection fails if the workflow was not started at all', function (): void {
+    $this->managerFake->assertStartedOnConnection(
+        TestWorkflow::class,
+        '::different-connection::',
+    );
+})->throws(
+    AssertionFailedError::class,
+    'The expected workflow [Stubs\TestWorkflow] was not started',
+);
+
+test('assertStartedOnConnection fails if the workflow was started on the correct connection but the callback returns false', function (): void {
+    $this->managerFake->startWorkflow(new TestWorkflow(), '::connection::');
+
+    $this->managerFake->assertStartedOnConnection(
+        TestWorkflow::class,
+        '::connection::',
+        fn () => false,
+    );
+})->throws(
+    AssertionFailedError::class,
+    'The expected workflow [Stubs\TestWorkflow] was not started',
+);
+
+test('assertStartedOnConnection passes if the workflow was started on the correct connection and the callback returns true', function (): void {
+    $this->managerFake->startWorkflow(new TestWorkflow(), '::connection::');
+
+    $this->managerFake->assertStartedOnConnection(
+        TestWorkflow::class,
+        '::connection::',
+        fn (TestWorkflow $workflow, ?string $connection) => '::connection::' === $connection,
+    );
+});
+
+test('assertStarted fails if the provided callback returns false', function (): void {
     $this->managerFake->startWorkflow(new WorkflowWithParameter('::input::'));
 
-    test()->expectException(AssertionFailedError::class);
-    test()->expectExceptionMessage("The expected workflow [{$expectedWorkflow}] was not started");
+    $this->managerFake->assertStarted(
+        WorkflowWithParameter::class,
+        fn (WorkflowWithParameter $workflow) => '::other-input::' === $workflow->something,
+    );
+})->throws(
+    AssertionFailedError::class,
+    'The expected workflow [Stubs\WorkflowWithParameter] was not started',
+);
 
-    $this->managerFake->assertStarted($expectedWorkflow, function (WorkflowWithParameter $workflow) {
-        return '::other-input::' === $workflow->something;
-    });
-});
-
-it('passes if the workflow was started and the callback returns true', function (): void {
-    $expectedWorkflow = WorkflowWithParameter::class;
-
+test('assertStarted passes if the workflow was started and the callback returns true', function (): void {
     $this->managerFake->startWorkflow(new WorkflowWithParameter('::input::'));
 
-    $this->managerFake->assertStarted($expectedWorkflow, function (WorkflowWithParameter $workflow) {
-        return '::input::' === $workflow->something;
-    });
+    $this->managerFake->assertStarted(
+        WorkflowWithParameter::class,
+        fn (WorkflowWithParameter $workflow) => '::input::' === $workflow->something,
+    );
 });
 
-it('passes if the workflow was not started', function (): void {
-    $expectedWorkflow = TestAbstractWorkflow::class;
-
-    $this->managerFake->assertNotStarted($expectedWorkflow);
+test('assertNotStarted passes if the workflow was not started', function (): void {
+    $this->managerFake->assertNotStarted(TestAbstractWorkflow::class);
 });
 
-it('fails if the workflow was started', function (): void {
-    $workflow = TestAbstractWorkflow::class;
-
+test('assertNotStarted fails if the workflow was started', function (): void {
     $this->managerFake->startWorkflow(new TestAbstractWorkflow());
 
-    test()->expectException(AssertionFailedError::class);
-    test()->expectExceptionMessage("The unexpected [{$workflow}] workflow was started");
+    $this->managerFake->assertNotStarted(TestAbstractWorkflow::class);
+})->throws(
+    AssertionFailedError::class,
+    'The unexpected [Stubs\TestAbstractWorkflow] workflow was started',
+);
 
-    $this->managerFake->assertNotStarted($workflow);
-});
-
-it('passes if a workflow was started, but the callback returns false', function (): void {
-    $workflow = WorkflowWithParameter::class;
-
+test('assertNotStarted passes if a workflow was started, but the callback returns false', function (): void {
     $this->managerFake->startWorkflow(new WorkflowWithParameter('::some-parameter::'));
 
-    $this->managerFake->assertNotStarted($workflow, function (WorkflowWithParameter $workflow) {
-        return '::other-parameter::' === $workflow->something;
-    });
+    $this->managerFake->assertNotStarted(
+        WorkflowWithParameter::class,
+        fn (WorkflowWithParameter $workflow) => '::other-parameter::' === $workflow->something,
+    );
 });
 
 it('runs the beforeCreate hook', function (): void {
     $workflow = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
-            return createDefinition();
-            ('::name::');
+            return createDefinition('::name::');
         }
 
         public function beforeCreate(Sassnowski\Venture\Models\Workflow $workflow): void
@@ -128,5 +174,5 @@ it('runs the beforeCreate hook', function (): void {
 
     $workflow = $this->managerFake->startWorkflow($workflow);
 
-    assertEquals('::new-name::', $workflow->name);
+    expect($workflow)->name->toBe('::new-name::');
 });
