@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Events;
 
-use DateInterval;
-use DateTimeInterface;
 use Illuminate\Foundation\Events\Dispatchable;
 use Sassnowski\Venture\WorkflowDefinition;
 use Sassnowski\Venture\WorkflowStepInterface;
@@ -24,8 +22,8 @@ final class JobAdding
     use Dispatchable;
 
     /**
-     * @param array<int, string>                      $dependencies
-     * @param null|DateInterval|DateTimeInterface|int $delay
+     * @param array<int, string> $dependencies
+     * @param Delay              $delay
      */
     public function __construct(
         public WorkflowDefinition $definition,

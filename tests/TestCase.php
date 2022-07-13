@@ -12,6 +12,7 @@ declare(strict_types=1);
  */
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\ServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 use Sassnowski\Venture\VentureServiceProvider;
 
@@ -19,7 +20,12 @@ class TestCase extends OrchestraTestCase
 {
     use RefreshDatabase;
 
-    protected function getPackageProviders($app)
+    /**
+     * @param mixed $app
+     *
+     * @return array<int, class-string<ServiceProvider>>
+     */
+    protected function getPackageProviders($app): array
     {
         return [
             VentureServiceProvider::class,

@@ -7,7 +7,7 @@ parameters:
         - src
 
     typeAliases:
-        Delay: '\DateTimeInterface|\DateInterval|int|null'
+        Delay: '\DateTimeInterface|\DateInterval|array<array-key, mixed>|int|null'
 
     level: 9
 
