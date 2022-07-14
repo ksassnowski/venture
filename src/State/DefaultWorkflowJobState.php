@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\State;
 
-use Sassnowski\Venture\Exceptions\InvalidStateTransitionException;
+use RuntimeException;
 use Sassnowski\Venture\Models\WorkflowJob;
 use Throwable;
 
@@ -88,7 +88,7 @@ class DefaultWorkflowJobState implements WorkflowJobState
     public function markAsGated(): void
     {
         if (!$this->job->manual) {
-            throw new InvalidStateTransitionException();
+            throw new RuntimeException('Only manual jobs can be marked as gated');
         }
 
         $this->job->update([
@@ -105,8 +105,17 @@ class DefaultWorkflowJobState implements WorkflowJobState
 
     public function canRun(): bool
     {
+        if ($this->isGated()) {
+            return false;
+        }
+
         $step = $this->job->step();
 
-        return \count(\array_diff($step->getDependencies(), $this->job->workflow->finished_jobs)) === 0;
+        return \count(
+            \array_diff(
+                $step->getDependencies(),
+                $this->job->workflow->finished_jobs,
+            ),
+        ) === 0;
     }
 }

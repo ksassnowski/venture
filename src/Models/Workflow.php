@@ -78,7 +78,7 @@ class Workflow extends Model
 
         parent::__construct($attributes);
 
-        $this->state = new Venture::$workflowState($this);
+        $this->state = app(Venture::$workflowState, ['workflow' => $this]);
     }
 
     /**

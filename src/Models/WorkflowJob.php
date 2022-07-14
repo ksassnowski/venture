@@ -51,6 +51,8 @@ class WorkflowJob extends Model
     protected $dates = [
         'failed_at',
         'finished_at',
+        'started_at',
+        'gated_at',
     ];
 
     /**
@@ -58,6 +60,7 @@ class WorkflowJob extends Model
      */
     protected $casts = [
         'edges' => 'array',
+        'manual' => 'bool',
     ];
 
     private WorkflowJobState $state;
@@ -73,7 +76,7 @@ class WorkflowJob extends Model
 
         parent::__construct($attributes);
 
-        $this->state = new Venture::$workflowJobState($this);
+        $this->state = app(Venture::$workflowJobState, ['job' => $this]);
     }
 
     /**
