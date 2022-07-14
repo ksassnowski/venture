@@ -1,22 +1,22 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Parameter \\#1 \\$callback of method Illuminate\\\\Support\\\\Collection\\<int,Illuminate\\\\Database\\\\Eloquent\\\\Model\\>\\:\\:each\\(\\) expects callable\\(Illuminate\\\\Database\\\\Eloquent\\\\Model, int\\)\\: mixed, Closure\\(Sassnowski\\\\Venture\\\\Models\\\\WorkflowJob\\)\\: void given\\.$#"
+			count: 1
+			path: src/Actions/HandleFinishedJobs.php
+
+		-
+			message: "#^Parameter \\#1 \\$callback of method Illuminate\\\\Support\\\\Collection\\<int,Illuminate\\\\Database\\\\Eloquent\\\\Model\\>\\:\\:filter\\(\\) expects \\(callable\\(Illuminate\\\\Database\\\\Eloquent\\\\Model, int\\)\\: bool\\)\\|null, Closure\\(Sassnowski\\\\Venture\\\\Models\\\\WorkflowJob\\)\\: bool given\\.$#"
+			count: 1
+			path: src/Actions/HandleFinishedJobs.php
+
+		-
 			message: "#^Method Sassnowski\\\\Venture\\\\Graph\\\\DependencyGraph\\:\\:resolveDependencies\\(\\) should return array\\<int, string\\> but returns array\\<int, mixed\\>\\.$#"
 			count: 1
 			path: src/Graph/DependencyGraph.php
 
 		-
-			message: "#^Cannot call method dispatch\\(\\) on mixed\\.$#"
-			count: 1
-			path: src/Models/Workflow.php
-
-		-
 			message: "#^Method Sassnowski\\\\Venture\\\\Models\\\\Workflow\\:\\:serializer\\(\\) should return Sassnowski\\\\Venture\\\\Serializer\\\\WorkflowJobSerializer but returns mixed\\.$#"
-			count: 1
-			path: src/Models/Workflow.php
-
-		-
-			message: "#^Parameter \\#1 \\$callback of method Illuminate\\\\Support\\\\Collection\\<int,mixed\\>\\:\\:map\\(\\) expects callable\\(mixed, int\\)\\: Sassnowski\\\\Venture\\\\WorkflowStepInterface\\|null, Closure\\(string\\)\\: Sassnowski\\\\Venture\\\\WorkflowStepInterface\\|null given\\.$#"
 			count: 1
 			path: src/Models/Workflow.php
 

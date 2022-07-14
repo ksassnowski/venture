@@ -18,11 +18,17 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
+use Sassnowski\Venture\Actions\HandlesFailedJobs;
+use Sassnowski\Venture\Actions\HandlesFinishedJobs;
+use function event;
 
 class WorkflowEventSubscriber
 {
-    public function __construct(private JobExtractor $jobExtractor)
-    {
+    public function __construct(
+        private JobExtractor $jobExtractor,
+        private HandlesFinishedJobs $handleFinishedJobs,
+        private HandlesFailedJobs $handleFailedJobs,
+    ) {
     }
 
     public function subscribe(Dispatcher $events): void
@@ -52,9 +58,7 @@ class WorkflowEventSubscriber
         $this->withWorkflowJob($event, function (WorkflowStepInterface $jobInstance): void {
             event(new Events\JobFinished($jobInstance));
 
-            $jobInstance
-                ->workflow()
-                ?->onStepFinished($jobInstance);
+            ($this->handleFinishedJobs)($jobInstance);
         });
     }
 
@@ -65,11 +69,9 @@ class WorkflowEventSubscriber
         }
 
         $this->withWorkflowJob($event, function (WorkflowStepInterface $jobInstance) use ($event): void {
-            event(new Events\JobFailed($jobInstance, $event->exception));
+            ($this->handleFailedJobs)($jobInstance, $event->exception);
 
-            $jobInstance
-                ->workflow()
-                ?->onStepFailed($jobInstance, $event->exception);
+            event(new Events\JobFailed($jobInstance, $event->exception));
         });
     }
 

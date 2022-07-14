@@ -14,6 +14,10 @@ declare(strict_types=1);
 namespace Sassnowski\Venture;
 
 use Illuminate\Support\ServiceProvider;
+use Sassnowski\Venture\Actions\HandleFailedJobs;
+use Sassnowski\Venture\Actions\HandleFinishedJobs;
+use Sassnowski\Venture\Actions\HandlesFailedJobs;
+use Sassnowski\Venture\Actions\HandlesFinishedJobs;
 use Sassnowski\Venture\Manager\WorkflowManager;
 use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
@@ -50,6 +54,7 @@ class VentureServiceProvider extends ServiceProvider
         $this->registerJobExtractor();
         $this->registerStepIdGenerator();
         $this->registerJobSerializer();
+        $this->registerActions();
     }
 
     private function registerManager(): void
@@ -87,6 +92,19 @@ class VentureServiceProvider extends ServiceProvider
                 'venture.workflow_job_serializer_class',
                 Base64WorkflowSerializer::class,
             ),
+        );
+    }
+
+    private function registerActions(): void
+    {
+        $this->app->bind(
+            HandlesFinishedJobs::class,
+            HandleFinishedJobs::class,
+        );
+
+        $this->app->bind(
+            HandlesFailedJobs::class,
+            HandleFailedJobs::class,
         );
     }
 }

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Testing;
 
 use Closure;
-use RuntimeException;
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowStepInterface;
@@ -31,7 +30,8 @@ final class WorkflowTester
      */
     public function runThenCallback(?Closure $configureWorkflowCallback = null): void
     {
-        $this->runCallback('then', $configureWorkflowCallback);
+        $this->getWorkflow($configureWorkflowCallback)
+            ->runThenCallback();
     }
 
     /**
@@ -42,39 +42,20 @@ final class WorkflowTester
         Throwable $exception,
         ?Closure $configureWorkflowCallback = null,
     ): void {
-        $this->runCallback('catch', $configureWorkflowCallback, $failedJob, $exception);
+        $this->getWorkflow($configureWorkflowCallback)
+            ->runCatchCallback($failedJob, $exception);
     }
 
-    /**
-     * @param null|Closure(Workflow): void $configureWorkflowCallback
-     */
-    private function runCallback(
-        string $callback,
-        ?Closure $configureWorkflowCallback,
-        mixed ...$arguments,
-    ): void {
+    private function getWorkflow(?Closure $callback = null): Workflow
+    {
         $definition = $this->workflow->definition();
 
         [$workflow, $_] = $definition->build();
 
-        $callbackName = "{$callback}_callback";
-        $serializedCallback = $workflow->{$callbackName};
-
-        if (null === $serializedCallback) {
-            throw new RuntimeException(\sprintf(
-                'No %s-callback configured for workflow %s',
-                $callback,
-                $this->workflow::class,
-            ));
+        if (null !== $callback) {
+            $callback($workflow);
         }
 
-        if (null !== $configureWorkflowCallback) {
-            $configureWorkflowCallback($workflow);
-        }
-
-        /** @var callable $callback */
-        $callback = \unserialize($serializedCallback);
-
-        $callback($workflow, ...$arguments);
+        return $workflow;
     }
 }

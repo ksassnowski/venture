@@ -36,15 +36,6 @@ it('can run the then-callback of the workflow', function (): void {
     expect($_SERVER['__then.called'])->toBe(1);
 });
 
-it('throws an exception if no then-callback is configured for the workflow', function (): void {
-    $tester = new WorkflowTester(new WorkflowWithCallbacks());
-
-    $tester->runThenCallback();
-})->throws(
-    RuntimeException::class,
-    'No then-callback configured for workflow ' . WorkflowWithCallbacks::class,
-);
-
 it('accepts callback to configure the workflow before calling the then-callback', function (): void {
     $tester = new WorkflowTester(
         new WorkflowWithCallbacks(

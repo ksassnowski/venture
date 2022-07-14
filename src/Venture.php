@@ -18,6 +18,10 @@ use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\Plugin\Core;
 use Sassnowski\Venture\Plugin\Plugin;
 use Sassnowski\Venture\Plugin\PluginContext;
+use Sassnowski\Venture\State\DefaultWorkflowJobState;
+use Sassnowski\Venture\State\DefaultWorkflowState;
+use Sassnowski\Venture\State\WorkflowJobState;
+use Sassnowski\Venture\State\WorkflowState;
 
 final class Venture
 {
@@ -30,6 +34,16 @@ final class Venture
      * @var class-string<WorkflowJob>
      */
     public static string $workflowJobModel = WorkflowJob::class;
+
+    /**
+     * @var class-string<WorkflowState>
+     */
+    public static string $workflowState = DefaultWorkflowState::class;
+
+    /**
+     * @var class-string<WorkflowJobState>
+     */
+    public static string $workflowJobState = DefaultWorkflowJobState::class;
 
     /**
      * @var array<int, class-string<Plugin>>
@@ -50,6 +64,22 @@ final class Venture
     public static function useWorkflowJobModel(string $workflowJobModel): void
     {
         self::$workflowJobModel = $workflowJobModel;
+    }
+
+    /**
+     * @param class-string<WorkflowState> $state
+     */
+    public static function useWorkflowState(string $state): void
+    {
+        self::$workflowState = $state;
+    }
+
+    /**
+     * @param class-string<WorkflowJobState> $state
+     */
+    public static function useWorkflowJobState(string $state): void
+    {
+        self::$workflowJobState = $state;
     }
 
     /**

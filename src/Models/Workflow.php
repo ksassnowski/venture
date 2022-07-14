@@ -15,16 +15,14 @@ namespace Sassnowski\Venture\Models;
 
 use Carbon\Carbon;
 use Illuminate\Container\Container;
-use Illuminate\Contracts\Bus\Dispatcher;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Sassnowski\Venture\Events\JobCreated;
 use Sassnowski\Venture\Events\JobCreating;
-use Sassnowski\Venture\Events\WorkflowFinished;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
+use Sassnowski\Venture\State\WorkflowState;
 use Sassnowski\Venture\Venture;
 use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
@@ -43,8 +41,6 @@ use Throwable;
  * @property int                                  $jobs_processed
  * @property string                               $name
  * @property ?string                              $then_callback
- *
- * @psalm-suppress PropertyNotSetInConstructor
  */
 class Workflow extends Model
 {
@@ -71,13 +67,18 @@ class Workflow extends Model
         'cancelled_at',
     ];
 
+    private WorkflowState $state;
+
     /**
      * @param array<string, mixed> $attributes
      */
     public function __construct(array $attributes = [])
     {
         $this->table = config('venture.workflow_table');
+
         parent::__construct($attributes);
+
+        $this->state = new Venture::$workflowState($this);
     }
 
     /**
@@ -93,12 +94,9 @@ class Workflow extends Model
      */
     public function addJobs(array $jobs): void
     {
-        $c = (new Collection($jobs))
+        (new Collection($jobs))
             ->map(function (WorkflowStepInterface $job): WorkflowJob {
-                /** @var class-string<WorkflowJob> $modelClass */
-                $modelClass = Venture::$workflowJobModel;
-
-                return new $modelClass([
+                return new Venture::$workflowJobModel([
                     'job' => $this->serializer()->serialize(clone $job),
                     'name' => $job->getName(),
                     'uuid' => $job->getStepId(),
@@ -118,77 +116,49 @@ class Workflow extends Model
             });
     }
 
-    public function onStepFinished(WorkflowStepInterface $job): void
+    public function allJobsHaveFinished(): bool
     {
-        $this->markJobAsFinished($job);
-
-        if ($this->isCancelled()) {
-            return;
-        }
-
-        if ($this->isFinished()) {
-            $this->markAsFinished();
-            $this->runThenCallback();
-
-            event(new WorkflowFinished($this));
-
-            return;
-        }
-
-        if (empty($job->getDependantJobs())) {
-            return;
-        }
-
-        $this->runDependantJobs($job);
+        return $this->state->allJobsHaveFinished();
     }
 
-    public function onStepFailed(WorkflowStepInterface $job, Throwable $e): void
+    public function markJobAsFinished(WorkflowStepInterface $job): void
     {
-        DB::transaction(function () use ($job, $e): void {
-            /** @var self $workflow */
-            $workflow = $this->newQuery()
-                ->lockForUpdate()
-                ->findOrFail($this->getKey(), ['jobs_failed']);
+        $this->state->markJobAsFinished($job);
+    }
 
-            $this->jobs_failed = $workflow->jobs_failed + 1;
-            $this->save();
+    public function markJobAsFailed(WorkflowStepInterface $job, Throwable $exception): void
+    {
+        $this->state->markJobAsFailed($job, $exception);
+    }
 
-            $job->step()?->update([
-                'failed_at' => now(),
-                'exception' => (string) $e,
-            ]);
-        });
-
-        $this->runCallback($this->catch_callback, $this, $job, $e);
+    public function markAsFinished(): void
+    {
+        $this->state->markAsFinished();
     }
 
     public function isFinished(): bool
     {
-        return $this->job_count === $this->jobs_processed;
+        return $this->state->isFinished();
     }
 
     public function isCancelled(): bool
     {
-        return null !== $this->cancelled_at;
+        return $this->state->isCancelled();
     }
 
     public function hasRan(): bool
     {
-        return ($this->jobs_processed + $this->jobs_failed) === $this->job_count;
+        return $this->state->hasRan();
     }
 
     public function cancel(): void
     {
-        if ($this->isCancelled()) {
-            return;
-        }
-
-        $this->update(['cancelled_at' => now()]);
+        $this->state->markAsCancelled();
     }
 
     public function remainingJobs(): int
     {
-        return $this->job_count - $this->jobs_processed;
+        return $this->state->remainingJobs();
     }
 
     /**
@@ -222,6 +192,16 @@ class Workflow extends Model
             ->get();
     }
 
+    public function runThenCallback(): void
+    {
+        $this->runCallback($this->then_callback, $this);
+    }
+
+    public function runCatchCallback(WorkflowStepInterface $failedStep, Throwable $exception): void
+    {
+        $this->runCallback($this->catch_callback, $this, $failedStep, $exception);
+    }
+
     /**
      * @return array<string, array{
      *     name: string,
@@ -244,40 +224,6 @@ class Workflow extends Model
         ])->all();
     }
 
-    protected function markAsFinished(): void
-    {
-        $this->update(['finished_at' => Carbon::now()]);
-    }
-
-    protected function markJobAsFinished(WorkflowStepInterface $job): void
-    {
-        DB::transaction(function () use ($job): void {
-            /** @var self $workflow */
-            $workflow = $this->newQuery()
-                ->lockForUpdate()
-                ->findOrFail($this->getKey(), ['finished_jobs', 'jobs_processed']);
-
-            $this->finished_jobs = \array_merge($workflow->finished_jobs, [$job->getJobId()]);
-            $this->jobs_processed = $workflow->jobs_processed + 1;
-            $this->save();
-
-            $job->step()?->update(['finished_at' => now()]);
-        });
-    }
-
-    private function canJobRun(WorkflowStepInterface $job): bool
-    {
-        return collect($job->getDependencies())
-            ->every(function (string $dependency): bool {
-                return \in_array($dependency, $this->finished_jobs, true);
-            });
-    }
-
-    private function runThenCallback(): void
-    {
-        $this->runCallback($this->then_callback, $this);
-    }
-
     private function runCallback(?string $serializedCallback, mixed ...$args): void
     {
         if (null === $serializedCallback) {
@@ -288,35 +234,6 @@ class Workflow extends Model
         $callback = \unserialize($serializedCallback);
 
         $callback(...$args);
-    }
-
-    private function runDependantJobs(WorkflowStepInterface $job): void
-    {
-        /** @phpstan-ignore-next-line */
-        if (\is_object($job->getDependantJobs()[0])) {
-            $dependantJobs = collect($job->getDependantJobs());
-        } else {
-            /** @var WorkflowJob $jobModel */
-            $jobModel = app(Venture::$workflowJobModel);
-
-            $dependantJobs = $jobModel::query()
-                ->whereIn('uuid', $job->getDependantJobs())
-                ->get('job')
-                ->pluck('job')
-                ->map(fn (string $job): ?WorkflowStepInterface => $this->serializer()->unserialize($job))
-                ->filter();
-        }
-
-        $dependantJobs
-            ->filter(fn (WorkflowStepInterface $job): bool => $this->canJobRun($job))
-            ->each(function (WorkflowStepInterface $job): void {
-                $this->dispatchJob($job);
-            });
-    }
-
-    private function dispatchJob(WorkflowStepInterface $job): void
-    {
-        Container::getInstance()->get(Dispatcher::class)->dispatch($job);
     }
 
     private function serializer(): WorkflowJobSerializer

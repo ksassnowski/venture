@@ -25,6 +25,7 @@ use Stubs\WorkflowWithJob;
 uses(TestCase::class)->group('plugin');
 
 beforeEach(function (): void {
+    $_SERVER['__catch.count'] = 0;
     $this->plugin = new Core(new FakeIDGenerator('::fake-id::'));
     $this->definition = new WorkflowDefinition(new TestWorkflow());
 });

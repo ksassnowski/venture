@@ -16,15 +16,25 @@ namespace Sassnowski\Venture\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use RuntimeException;
+use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
+use Sassnowski\Venture\State\WorkflowJobState;
 use Sassnowski\Venture\Venture;
+use Sassnowski\Venture\WorkflowStepInterface;
+use Throwable;
 
 /**
  * @property array<int, string> $edges
- * @property string             $exception
+ * @property ?string            $exception
  * @property ?Carbon            $failed_at
  * @property ?Carbon            $finished_at
+ * @property ?Carbon            $gated_at
+ * @property string             $job
+ * @property bool               $manual
  * @property string             $name
+ * @property ?Carbon            $started_at
  * @property string             $uuid
+ * @property Workflow           $workflow
  */
 class WorkflowJob extends Model
 {
@@ -50,6 +60,10 @@ class WorkflowJob extends Model
         'edges' => 'array',
     ];
 
+    private WorkflowJobState $state;
+
+    private ?WorkflowStepInterface $step = null;
+
     /**
      * @param array<string, mixed> $attributes
      */
@@ -58,6 +72,8 @@ class WorkflowJob extends Model
         $this->table = config('venture.jobs_table');
 
         parent::__construct($attributes);
+
+        $this->state = new Venture::$workflowJobState($this);
     }
 
     /**
@@ -66,5 +82,63 @@ class WorkflowJob extends Model
     public function workflow(): BelongsTo
     {
         return $this->belongsTo(Venture::$workflowModel, 'workflow_id');
+    }
+
+    public function step(): WorkflowStepInterface
+    {
+        if (null === $this->step) {
+            /** @var WorkflowJobSerializer $serializer */
+            $serializer = app(WorkflowJobSerializer::class);
+
+            $step = $serializer->unserialize($this->job);
+
+            if (null === $step) {
+                throw new RuntimeException('Unable to unserialize job');
+            }
+
+            $this->step = $step;
+        }
+
+        return $this->step;
+    }
+
+    public function hasFinished(): bool
+    {
+        return $this->state->hasFinished();
+    }
+
+    public function markAsFinished(): void
+    {
+        $this->state->markAsFinished();
+    }
+
+    public function hasFailed(): bool
+    {
+        return $this->state->hasFailed();
+    }
+
+    public function markAsFailed(Throwable $exception): void
+    {
+        $this->state->markAsFailed($exception);
+    }
+
+    public function markAsProcessing(): void
+    {
+        $this->state->markAsProcessing();
+    }
+
+    public function transition(): void
+    {
+        $this->state->transition($this->workflow->finished_jobs);
+    }
+
+    public function canRun(): bool
+    {
+        return $this->state->canRun();
+    }
+
+    public function start(): void
+    {
+        \dispatch($this->step());
     }
 }
