@@ -125,19 +125,34 @@ class WorkflowJob extends Model
         $this->state->markAsFailed($exception);
     }
 
+    public function isProcessing(): bool
+    {
+        return $this->state->isProcessing();
+    }
+
     public function markAsProcessing(): void
     {
         $this->state->markAsProcessing();
     }
 
-    public function transition(): void
-    {
-        $this->state->transition($this->workflow->finished_jobs);
-    }
-
     public function canRun(): bool
     {
         return $this->state->canRun();
+    }
+
+    public function isGated(): bool
+    {
+        return $this->state->isGated();
+    }
+
+    public function markAsGated(): void
+    {
+        $this->state->markAsGated();
+    }
+
+    public function transition(): void
+    {
+        $this->state->transition($this->workflow->finished_jobs);
     }
 
     public function start(): void
