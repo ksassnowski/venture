@@ -15,7 +15,6 @@ namespace Sassnowski\Venture\Plugin;
 
 use Illuminate\Support\Str;
 use Sassnowski\Venture\Events\JobAdding;
-use Sassnowski\Venture\Events\JobProcessing;
 use Sassnowski\Venture\Events\WorkflowAdding;
 use Sassnowski\Venture\Events\WorkflowCreated;
 use Sassnowski\Venture\StepIdGenerator;
@@ -31,7 +30,6 @@ final class Core implements Plugin
         $context->onJobAdding([$this, 'onJobAdding']);
         $context->onWorkflowAdding([$this, 'onWorkflowAdding']);
         $context->onWorkflowCreated([$this, 'onWorkflowCreated']);
-        $context->onJobProcessing([$this, 'onJobProcessing']);
     }
 
     public function onJobAdding(JobAdding $event): void
@@ -73,10 +71,5 @@ final class Core implements Plugin
                 ->withDependantJobs($graph->getDependantJobs($jobID))
                 ->withDependencies($graph->getDependencies($jobID));
         }
-    }
-
-    public function onJobProcessing(JobProcessing $event): void
-    {
-        $event->job->step()?->markAsProcessing();
     }
 }

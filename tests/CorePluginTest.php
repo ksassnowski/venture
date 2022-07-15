@@ -14,7 +14,6 @@ declare(strict_types=1);
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use Sassnowski\Venture\Events\JobAdding;
-use Sassnowski\Venture\Events\JobProcessing;
 use Sassnowski\Venture\Events\WorkflowAdding;
 use Sassnowski\Venture\FakeIDGenerator;
 use Sassnowski\Venture\Plugin\Core;
@@ -130,15 +129,4 @@ it('namespaces the nested workflow\'s job ids', function (): void {
     foreach ($nestedDefinition->jobs() as $jobID => $job) {
         expect($job->getJobId())->toBe('::workflow-id::.' . $jobID);
     }
-});
-
-it('marks a job as processing', function (): void {
-    createDefinition()
-        ->addJob($job = new TestJob1())
-        ->build();
-    $event = new JobProcessing($job);
-
-    $this->plugin->onJobProcessing($event);
-
-    expect($job->step())->isProcessing()->toBeTrue();
 });
