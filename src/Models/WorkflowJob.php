@@ -28,9 +28,9 @@ use Throwable;
  * @property ?string            $exception
  * @property ?Carbon            $failed_at
  * @property ?Carbon            $finished_at
+ * @property bool               $gated
  * @property ?Carbon            $gated_at
  * @property string             $job
- * @property bool               $gated
  * @property string             $name
  * @property ?Carbon            $started_at
  * @property string             $uuid

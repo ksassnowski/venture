@@ -26,11 +26,11 @@ final class InvalidJobException extends Exception
     public static function jobNotUsingTrait(object $job, ?Throwable $previous = null): self
     {
         return new self(
-            sprintf(
+            \sprintf(
                 'Job [%s] does not implement WorkflowStepInterface or use the WorkflowStep trait',
                 $job::class,
             ),
-            previous: $previous
+            previous: $previous,
         );
     }
 }

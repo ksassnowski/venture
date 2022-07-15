@@ -371,7 +371,7 @@ class WorkflowDefinition
         try {
             $job = WorkflowStepAdapter::fromJob($step);
 
-            @trigger_error(
+            @\trigger_error(
                 "Jobs that don't implement WorkflowStepInterface are deprecated and support for them will be dropped in Venture 5",
                 \E_USER_DEPRECATED,
             );

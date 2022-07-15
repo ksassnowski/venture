@@ -164,7 +164,7 @@ it('saves the workflow steps to the database', function (): void {
     assertDatabaseHas('workflow_jobs', [
         'workflow_id' => $workflow->id,
         'gated' => true,
-        'job' => \serialize($testJob3)
+        'job' => \serialize($testJob3),
     ]);
 });
 
@@ -311,7 +311,7 @@ it('throws an exception when adding a closure job without an explicit id', funct
     createDefinition()->addJob(fn () => 'foo', id: null);
 })->throws(
     InvalidJobException::class,
-    'Closure-based jobs must have an explicit id'
+    'Closure-based jobs must have an explicit id',
 );
 
 it('throws an exception when adding a job that does not implement WorkflowStepInterface or use the WorkflowStep trait', function (): void {

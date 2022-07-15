@@ -22,11 +22,11 @@ use Sassnowski\Venture\Models\WorkflowJob;
  * @property Delay              $delay
  * @property array<int, string> $dependantJobs
  * @property array<int, string> $dependencies
+ * @property bool               $gated
  * @property ?string            $jobId
  * @property ?string            $name
  * @property ?string            $stepId
  * @property ?int               $workflowId
- * @property bool               $gated
  */
 final class WorkflowStepAdapter implements WorkflowStepInterface
 {
