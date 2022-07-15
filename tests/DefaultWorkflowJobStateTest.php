@@ -338,3 +338,52 @@ it('can not run if the job is gated', function (): void {
 
     expect($state)->canRun()->toBeFalse();
 });
+
+it('transitions to a gated state if the job is gated and all its dependencies have finished', function (): void {
+    [$workflow, $initialJobs] = createDefinition()
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2())
+        ->addGatedJob($job = new TestJob3(), [TestJob1::class, TestJob2::class])
+        ->addJob(new TestJob4())
+        ->build();
+    $workflow->update([
+        'finished_jobs' => [TestJob1::class, TestJob2::class, TestJob4::class],
+    ]);
+    $state = new DefaultWorkflowJobState($job->step());
+
+    $state->transition();
+
+    expect($state)->isGated()->toBeTrue();
+});
+
+it('does not transition to a gated state if the job is gated but not all dependencies have finished', function (): void {
+    [$workflow, $initialJobs] = createDefinition()
+        ->addJob(new TestJob1())
+        ->addJob(new TestJob2())
+        ->addGatedJob($job = new TestJob3(), [TestJob1::class, TestJob2::class])
+        ->addJob(new TestJob4())
+        ->build();
+    $workflow->update([
+        'finished_jobs' => [TestJob1::class, TestJob4::class],
+    ]);
+    $state = new DefaultWorkflowJobState($job->step());
+
+    $state->transition();
+
+    expect($state)->isGated()->toBeFalse();
+});
+
+it('does not transition to a gated state if all its dependencies have finished but the job is not gated', function (): void {
+    [$workflow, $initialJobs] = createDefinition()
+        ->addJob(new TestJob1())
+        ->addJob($job = new TestJob2(), [TestJob1::class])
+        ->build();
+    $workflow->update([
+        'finished_jobs' => [TestJob1::class],
+    ]);
+    $state = new DefaultWorkflowJobState($job->step());
+
+    $state->transition();
+
+    expect($state)->isGated()->toBeFalse();
+});

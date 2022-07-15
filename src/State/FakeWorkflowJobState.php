@@ -37,10 +37,7 @@ final class FakeWorkflowJobState implements WorkflowJobState
 
     public bool $canRun = false;
 
-    /**
-     * @var null|array<int, string>
-     */
-    public ?array $transitioned = null;
+    public bool $transitioned = false;
 
     private bool $initialized = false;
 
@@ -148,11 +145,11 @@ final class FakeWorkflowJobState implements WorkflowJobState
         $this->finished = false;
     }
 
-    public function transition(array $completedJobs): void
+    public function transition(): void
     {
         $this->init();
 
-        $this->transitioned = $completedJobs;
+        $this->transitioned = true;
     }
 
     public function canRun(): bool

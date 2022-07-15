@@ -152,7 +152,7 @@ class WorkflowJob extends Model
 
     public function transition(): void
     {
-        $this->state->transition($this->workflow->finished_jobs);
+        $this->state->transition();
     }
 
     public function start(): void

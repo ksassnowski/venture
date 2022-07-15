@@ -96,11 +96,11 @@ class DefaultWorkflowJobState implements WorkflowJobState
         ]);
     }
 
-    /**
-     * @param array<int, string> $completedSteps
-     */
-    public function transition(array $completedSteps): void
+    public function transition(): void
     {
+        if ($this->job->gated && $this->allDependenciesHaveFinished()) {
+            $this->markAsGated();
+        }
     }
 
     public function canRun(): bool
@@ -109,11 +109,14 @@ class DefaultWorkflowJobState implements WorkflowJobState
             return false;
         }
 
-        $step = $this->job->step();
+        return $this->allDependenciesHaveFinished();
+    }
 
+    private function allDependenciesHaveFinished(): bool
+    {
         return \count(
             \array_diff(
-                $step->getDependencies(),
+                $this->job->step()->getDependencies(),
                 $this->job->workflow->finished_jobs,
             ),
         ) === 0;

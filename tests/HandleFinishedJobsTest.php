@@ -25,6 +25,7 @@ use Stubs\ThenCallback;
 uses(TestCase::class);
 
 beforeEach(function (): void {
+    Bus::fake();
     $this->action = new HandleFinishedJobs();
     $_SERVER['__then.count'] = 0;
 });
@@ -33,9 +34,20 @@ afterEach(function (): void {
     FakeWorkflowJobState::restore();
 });
 
-it('runs a finished job\'s dependency if no other dependencies exist', function (): void {
-    Bus::fake();
+it('transitions the state of all dependant jobs of the finished job', function (): void {
+    createDefinition()
+        ->addJob($job1 = new TestJob1())
+        ->addGatedJob($job2 = new TestJob2(), [TestJob1::class])
+        ->addGatedJob($job3 = new TestJob3(), [TestJob1::class])
+        ->build();
 
+    ($this->action)($job1);
+
+    expect($job2->step())->isGated()->toBeTrue();
+    expect($job3->step())->isGated()->toBeTrue();
+});
+
+it('runs a finished job\'s dependency if no other dependencies exist', function (): void {
     FakeWorkflowJobState::setup([
         TestJob2::class => fn (FakeWorkflowJobState $state) => $state->canRun = true,
         TestJob3::class => fn (FakeWorkflowJobState $state) => $state->canRun = true,
@@ -54,8 +66,6 @@ it('runs a finished job\'s dependency if no other dependencies exist', function 
 });
 
 it('does not run dependent jobs if they are not ready to run', function (): void {
-    Bus::fake();
-
     FakeWorkflowJobState::setup([
         TestJob2::class => fn (FakeWorkflowJobState $state) => $state->canRun = false,
         TestJob3::class => fn (FakeWorkflowJobState $state) => $state->canRun = false,
@@ -74,8 +84,6 @@ it('does not run dependent jobs if they are not ready to run', function (): void
 });
 
 it('does not run jobs that are not dependent on the finished job, even if they could be run', function (): void {
-    Bus::fake();
-
     FakeWorkflowJobState::setup([
         TestJob3::class => fn (FakeWorkflowJobState $state) => $state->canRun = true,
     ]);

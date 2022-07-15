@@ -2,7 +2,7 @@ parameters:
 	ignoreErrors:
 		-
 			message: "#^Parameter \\#1 \\$callback of method Illuminate\\\\Support\\\\Collection\\<int,Illuminate\\\\Database\\\\Eloquent\\\\Model\\>\\:\\:each\\(\\) expects callable\\(Illuminate\\\\Database\\\\Eloquent\\\\Model, int\\)\\: mixed, Closure\\(Sassnowski\\\\Venture\\\\Models\\\\WorkflowJob\\)\\: void given\\.$#"
-			count: 1
+			count: 2
 			path: src/Actions/HandleFinishedJobs.php
 
 		-
@@ -38,6 +38,11 @@ parameters:
 		-
 			message: "#^Access to an undefined property object\\:\\:\\$connection\\.$#"
 			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$gated\\.$#"
+			count: 2
 			path: src/WorkflowStepAdapter.php
 
 		-

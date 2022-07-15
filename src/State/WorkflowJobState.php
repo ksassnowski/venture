@@ -40,12 +40,9 @@ interface WorkflowJobState
     public function markAsGated(): void;
 
     /**
-     * Transition the job to the next state by checking if all
-     * dependencies have finished.
-     *
-     * @param array<int, string> $completedJobs
+     * Transition the job to the next state if applicable.
      */
-    public function transition(array $completedJobs): void;
+    public function transition(): void;
 
     /**
      * Check if a job is ready to be dispatched.

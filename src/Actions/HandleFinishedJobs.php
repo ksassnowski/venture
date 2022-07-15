@@ -59,9 +59,8 @@ final class HandleFinishedJobs implements HandlesFinishedJobs
             ->whereIn('uuid', $step->getDependantJobs())
             ->with('workflow')
             ->get()
+            ->each(fn (WorkflowJob $job) => $job->transition())
             ->filter(fn (WorkflowJob $job): bool => $job->canRun())
-            ->each(function (WorkflowJob $job): void {
-                $job->start();
-            });
+            ->each(fn (WorkflowJob $job) => $job->start());
     }
 }
