@@ -11,11 +11,6 @@ parameters:
 			path: src/Actions/HandleFinishedJobs.php
 
 		-
-			message: "#^Method Sassnowski\\\\Venture\\\\Graph\\\\DependencyGraph\\:\\:resolveDependencies\\(\\) should return array\\<int, string\\> but returns array\\<int, mixed\\>\\.$#"
-			count: 1
-			path: src/Graph/DependencyGraph.php
-
-		-
 			message: "#^Method Sassnowski\\\\Venture\\\\Models\\\\Workflow\\:\\:serializer\\(\\) should return Sassnowski\\\\Venture\\\\Serializer\\\\WorkflowJobSerializer but returns mixed\\.$#"
 			count: 1
 			path: src/Models/Workflow.php
