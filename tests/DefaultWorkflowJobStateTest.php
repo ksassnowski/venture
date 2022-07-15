@@ -339,6 +339,33 @@ it('can not run if the job is gated', function (): void {
     expect($state)->canRun()->toBeFalse();
 });
 
+it('cannot run if the job has already started', function (): void {
+    $workflowJob = createWorkflowJob($this->workflow, [
+        'started_at' => now(),
+    ]);
+    $state = new DefaultWorkflowJobState($workflowJob);
+
+    expect($state)->canRun()->toBeFalse();
+});
+
+it('cannot run if the job has failed', function (): void {
+    $workflowJob = createWorkflowJob($this->workflow, [
+        'failed_at' => now(),
+    ]);
+    $state = new DefaultWorkflowJobState($workflowJob);
+
+    expect($state)->canRun()->toBeFalse();
+});
+
+it('cannot run if the job has finished', function (): void {
+    $workflowJob = createWorkflowJob($this->workflow, [
+        'finished_at' => now(),
+    ]);
+    $state = new DefaultWorkflowJobState($workflowJob);
+
+    expect($state)->canRun()->toBeFalse();
+});
+
 it('transitions to a gated state if the job is gated and all its dependencies have finished', function (): void {
     [$workflow, $initialJobs] = createDefinition()
         ->addJob(new TestJob1())

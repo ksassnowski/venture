@@ -105,6 +105,10 @@ class DefaultWorkflowJobState implements WorkflowJobState
 
     public function canRun(): bool
     {
+        if (!$this->isPending()) {
+            return false;
+        }
+
         if ($this->isGated()) {
             return false;
         }

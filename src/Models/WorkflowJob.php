@@ -156,6 +156,14 @@ class WorkflowJob extends Model
 
     public function start(): void
     {
+        if (!$this->canRun()) {
+            throw new JobNotReadyException();
+        }
+
+        \dispatch($this->step());
+
+        $this->markAsProcessing();
+    }
         \dispatch($this->step());
     }
 
