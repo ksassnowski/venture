@@ -22,11 +22,7 @@ final class HandleFailedJobs implements HandlesFailedJobs
     {
         $workflow = $step->workflow();
 
-        if (null === $workflow) {
-            return;
-        }
-
-        $workflow->markJobAsFailed($step, $exception);
-        $workflow->runCatchCallback($step, $exception);
+        $workflow?->markJobAsFailed($step, $exception);
+        $workflow?->runCatchCallback($step, $exception);
     }
 }
