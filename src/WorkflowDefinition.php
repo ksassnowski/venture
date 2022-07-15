@@ -322,11 +322,10 @@ class WorkflowDefinition
         mixed $delay,
         ?string $id,
     ): JobAdding {
-        $event = new JobAdding($this, $job, $dependencies, $name, $delay, $id);
-
-        \event($event);
-
-        return $event;
+        return tap(
+            new JobAdding($this, $job, $dependencies, $name, $delay, $id),
+            fn (JobAdding $event) => \event($event),
+        );
     }
 
     /**
@@ -337,11 +336,10 @@ class WorkflowDefinition
         array $dependencies,
         ?string $id,
     ): WorkflowAdding {
-        $event = new WorkflowAdding($this, $definition, $dependencies, $id ?: '');
-
-        \event($event);
-
-        return $event;
+        return tap(
+            new WorkflowAdding($this, $definition, $dependencies, $id ?: ''),
+            fn (WorkflowAdding $event) => \event($event),
+        );
     }
 
     private function serializeCallback(mixed $callback): string
