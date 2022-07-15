@@ -205,8 +205,9 @@ it('has not run if there are still jobs that haven\'t been processed', function 
 it('cancelling an already cancelled job does not update timestamp', function (): void {
     Carbon::setTestNow(now());
     $workflow = createWorkflow(['cancelled_at' => now()->subDay()]);
+    $state = new DefaultWorkflowState($workflow);
 
-    $workflow->cancel();
+    $state->markAsCancelled();
 
     expect($workflow)
         ->cancelled_at->timestamp->toBe(now()->subDay()->timestamp);

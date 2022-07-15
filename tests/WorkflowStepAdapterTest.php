@@ -66,6 +66,8 @@ it('proxies all interface methods to the underlying object', function (): void {
 
     expect($adapter->step()->is($workflowJob))->toBeTrue();
 
+    expect($adapter->workflow())->toBeNull();
+
     $adapter->withWorkflowId($workflow->id);
     expect($job)->workflowId->toEqual($workflow->id);
     expect($adapter->workflow()->is($workflow))->toBeTrue();
