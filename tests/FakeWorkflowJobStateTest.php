@@ -11,19 +11,12 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\State\FakeWorkflowJobState;
-use Stubs\TestJob1;
-use Stubs\TestJob2;
 
 uses(TestCase::class);
 
 beforeEach(function (): void {
-    $this->state = new FakeWorkflowJobState(new WorkflowJob());
-});
-
-afterEach(function (): void {
-    FakeWorkflowJobState::restore();
+    $this->state = new FakeWorkflowJobState();
 });
 
 it('is pending by default', function (): void {
@@ -95,32 +88,4 @@ it('can be marked as processing', function (): void {
         ->isPending()->toBeFalse()
         ->hasFinished()->toBeFalse()
         ->hasFailed()->toBeFalse();
-});
-
-it('can fake a jobs state based on the job ID', function (): void {
-    FakeWorkflowJobState::setup([
-        TestJob1::class => function (FakeWorkflowJobState $state): void {
-            $state->canRun = true;
-        },
-        '::job-id::' => function (FakeWorkflowJobState $state): void {
-            $state->markAsFinished();
-        },
-    ]);
-
-    $job = new WorkflowJob([
-        'job' => \serialize(new TestJob1()),
-    ]);
-    expect($job)->canRun()->toBeTrue();
-
-    $job = new WorkflowJob([
-        'job' => \serialize((new TestJob1())->withJobId('::job-id::')),
-    ]);
-    expect($job)->canRun()->toBeFalse();
-    expect($job)->hasFinished()->toBeTrue();
-
-    $job = new WorkflowJob([
-        'job' => \serialize((new TestJob2())),
-    ]);
-    expect($job)->canRun()->toBeFalse();
-    expect($job)->hasFinished()->toBeFalse();
 });

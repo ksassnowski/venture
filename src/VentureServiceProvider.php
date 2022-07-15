@@ -13,14 +13,22 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Sassnowski\Venture\Actions\HandleFailedJobs;
 use Sassnowski\Venture\Actions\HandleFinishedJobs;
 use Sassnowski\Venture\Actions\HandlesFailedJobs;
 use Sassnowski\Venture\Actions\HandlesFinishedJobs;
 use Sassnowski\Venture\Manager\WorkflowManager;
+use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
+use Sassnowski\Venture\State\FakeWorkflowJobState;
+use Sassnowski\Venture\State\FakeWorkflowState;
+use Sassnowski\Venture\State\WorkflowJobState;
+use Sassnowski\Venture\State\WorkflowState;
+use Sassnowski\Venture\State\WorkflowStateStore;
 use function config;
 
 class VentureServiceProvider extends ServiceProvider
@@ -55,6 +63,10 @@ class VentureServiceProvider extends ServiceProvider
         $this->registerStepIdGenerator();
         $this->registerJobSerializer();
         $this->registerActions();
+
+        if (app()->runningUnitTests()) {
+            $this->registerFakeWorkflowState();
+        }
     }
 
     private function registerManager(): void
@@ -105,6 +117,25 @@ class VentureServiceProvider extends ServiceProvider
         $this->app->bind(
             HandlesFailedJobs::class,
             HandleFailedJobs::class,
+        );
+    }
+
+    private function registerFakeWorkflowState(): void
+    {
+        $this->app->bind(
+            FakeWorkflowJobState::class,
+            function (Application $app, array $args): WorkflowJobState {
+                /** @var array{job: WorkflowJob} $args */
+                return WorkflowStateStore::forJob($args['job']->step()->getJobId());
+            },
+        );
+
+        $this->app->bind(
+            FakeWorkflowState::class,
+            function (Application $app, array $args): WorkflowState {
+                /** @var array{workflow: Workflow} $args */
+                return WorkflowStateStore::forWorkflow($args['workflow']);
+            },
         );
     }
 }

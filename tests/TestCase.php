@@ -14,11 +14,19 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\ServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
+use Sassnowski\Venture\State\WorkflowStateStore;
 use Sassnowski\Venture\VentureServiceProvider;
 
 class TestCase extends OrchestraTestCase
 {
     use RefreshDatabase;
+
+    protected function tearDown(): void
+    {
+        WorkflowStateStore::restore();
+
+        parent::tearDown();
+    }
 
     /**
      * @param mixed $app

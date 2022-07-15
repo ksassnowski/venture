@@ -22,6 +22,7 @@ use Sassnowski\Venture\State\WorkflowJobState;
 use Sassnowski\Venture\Venture;
 use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
+use function app;
 
 /**
  * @property array<int, string> $edges
@@ -63,7 +64,7 @@ class WorkflowJob extends Model
         'manual' => 'bool',
     ];
 
-    private WorkflowJobState $state;
+    private ?WorkflowJobState $state = null;
 
     private ?WorkflowStepInterface $step = null;
 
@@ -75,8 +76,6 @@ class WorkflowJob extends Model
         $this->table = config('venture.jobs_table');
 
         parent::__construct($attributes);
-
-        $this->state = app(Venture::$workflowJobState, ['job' => $this]);
     }
 
     /**
@@ -107,56 +106,65 @@ class WorkflowJob extends Model
 
     public function hasFinished(): bool
     {
-        return $this->state->hasFinished();
+        return $this->getState()->hasFinished();
     }
 
     public function markAsFinished(): void
     {
-        $this->state->markAsFinished();
+        $this->getState()->markAsFinished();
     }
 
     public function hasFailed(): bool
     {
-        return $this->state->hasFailed();
+        return $this->getState()->hasFailed();
     }
 
     public function markAsFailed(Throwable $exception): void
     {
-        $this->state->markAsFailed($exception);
+        $this->getState()->markAsFailed($exception);
     }
 
     public function isProcessing(): bool
     {
-        return $this->state->isProcessing();
+        return $this->getState()->isProcessing();
     }
 
     public function markAsProcessing(): void
     {
-        $this->state->markAsProcessing();
+        $this->getState()->markAsProcessing();
     }
 
     public function canRun(): bool
     {
-        return $this->state->canRun();
+        return $this->getState()->canRun();
     }
 
     public function isGated(): bool
     {
-        return $this->state->isGated();
+        return $this->getState()->isGated();
     }
 
     public function markAsGated(): void
     {
-        $this->state->markAsGated();
+        $this->getState()->markAsGated();
     }
 
     public function transition(): void
     {
-        $this->state->transition();
+        $this->getState()->transition();
     }
 
     public function start(): void
     {
         \dispatch($this->step());
+    }
+
+    private function getState(): WorkflowJobState
+    {
+        if (null === $this->state) {
+            $this->state = app(Venture::$workflowJobState, ['job' => $this]);
+        }
+
+        return $this->state;
     }
 }

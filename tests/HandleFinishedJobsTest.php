@@ -11,12 +11,13 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Sassnowski\Venture\Actions\HandleFinishedJobs;
 use Sassnowski\Venture\Events\WorkflowFinished;
 use Sassnowski\Venture\State\FakeWorkflowJobState;
+use Sassnowski\Venture\State\FakeWorkflowState;
+use Sassnowski\Venture\State\WorkflowStateStore;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
@@ -26,31 +27,32 @@ uses(TestCase::class);
 
 beforeEach(function (): void {
     Bus::fake();
+
+    WorkflowStateStore::fake();
+
     $this->action = new HandleFinishedJobs();
     $_SERVER['__then.count'] = 0;
-});
-
-afterEach(function (): void {
-    FakeWorkflowJobState::restore();
 });
 
 it('transitions the state of all dependant jobs of the finished job', function (): void {
     createDefinition()
         ->addJob($job1 = new TestJob1())
-        ->addGatedJob($job2 = new TestJob2(), [TestJob1::class])
-        ->addGatedJob($job3 = new TestJob3(), [TestJob1::class])
+        ->addGatedJob(new TestJob2(), [TestJob1::class])
+        ->addGatedJob(new TestJob3(), [TestJob1::class])
         ->build();
 
     ($this->action)($job1);
 
-    expect($job2->step())->isGated()->toBeTrue();
-    expect($job3->step())->isGated()->toBeTrue();
+    expect(WorkflowStateStore::forJob(TestJob2::class))
+        ->transitioned->toBeTrue();
+    expect(WorkflowStateStore::forJob(TestJob3::class))
+        ->transitioned->toBeTrue();
 });
 
 it('runs a finished job\'s dependency if no other dependencies exist', function (): void {
-    FakeWorkflowJobState::setup([
-        TestJob2::class => fn (FakeWorkflowJobState $state) => $state->canRun = true,
-        TestJob3::class => fn (FakeWorkflowJobState $state) => $state->canRun = true,
+    WorkflowStateStore::setupJobs([
+        TestJob2::class => new FakeWorkflowJobState(canRun: true),
+        TestJob3::class => new FakeWorkflowJobState(canRun: true),
     ]);
 
     createDefinition()
@@ -66,9 +68,9 @@ it('runs a finished job\'s dependency if no other dependencies exist', function 
 });
 
 it('does not run dependent jobs if they are not ready to run', function (): void {
-    FakeWorkflowJobState::setup([
-        TestJob2::class => fn (FakeWorkflowJobState $state) => $state->canRun = false,
-        TestJob3::class => fn (FakeWorkflowJobState $state) => $state->canRun = false,
+    WorkflowStateStore::setupJobs([
+        TestJob2::class => new FakeWorkflowJobState(canRun: false),
+        TestJob3::class => new FakeWorkflowJobState(canRun: false),
     ]);
 
     createDefinition()
@@ -84,8 +86,8 @@ it('does not run dependent jobs if they are not ready to run', function (): void
 });
 
 it('does not run jobs that are not dependent on the finished job, even if they could be run', function (): void {
-    FakeWorkflowJobState::setup([
-        TestJob3::class => fn (FakeWorkflowJobState $state) => $state->canRun = true,
+    WorkflowStateStore::setupJobs([
+        TestJob3::class => new FakeWorkflowJobState(canRun: true),
     ]);
 
     createDefinition()
@@ -100,32 +102,46 @@ it('does not run jobs that are not dependent on the finished job, even if they c
 });
 
 it('marks the workflow as finished if all jobs have been processed', function (): void {
-    Carbon::setTestNow(now());
     [$workflow, $initialJobs] = createDefinition()
-        ->addJob($job1 = new TestJob1())
-        ->addJob($job2 = new TestJob2())
+        ->addJob($job = new TestJob1())
         ->build();
+    WorkflowStateStore::setupWorkflow(
+        $workflow,
+        new FakeWorkflowState(allJobsFinished: true),
+    );
 
-    ($this->action)($job1);
-    expect($workflow->refresh()->isFinished())->toBeFalse();
+    ($this->action)($job);
 
-    ($this->action)($job2);
-    expect($workflow->refresh()->isFinished())->toBeTrue();
+    expect($workflow)->isFinished()->toBeTrue();
+});
+
+it('does not mark the workflow as finished if not all jobs have been processed', function (): void {
+    [$workflow, $initialJobs] = createDefinition()
+        ->addJob($job = new TestJob1())
+        ->build();
+    WorkflowStateStore::setupWorkflow(
+        $workflow,
+        new FakeWorkflowState(allJobsFinished: false),
+    );
+
+    ($this->action)($job);
+
+    expect($workflow)->isFinished()->toBeFalse();
 });
 
 it('marks the corresponding job step finished whenever a job finishes', function (): void {
-    Carbon::setTestNow(now());
-    createDefinition()
+    [$workflow, $initalJobs] = createDefinition()
         ->addJob($job1 = new TestJob1())
         ->addJob($job2 = new TestJob2())
         ->build();
+    $state = WorkflowStateStore::forWorkflow($workflow);
 
     ($this->action)($job1);
-    expect($job1->step()?->hasFinished())->toBeTrue();
-    expect($job2->step()?->hasFinished())->toBeFalse();
+    expect($state->finishedJobs)->toHaveKey(TestJob1::class);
+    expect($state->finishedJobs)->not()->toHaveKey(TestJob2::class);
 
     ($this->action)($job2);
-    expect($job2->step()?->hasFinished())->toBeTrue();
+    expect($state->finishedJobs)->toHaveKey(TestJob2::class);
 });
 
 it('will not run any further jobs if the workflow has been cancelled', function (): void {
@@ -142,12 +158,16 @@ it('will not run any further jobs if the workflow has been cancelled', function 
 });
 
 it('runs the "then" callback after every job has been processed', function (): void {
-    createDefinition()
+    [$workflow, $initialJobs] = createDefinition()
         ->addJob($job = new TestJob1())
         ->then(function (): void {
             ++$_SERVER['__then.count'];
         })
         ->build();
+    WorkflowStateStore::setupWorkflow(
+        $workflow,
+        new FakeWorkflowState(allJobsFinished: true),
+    );
 
     ($this->action)($job);
 
@@ -155,10 +175,14 @@ it('runs the "then" callback after every job has been processed', function (): v
 });
 
 it('supports invokable classes as then callbacks', function (): void {
-    createDefinition()
+    [$workflow, $initialJobs] = createDefinition()
         ->addJob($job = new TestJob1())
         ->then(new ThenCallback())
         ->build();
+    WorkflowStateStore::setupWorkflow(
+        $workflow,
+        new FakeWorkflowState(allJobsFinished: true),
+    );
 
     ($this->action)($job);
 
@@ -166,11 +190,14 @@ it('supports invokable classes as then callbacks', function (): void {
 });
 
 it('does not call the then callback if there are still pending jobs', function (): void {
-    createDefinition()
+    [$workflow, $initialJobs] = createDefinition()
         ->addJob($job = new TestJob1())
-        ->addJob(new TestJob2())
         ->then(new ThenCallback())
         ->build();
+    WorkflowStateStore::setupWorkflow(
+        $workflow,
+        new FakeWorkflowState(allJobsFinished: false),
+    );
 
     ($this->action)($job);
 
@@ -182,6 +209,10 @@ it('fires an event after a workflow has finished', function (): void {
     [$workflow, $initialJobs] = createDefinition()
         ->addJob($job = new TestJob1())
         ->build();
+    WorkflowStateStore::setupWorkflow(
+        $workflow,
+        new FakeWorkflowState(allJobsFinished: true),
+    );
 
     ($this->action)($job);
 

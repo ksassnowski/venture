@@ -12,11 +12,14 @@ declare(strict_types=1);
  */
 
 use Sassnowski\Venture\Actions\HandleFailedJobs;
+use Sassnowski\Venture\State\WorkflowStateStore;
 use Stubs\TestJob1;
 
 uses(TestCase::class);
 
 beforeEach(function (): void {
+    WorkflowStateStore::fake();
+
     $this->action = new HandleFailedJobs();
     $_SERVER['__catch.count'] = 0;
 });
@@ -25,11 +28,14 @@ it('marks the step as failed', function (): void {
     [$workflow, $initialJobs] = createDefinition()
         ->addJob($job = new TestJob1())
         ->build();
+    $exception = new Exception();
 
-    ($this->action)($job, new Exception());
+    ($this->action)($job, $exception);
 
-    expect($job->step())->hasFailed()->toBeTrue();
-    expect($workflow->fresh())->jobs_failed->toBe(1);
+    expect(WorkflowStateStore::forWorkflow($workflow))
+        ->failedJobs->toHaveKey(TestJob1::class);
+    expect(WorkflowStateStore::forWorkflow($workflow)->failedJobs[TestJob1::class])
+        ->toBe($exception);
 });
 
 it('runs the catch callback', function (): void {

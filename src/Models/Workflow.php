@@ -67,7 +67,7 @@ class Workflow extends Model
         'cancelled_at',
     ];
 
-    private WorkflowState $state;
+    private ?WorkflowState $state = null;
 
     /**
      * @param array<string, mixed> $attributes
@@ -77,8 +77,6 @@ class Workflow extends Model
         $this->table = config('venture.workflow_table');
 
         parent::__construct($attributes);
-
-        $this->state = app(Venture::$workflowState, ['workflow' => $this]);
     }
 
     /**
@@ -119,47 +117,47 @@ class Workflow extends Model
 
     public function allJobsHaveFinished(): bool
     {
-        return $this->state->allJobsHaveFinished();
+        return $this->getState()->allJobsHaveFinished();
     }
 
     public function markJobAsFinished(WorkflowStepInterface $job): void
     {
-        $this->state->markJobAsFinished($job);
+        $this->getState()->markJobAsFinished($job);
     }
 
     public function markJobAsFailed(WorkflowStepInterface $job, Throwable $exception): void
     {
-        $this->state->markJobAsFailed($job, $exception);
+        $this->getState()->markJobAsFailed($job, $exception);
     }
 
     public function markAsFinished(): void
     {
-        $this->state->markAsFinished();
+        $this->getState()->markAsFinished();
     }
 
     public function isFinished(): bool
     {
-        return $this->state->isFinished();
+        return $this->getState()->isFinished();
     }
 
     public function isCancelled(): bool
     {
-        return $this->state->isCancelled();
+        return $this->getState()->isCancelled();
     }
 
     public function hasRan(): bool
     {
-        return $this->state->hasRan();
+        return $this->getState()->hasRan();
     }
 
     public function cancel(): void
     {
-        $this->state->markAsCancelled();
+        $this->getState()->markAsCancelled();
     }
 
     public function remainingJobs(): int
     {
-        return $this->state->remainingJobs();
+        return $this->getState()->remainingJobs();
     }
 
     /**
@@ -235,6 +233,15 @@ class Workflow extends Model
         $callback = \unserialize($serializedCallback);
 
         $callback(...$args);
+    }
+
+    private function getState(): WorkflowState
+    {
+        if (null === $this->state) {
+            $this->state = app(Venture::$workflowState, ['workflow' => $this]);
+        }
+
+        return $this->state;
     }
 
     private function serializer(): WorkflowJobSerializer

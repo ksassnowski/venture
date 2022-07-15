@@ -23,6 +23,8 @@ use Sassnowski\Venture\Events\JobFailed as JobFailedEvent;
 use Sassnowski\Venture\Events\JobFinished;
 use Sassnowski\Venture\Events\JobProcessing as JobProcessingEvent;
 use Sassnowski\Venture\Serializer\DefaultSerializer;
+use Sassnowski\Venture\State\FakeWorkflowState;
+use Sassnowski\Venture\State\WorkflowStateStore;
 use Sassnowski\Venture\UnserializeJobExtractor;
 use Sassnowski\Venture\WorkflowEventSubscriber;
 use Stubs\NonWorkflowJob;
@@ -31,6 +33,8 @@ use Stubs\TestJob1;
 uses(TestCase::class);
 
 beforeEach(function (): void {
+    WorkflowStateStore::fake();
+
     Event::fake([
         JobProcessingEvent::class,
         JobFailedEvent::class,
@@ -125,7 +129,8 @@ it('does not handle failed non-workflow jobs', function (): void {
 });
 
 it('will delete the job if the workflow it belongs to has been cancelled', function (): void {
-    $workflow = createWorkflow(['cancelled_at' => now()]);
+    $workflow = createWorkflow();
+    WorkflowStateStore::setupWorkflow($workflow, new FakeWorkflowState(cancelled: true));
     $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
     $laravelJob = createQueueJob($workflowJob);
     $event = new JobProcessing('::connection::', $laravelJob);
@@ -146,7 +151,8 @@ it('only cares about workflow jobs when checking for cancelled workflows', funct
 });
 
 it('does not delete a job if its workflow has not been cancelled', function (): void {
-    $workflow = createWorkflow(['cancelled_at' => null]);
+    $workflow = createWorkflow();
+    WorkflowStateStore::setupWorkflow($workflow, new FakeWorkflowState(cancelled: false));
     $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
     $laravelJob = createQueueJob($workflowJob);
     $event = new JobProcessing('::connection::', $laravelJob);
@@ -157,7 +163,8 @@ it('does not delete a job if its workflow has not been cancelled', function (): 
 });
 
 it('fires an event when a workflow step gets processed and the job has not been cancelled', function (): void {
-    $workflow = createWorkflow(['cancelled_at' => null]);
+    $workflow = createWorkflow();
+    WorkflowStateStore::setupWorkflow($workflow, new FakeWorkflowState(cancelled: false));
     $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
     $laravelJob = createQueueJob($workflowJob);
     $event = new JobProcessing('::connection::', $laravelJob);
@@ -171,7 +178,8 @@ it('fires an event when a workflow step gets processed and the job has not been 
 });
 
 it('does not fire an event when a job is processing but the job has been cancelled', function (): void {
-    $workflow = createWorkflow(['cancelled_at' => now()]);
+    $workflow = createWorkflow();
+    WorkflowStateStore::setupWorkflow($workflow, new FakeWorkflowState(cancelled: true));
     $workflowJob = (new TestJob1())->withWorkflowId($workflow->id);
     $laravelJob = createQueueJob($workflowJob);
     $event = new JobProcessing('::connection::', $laravelJob);
