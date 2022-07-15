@@ -17,6 +17,8 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use RuntimeException;
+use Sassnowski\Venture\Exceptions\CannotRetryJobException;
+use Sassnowski\Venture\Exceptions\JobNotReadyException;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\State\WorkflowJobState;
 use Sassnowski\Venture\Venture;
@@ -104,7 +106,7 @@ class WorkflowJob extends Model
         return $this->step;
     }
 
-    public function hasFinished(): bool
+    public function isFinished(): bool
     {
         return $this->getState()->hasFinished();
     }
@@ -164,6 +166,13 @@ class WorkflowJob extends Model
 
         $this->markAsProcessing();
     }
+
+    public function retry(): void
+    {
+        if (!$this->hasFailed()) {
+            throw new CannotRetryJobException();
+        }
+
         \dispatch($this->step());
     }
 
