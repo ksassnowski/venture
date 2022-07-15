@@ -22,7 +22,7 @@ class CreateWorkflowTable extends Migration
 
         Schema::create(config('venture.jobs_table'), function (Blueprint $table) {
             $table->id();
-            $table->uuid('uuid');
+            $table->uuid('uuid')->index();
             $table->string('name');
             $table->text('job');
             $table->unsignedBigInteger('workflow_id');
