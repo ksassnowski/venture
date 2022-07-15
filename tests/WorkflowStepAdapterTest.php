@@ -108,3 +108,10 @@ it('proxies all property writes to the underlying object', function (): void {
 
     expect($job)->foo->toBe('::value::');
 });
+
+it('can return the wrapped job', function (): void {
+    $job = new LegacyWorkflowJob();
+    $adapter = WorkflowStepAdapter::fromJob($job);
+
+    expect($adapter->unwrap())->toBe($job);
+});

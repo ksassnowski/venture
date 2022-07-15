@@ -17,6 +17,10 @@ final class ClassNameStepIdGenerator implements StepIdGenerator
 {
     public function generateId(object $job): string
     {
+        if ($job instanceof WorkflowStepAdapter) {
+            $job = $job->unwrap();
+        }
+
         return \get_class($job);
     }
 }

@@ -19,6 +19,7 @@ use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\StepIdGenerator;
 use Sassnowski\Venture\UnserializeJobExtractor;
+use Stubs\LegacyWorkflowJob;
 use Stubs\TestJob1;
 
 uses(TestCase::class);
@@ -78,4 +79,14 @@ it('can handle old workflows that still use opis/closure for their catch_callbac
     $workflow->runCatchCallback(new TestJob1(), new Exception());
 
     expect($_SERVER['__catch_called'])->toBe(1);
+});
+
+it('allows adding jobs to a workflow that do not implement WorkflowStepInterface as long as they use the WorkflowStep trait', function (): void {
+    $definition = createDefinition()
+        ->addJob(new LegacyWorkflowJob())
+        ->addJob(new LegacyWorkflowJob(), id: '::legacy-job-id::');
+
+    expect($definition)
+        ->hasJob(LegacyWorkflowJob::class)->toBeTrue()
+        ->hasJob('::legacy-job-id::')->toBeTrue();
 });

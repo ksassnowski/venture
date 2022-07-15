@@ -15,6 +15,7 @@ namespace Sassnowski\Venture;
 
 use Closure;
 use Illuminate\Support\Traits\Conditionable;
+use InvalidArgumentException;
 use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\Events\JobAdded;
 use Sassnowski\Venture\Events\JobAdding;
@@ -70,21 +71,16 @@ class WorkflowDefinition
      * @param Delay              $delay
      *
      * @throws DuplicateJobException
+     * @throws InvalidJobException
      */
     public function addJob(
-        WorkflowStepInterface|Closure $job,
+        object $job,
         array $dependencies = [],
         ?string $name = null,
         mixed $delay = null,
         ?string $id = null,
     ): self {
-        if ($job instanceof Closure) {
-            if (null === $id) {
-                throw new InvalidJobException('Closure jobs need an explicit id');
-            }
-
-            $job = new ClosureWorkflowStep($job);
-        }
+        $job = $this->wrapJob($job, $id);
 
         $event = $this->onJobAdding($job, $dependencies, $name, $delay, $id);
 
@@ -320,6 +316,37 @@ class WorkflowDefinition
         }
 
         return \serialize($callback);
+    }
+
+    /**
+     * @throw InvalidJobException
+     */
+    private function wrapJob(object $step, ?string $id): WorkflowStepInterface
+    {
+        if ($step instanceof WorkflowStepInterface) {
+            return $step;
+        }
+
+        if ($step instanceof Closure) {
+            if (null === $id) {
+                throw InvalidJobException::closureWithoutID();
+            }
+
+            return new ClosureWorkflowStep($step);
+        }
+
+        try {
+            $job = WorkflowStepAdapter::fromJob($step);
+
+            @trigger_error(
+                "Jobs that don't implement WorkflowStepInterface are deprecated and support for them will be dropped in Venture 5",
+                \E_USER_DEPRECATED,
+            );
+
+            return $job;
+        } catch (InvalidArgumentException $e) {
+            throw InvalidJobException::jobNotUsingTrait($step, $e);
+        }
     }
 
     private function pushJob(WorkflowStepInterface $job): void

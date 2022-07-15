@@ -24,6 +24,7 @@ use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
 use Stubs\DummyCallback;
 use Stubs\NestedWorkflow;
+use Stubs\NonWorkflowJob;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
@@ -279,7 +280,17 @@ it('allows adding a job as a closure', function (): void {
 
 it('throws an exception when adding a closure job without an explicit id', function (): void {
     createDefinition()->addJob(fn () => 'foo', id: null);
-})->throws(InvalidJobException::class);
+})->throws(
+    InvalidJobException::class,
+    'Closure-based jobs must have an explicit id'
+);
+
+it('throws an exception when adding a job that does not implement WorkflowStepInterface or use the WorkflowStep trait', function (): void {
+    createDefinition()->addJob(new NonWorkflowJob());
+})->throws(
+    InvalidJobException::class,
+    'Job [Stubs\NonWorkflowJob] does not implement WorkflowStepInterface or use the WorkflowStep trait',
+);
 
 it('returns true if job is part of the workflow', function (): void {
     $definition = createDefinition('::name::')

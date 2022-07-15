@@ -166,4 +166,9 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
     {
         return $this->job->connection;
     }
+
+    public function unwrap(): object
+    {
+        return $this->job;
+    }
 }
