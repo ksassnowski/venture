@@ -101,6 +101,27 @@ class WorkflowDefinition
      * @param array<int, string> $dependencies
      *
      * @throws DuplicateJobException
+     * @throws InvalidJobException
+     */
+    public function addGatedJob(
+        object $job,
+        array $dependencies = [],
+        ?string $name = null,
+        ?string $id = null,
+    ): self {
+        return $this->addJob(
+            $this->wrapJob($job, $id)->withGate(),
+            $dependencies,
+            $name,
+            null,
+            $id,
+        );
+    }
+
+    /**
+     * @param array<int, string> $dependencies
+     *
+     * @throws DuplicateJobException
      * @throws DuplicateWorkflowException
      */
     public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = [], ?string $id = null): self
@@ -210,8 +231,22 @@ class WorkflowDefinition
      * @param Delay                   $delay
      * @param null|array<int, string> $dependencies
      */
-    public function hasJob(string $id, ?array $dependencies = null, mixed $delay = null): bool
-    {
+    public function hasJob(
+        string $id,
+        ?array $dependencies = null,
+        mixed $delay = null,
+        bool $gated = false,
+    ): bool {
+        $job = $this->getJobById($id);
+
+        if (null === $job) {
+            return false;
+        }
+
+        if ($job->isGated() !== $gated) {
+            return false;
+        }
+
         if (null === $dependencies && null === $delay) {
             return $this->getJobById($id) !== null;
         }

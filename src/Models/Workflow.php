@@ -101,6 +101,7 @@ class Workflow extends Model
                     'name' => $job->getName(),
                     'uuid' => $job->getStepId(),
                     'edges' => $job->getDependantJobs(),
+                    'gated' => $job->isGated(),
                 ]);
             })
             ->each(function (WorkflowJob $job): void {

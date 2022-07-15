@@ -30,7 +30,7 @@ use Throwable;
  * @property ?Carbon            $finished_at
  * @property ?Carbon            $gated_at
  * @property string             $job
- * @property bool               $manual
+ * @property bool               $gated
  * @property string             $name
  * @property ?Carbon            $started_at
  * @property string             $uuid

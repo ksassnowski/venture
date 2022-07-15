@@ -74,7 +74,7 @@ class DefaultWorkflowJobState implements WorkflowJobState
 
     public function isGated(): bool
     {
-        if (!$this->job->manual) {
+        if (!$this->job->gated) {
             return false;
         }
 
@@ -87,8 +87,8 @@ class DefaultWorkflowJobState implements WorkflowJobState
 
     public function markAsGated(): void
     {
-        if (!$this->job->manual) {
-            throw new RuntimeException('Only manual jobs can be marked as gated');
+        if (!$this->job->gated) {
+            throw new RuntimeException('Only gated jobs can be marked as gated');
         }
 
         $this->job->update([

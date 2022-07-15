@@ -71,4 +71,8 @@ interface WorkflowStepInterface extends ShouldQueue
     public function withConnection(?string $connection): self;
 
     public function getConnection(): ?string;
+
+    public function withGate(bool $gated = true): self;
+
+    public function isGated(): bool;
 }

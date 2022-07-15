@@ -84,6 +84,10 @@ it('proxies all interface methods to the underlying object', function (): void {
     $adapter->withConnection('::connection::');
     expect($adapter)->getConnection()->toBe('::connection::');
     expect($job)->connection->toBe('::connection::');
+
+    $adapter->withGate();
+    expect($adapter)->isGated()->toBeTrue();
+    expect($job)->gated->toBeTrue();
 });
 
 it('proxies all property accesses to the underlying object', function (): void {

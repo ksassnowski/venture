@@ -16,6 +16,7 @@ use Sassnowski\Venture\State\DefaultWorkflowJobState;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
+use Stubs\TestJob4;
 
 uses(TestCase::class);
 
@@ -203,7 +204,7 @@ it('is not pending if the job has failed', function (): void {
 
 it('is gated if the job gated_at column is set', function (): void {
     $workflowJob = createWorkflowJob($this->workflow, [
-        'manual' => true,
+        'gated' => true,
         'gated_at' => now(),
     ]);
 
@@ -214,7 +215,7 @@ it('is gated if the job gated_at column is set', function (): void {
 
 it('is gated if the job gated_at column is null', function (): void {
     $workflowJob = createWorkflowJob($this->workflow, [
-        'manual' => true,
+        'gated' => true,
         'gated_at' => null,
     ]);
 
@@ -223,9 +224,9 @@ it('is gated if the job gated_at column is null', function (): void {
     expect($state)->isGated()->toBeFalse();
 });
 
-it('is not gated if the job is not a manual job', function (): void {
+it('is not gated if the job is not a gated job', function (): void {
     $workflowJob = createWorkflowJob($this->workflow, [
-        'manual' => false,
+        'gated' => false,
     ]);
 
     $state = new DefaultWorkflowJobState($workflowJob);
@@ -235,7 +236,7 @@ it('is not gated if the job is not a manual job', function (): void {
 
 it('is not gated if the job has finished', function (): void {
     $workflowJob = createWorkflowJob($this->workflow, [
-        'manual' => true,
+        'gated' => true,
         'gated_at' => now(),
         'finished_at' => now(),
     ]);
@@ -247,7 +248,7 @@ it('is not gated if the job has finished', function (): void {
 
 it('is not gated if the job has failed', function (): void {
     $workflowJob = createWorkflowJob($this->workflow, [
-        'manual' => true,
+        'gated' => true,
         'gated_at' => now(),
         'failed_at' => now(),
     ]);
@@ -259,7 +260,7 @@ it('is not gated if the job has failed', function (): void {
 
 it('is not gated if the job is processing', function (): void {
     $workflowJob = createWorkflowJob($this->workflow, [
-        'manual' => true,
+        'gated' => true,
         'gated_at' => now(),
         'failed_at' => null,
         'finished_at' => null,
@@ -274,7 +275,7 @@ it('is not gated if the job is processing', function (): void {
 it('can mark the job as gated', function (): void {
     Carbon::setTestNow(now());
     $workflowJob = createWorkflowJob($this->workflow, [
-        'manual' => true,
+        'gated' => true,
         'gated_at' => null,
     ]);
     $state = new DefaultWorkflowJobState($workflowJob);
@@ -285,10 +286,10 @@ it('can mark the job as gated', function (): void {
         ->gated_at->timestamp->toBe(now()->timestamp);
 });
 
-it('throws an exception when trying to mark a non-manual job as gated', function (): void {
+it('throws an exception when trying to mark a non-gated job as gated', function (): void {
     Carbon::setTestNow(now());
     $workflowJob = createWorkflowJob($this->workflow, [
-        'manual' => false,
+        'gated' => false,
         'gated_at' => null,
     ]);
     $state = new DefaultWorkflowJobState($workflowJob);
@@ -296,7 +297,7 @@ it('throws an exception when trying to mark a non-manual job as gated', function
     $state->markAsGated();
 })->throws(
     RuntimeException::class,
-    'Only manual jobs can be marked as gated',
+    'Only gated jobs can be marked as gated',
 );
 
 it('can run if all dependencies of the job have finished', function (): void {
@@ -330,7 +331,7 @@ it('can not run if some of the job\'s dependencies have not finished yet', funct
 it('can not run if the job is gated', function (): void {
     Carbon::setTestNow(now());
     $workflowJob = createWorkflowJob($this->workflow, [
-        'manual' => true,
+        'gated' => true,
         'gated_at' => now(),
     ]);
     $state = new DefaultWorkflowJobState($workflowJob);

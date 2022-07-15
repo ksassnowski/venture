@@ -40,6 +40,8 @@ trait WorkflowStep
 
     public ?string $name = null;
 
+    public bool $gated = false;
+
     public function withWorkflowId(int $workflowId): self
     {
         $this->workflowId = $workflowId;
@@ -166,5 +168,17 @@ trait WorkflowStep
     public function getConnection(): ?string
     {
         return $this->connection;
+    }
+
+    public function withGate(bool $gated = true): self
+    {
+        $this->gated = true;
+
+        return $this;
+    }
+
+    public function isGated(): bool
+    {
+        return $this->gated;
     }
 }

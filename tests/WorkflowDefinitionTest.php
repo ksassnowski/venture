@@ -143,14 +143,29 @@ it('sets the dependants of a job', function (): void {
 it('saves the workflow steps to the database', function (): void {
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
+    $testJob3 = new TestJob3();
 
-    createDefinition()
+    [$workflow, $initialJobs] = createDefinition()
         ->addJob($testJob1)
         ->addJob($testJob2, dependencies: [TestJob1::class])
+        ->addGatedJob($testJob3)
         ->build();
 
-    assertDatabaseHas('workflow_jobs', ['job' => \serialize($testJob1)]);
-    assertDatabaseHas('workflow_jobs', ['job' => \serialize($testJob2)]);
+    assertDatabaseHas('workflow_jobs', [
+        'workflow_id' => $workflow->id,
+        'gated' => false,
+        'job' => \serialize($testJob1),
+    ]);
+    assertDatabaseHas('workflow_jobs', [
+        'workflow_id' => $workflow->id,
+        'gated' => false,
+        'job' => \serialize($testJob2),
+    ]);
+    assertDatabaseHas('workflow_jobs', [
+        'workflow_id' => $workflow->id,
+        'gated' => true,
+        'job' => \serialize($testJob3)
+    ]);
 });
 
 it('saves the list of edges for each job', function (): void {
@@ -278,6 +293,20 @@ it('allows adding a job as a closure', function (): void {
     expect($definition->hasJob('::job-id::', [], 500))->toBeTrue();
 });
 
+it('can add a gated job', function (): void {
+    $definition = createDefinition()
+        ->addGatedJob(
+            new TestJob1(),
+            [],
+            '::name::',
+            '::id::',
+        );
+
+    expect($definition)
+        ->hasJob('::id::', dependencies: [], delay: null, gated: true)
+        ->toBeTrue();
+});
+
 it('throws an exception when adding a closure job without an explicit id', function (): void {
     createDefinition()->addJob(fn () => 'foo', id: null);
 })->throws(
@@ -346,6 +375,22 @@ dataset('delay provider', [
     'integer' => [2000],
     'date interval' => [new DateInterval('P14D')],
 ]);
+
+it('returns true if gated job is part of the workflow', function (): void {
+    $definition = createDefinition()
+        ->addGatedJob(new TestJob1());
+
+    expect($definition)
+        ->hasJob(TestJob1::class, gated: true)->toBeTrue();
+});
+
+it('returns false if job exists for id but without gate', function (): void {
+    $definition = createDefinition()
+        ->addJob(new TestJob1());
+
+    expect($definition)
+        ->hasJob(TestJob1::class, gated: true)->toBeFalse();
+});
 
 it('calls the before create hook before saving the workflow if provided', function (): void {
     $callback = function (Workflow $workflow): void {

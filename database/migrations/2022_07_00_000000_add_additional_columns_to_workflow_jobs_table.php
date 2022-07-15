@@ -12,7 +12,7 @@ return new class extends Migration {
         Schema::table(config('venture.jobs_table'), function (Blueprint $table): void {
             $table->timestamp('gated_at')->nullable();
             $table->timestamp('started_at')->nullable();
-            $table->boolean('manual')->default(false);
+            $table->boolean('gated')->default(false);
         });
     }
 };

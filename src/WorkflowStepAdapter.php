@@ -26,6 +26,7 @@ use Sassnowski\Venture\Models\WorkflowJob;
  * @property ?string            $name
  * @property ?string            $stepId
  * @property ?int               $workflowId
+ * @property bool               $gated
  */
 final class WorkflowStepAdapter implements WorkflowStepInterface
 {
@@ -165,6 +166,18 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
     public function getConnection(): ?string
     {
         return $this->job->connection;
+    }
+
+    public function withGate(bool $gated = true): WorkflowStepInterface
+    {
+        $this->job->gated = $gated;
+
+        return $this;
+    }
+
+    public function isGated(): bool
+    {
+        return $this->job->gated;
     }
 
     public function unwrap(): object
