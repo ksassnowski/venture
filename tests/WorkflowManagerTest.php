@@ -17,6 +17,8 @@ use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Events\WorkflowStarted;
 use Sassnowski\Venture\Manager\WorkflowManager;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\State\FakeWorkflowJobState;
+use Sassnowski\Venture\State\WorkflowStateStore;
 use Sassnowski\Venture\WorkflowDefinition;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
@@ -26,6 +28,8 @@ use Stubs\TestWorkflow;
 uses(TestCase::class);
 
 beforeEach(function (): void {
+    WorkflowStateStore::fake();
+
     $this->dispatcherSpy = Bus::fake();
     $this->manager = new WorkflowManager(
         $this->dispatcherSpy,
@@ -42,7 +46,33 @@ it('creates a new workflow definition with the provided name', function (): void
         ->workflow()->toBe($workflow);
 });
 
-it('starts a workflow by dispatching all jobs without dependencies', function (): void {
+it('transitions all initial jobs before dispatching them', function (): void {
+    $definition = new class() extends AbstractWorkflow {
+        public function definition(): WorkflowDefinition
+        {
+            return createDefinition('::name::')
+                ->addJob(new TestJob1())
+                ->addJob(new TestJob2())
+                ->addJob(new TestJob3(), [TestJob1::class]);
+        }
+    };
+
+    $this->manager->startWorkflow($definition);
+
+    expect(WorkflowStateStore::forJob(TestJob1::class))
+        ->transitioned->toBeTrue();
+    expect(WorkflowStateStore::forJob(TestJob2::class))
+        ->transitioned->toBeTrue();
+    expect(WorkflowStateStore::forJob(TestJob3::class))
+        ->transitioned->toBeFalse();
+});
+
+it('starts a workflow by dispatching all initial jobs that can be run', function (): void {
+    WorkflowStateStore::setupJobs([
+        TestJob1::class => new FakeWorkflowJobState(canRun: true),
+        TestJob2::class => new FakeWorkflowJobState(canRun: false),
+    ]);
+
     $definition = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
@@ -56,7 +86,7 @@ it('starts a workflow by dispatching all jobs without dependencies', function ()
     $this->manager->startWorkflow($definition);
 
     Bus::assertDispatchedTimes(TestJob1::class, 1);
-    Bus::assertDispatchedTimes(TestJob2::class, 1);
+    Bus::assertNotDispatched(TestJob2::class);
     Bus::assertNotDispatched(TestJob3::class);
 });
 
@@ -112,6 +142,11 @@ it('fires an event after a workflow was started', function (): void {
 });
 
 it('sets the provided connection on all jobs', function (): void {
+    WorkflowStateStore::setupJobs([
+        TestJob1::class => new FakeWorkflowJobState(canRun: true),
+        TestJob2::class => new FakeWorkflowJobState(canRun: true),
+    ]);
+
     $workflow = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
@@ -134,6 +169,11 @@ it('sets the provided connection on all jobs', function (): void {
 });
 
 it('overrides the global workflow connection if an explicit connection was provided', function (): void {
+    WorkflowStateStore::setupJobs([
+        TestJob1::class => new FakeWorkflowJobState(canRun: true),
+        TestJob2::class => new FakeWorkflowJobState(canRun: true),
+    ]);
+
     $workflow = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {
@@ -157,6 +197,11 @@ it('overrides the global workflow connection if an explicit connection was provi
 });
 
 it('does not change the job connections if no explicit connection was provided', function (): void {
+    WorkflowStateStore::setupJobs([
+        TestJob1::class => new FakeWorkflowJobState(canRun: true),
+        TestJob2::class => new FakeWorkflowJobState(canRun: true),
+    ]);
+
     $workflow = new class() extends AbstractWorkflow {
         public function definition(): WorkflowDefinition
         {

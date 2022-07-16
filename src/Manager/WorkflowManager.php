@@ -47,7 +47,13 @@ class WorkflowManager implements WorkflowManagerInterface
         );
 
         foreach ($initialJobs as $job) {
-            $this->dispatcher->dispatch($job);
+            $model = $job->step();
+
+            $model->transition();
+
+            if ($model->canRun()) {
+                $this->dispatcher->dispatch($job);
+            }
         }
 
         event(new WorkflowStarted($abstractWorkflow, $workflow, $initialJobs));
