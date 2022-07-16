@@ -49,9 +49,9 @@ class WorkflowManager implements WorkflowManagerInterface
         foreach ($initialJobs as $job) {
             $model = $job->step();
 
-            $model->transition();
+            $model?->transition();
 
-            if ($model->canRun()) {
+            if ($model?->canRun()) {
                 $this->dispatcher->dispatch($job);
             }
         }
