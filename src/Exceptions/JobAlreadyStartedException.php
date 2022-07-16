@@ -15,6 +15,6 @@ namespace Sassnowski\Venture\Exceptions;
 
 use Exception;
 
-final class JobNotReadyException extends Exception
+final class JobAlreadyStartedException extends Exception
 {
 }

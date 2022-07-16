@@ -12,7 +12,6 @@ declare(strict_types=1);
  */
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\AbstractWorkflow;
@@ -41,7 +40,6 @@ use function PHPUnit\Framework\assertTrue;
 uses(TestCase::class);
 
 beforeEach(function (): void {
-    Bus::fake();
     $_SERVER['__before_connect_callback'] = 0;
 });
 
@@ -127,7 +125,6 @@ it('sets the jobId on the job instance if explicitly provided', function (): voi
 });
 
 it('sets the dependants of a job', function (): void {
-    Bus::fake();
     $testJob1 = new TestJob1();
     $testJob2 = new TestJob2();
 

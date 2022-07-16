@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use RuntimeException;
 use Sassnowski\Venture\Exceptions\CannotRetryJobException;
-use Sassnowski\Venture\Exceptions\JobNotReadyException;
+use Sassnowski\Venture\Exceptions\JobAlreadyStartedException;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\State\WorkflowJobState;
 use Sassnowski\Venture\Venture;
@@ -158,8 +158,8 @@ class WorkflowJob extends Model
 
     public function start(): void
     {
-        if (!$this->canRun()) {
-            throw new JobNotReadyException();
+        if ($this->isProcessing()) {
+            throw new JobAlreadyStartedException();
         }
 
         \dispatch($this->step());

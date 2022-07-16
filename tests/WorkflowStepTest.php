@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Bus;
 use Sassnowski\Venture\Exceptions\CannotRetryJobException;
-use Sassnowski\Venture\Exceptions\JobNotReadyException;
+use Sassnowski\Venture\Exceptions\JobAlreadyStartedException;
 use Sassnowski\Venture\State\FakeWorkflowJobState;
 use Sassnowski\Venture\State\WorkflowStateStore;
 use Stubs\TestJob1;
@@ -27,9 +27,9 @@ beforeEach(function (): void {
     $this->workflow = createWorkflow();
 });
 
-it('starts a job that can run', function (): void {
+it('starts a job that isn\'t running', function (): void {
     WorkflowStateStore::setupJobs([
-        TestJob1::class => new FakeWorkflowJobState(canRun: true),
+        TestJob1::class => new FakeWorkflowJobState(processing: false),
     ]);
 
     $job = createWorkflowJob(
@@ -42,9 +42,9 @@ it('starts a job that can run', function (): void {
     Bus::assertDispatchedTimes(TestJob1::class, 1);
 });
 
-it('throws an exception when trying to start a job that cannot run', function (): void {
+it('throws an exception when trying to start a job that is already running', function (): void {
     WorkflowStateStore::setupJobs([
-        TestJob1::class => new FakeWorkflowJobState(canRun: false),
+        TestJob1::class => new FakeWorkflowJobState(processing: true),
     ]);
 
     $job = createWorkflowJob(
@@ -52,7 +52,7 @@ it('throws an exception when trying to start a job that cannot run', function ()
         ['job' => \serialize(new TestJob1())],
     );
 
-    expect(fn () => $job->start())->toThrow(JobNotReadyException::class);
+    expect(fn () => $job->start())->toThrow(JobAlreadyStartedException::class);
 
     Bus::assertNotDispatched(TestJob1::class);
 });
