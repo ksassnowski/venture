@@ -92,6 +92,13 @@ it('proxies all interface methods to the underlying object', function (): void {
     expect($job)->gated->toBeTrue();
 });
 
+it('returns the name of the wrapped job', function (): void {
+    $job = new LegacyWorkflowJob();
+    $adapter = WorkflowStepAdapter::fromJob($job);
+
+    expect($adapter->displayName())->toBe(LegacyWorkflowJob::class);
+});
+
 it('proxies all property accesses to the underlying object', function (): void {
     $job = new LegacyWorkflowJob();
     $adapter = WorkflowStepAdapter::fromJob($job);

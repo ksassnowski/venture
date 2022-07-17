@@ -67,6 +67,12 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return new self($job);
     }
 
+
+    public function displayName(): string
+    {
+        return $this->job::class;
+    }
+
     public function withWorkflowId(int $workflowID): WorkflowStepInterface
     {
         $this->job->withWorkflowId($workflowID);
