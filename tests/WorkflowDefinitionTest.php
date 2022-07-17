@@ -579,8 +579,7 @@ it('fires an event after a job was added', function (): void {
     Event::assertDispatched(JobAdded::class, function (JobAdded $event) use ($definition, $job): bool {
         return $event->definition === $definition
             && $event->job === $job
-            && '::job-name::' === $event->name
-            && [] === $event->dependencies;
+            && '::job-name::' === $event->name;
     });
 });
 
@@ -595,8 +594,7 @@ it('fires an event after a workflow was added', function (): void {
         function (WorkflowAdded $event) use ($definition, $nestedWorkflow) {
             return $event->parentDefinition === $definition
                 && $event->nestedDefinition->workflow() === $nestedWorkflow
-                && '::id::' === $event->id
-                && [] === $event->dependencies;
+                && '::id::' === $event->id;
         },
     );
 });

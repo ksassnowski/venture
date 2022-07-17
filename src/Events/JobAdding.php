@@ -28,7 +28,6 @@ final class JobAdding
     public function __construct(
         public WorkflowDefinition $definition,
         public WorkflowStepInterface $job,
-        public array $dependencies,
         public ?string $name,
         public mixed $delay,
         public ?string $jobID,

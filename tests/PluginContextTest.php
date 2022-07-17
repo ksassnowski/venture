@@ -49,18 +49,17 @@ it('registers an event listener', function (string $method, object $event): void
 })->with([
     'JobAdding' => [
         'onJobAdding',
-        new JobAdding((new TestWorkflow())->definition(), new TestJob1(), [], null, null, null),
+        new JobAdding((new TestWorkflow())->definition(), new TestJob1(), null, null, null),
     ],
     'JobAdded' => [
         'onJobAdded',
-        new JobAdded((new TestWorkflow())->definition(), new TestJob1(), [], '::name::'),
+        new JobAdded((new TestWorkflow())->definition(), new TestJob1(), '::name::'),
     ],
     'WorkflowAdding' => [
         'onWorkflowAdding',
         new WorkflowAdding(
             (new TestWorkflow())->definition(),
             (new TestWorkflow())->definition(),
-            [],
             '::workflow-id::',
         ),
     ],
@@ -69,7 +68,6 @@ it('registers an event listener', function (string $method, object $event): void
         new WorkflowAdded(
             (new TestWorkflow())->definition(),
             (new TestWorkflow())->definition(),
-            [],
             '::workflow-id::',
         ),
     ],

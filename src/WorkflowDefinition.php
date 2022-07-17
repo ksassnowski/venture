@@ -82,7 +82,7 @@ class WorkflowDefinition
     ): self {
         $job = $this->wrapJob($job, $id);
 
-        $event = $this->onJobAdding($job, $dependencies, $name, $delay, $id);
+        $event = $this->onJobAdding($job, $name, $delay, $id);
 
         $this->graph->addDependantJob(
             $event->job,
@@ -92,7 +92,7 @@ class WorkflowDefinition
 
         $this->pushJob($event->job);
 
-        event(new JobAdded($this, $event->job, $event->dependencies, $event->job->getName()));
+        event(new JobAdded($this, $event->job, $event->job->getName()));
 
         return $this;
     }
@@ -111,7 +111,7 @@ class WorkflowDefinition
     ): self {
         return $this->addJob(
             $this->wrapJob($job, $id)->withGate(),
-            $dependencies,
+            $this->mapDependencies($dependencies),
             $name,
             null,
             $id,
@@ -128,7 +128,7 @@ class WorkflowDefinition
     {
         $definition = $workflow->definition();
 
-        $event = $this->onWorkflowAdding($definition, $dependencies, $id);
+        $event = $this->onWorkflowAdding($definition, $id);
 
         $workflow->beforeNesting($definition->jobs);
 
@@ -145,7 +145,7 @@ class WorkflowDefinition
 
         $this->nestedWorkflows[$event->workflowID] = $dependencies;
 
-        event(new WorkflowAdded($this, $definition, $event->dependencies, $event->workflowID));
+        event(new WorkflowAdded($this, $definition, $event->workflowID));
 
         return $this;
     }
@@ -317,27 +317,22 @@ class WorkflowDefinition
      */
     private function onJobAdding(
         WorkflowStepInterface $job,
-        array $dependencies,
         ?string $name,
         mixed $delay,
         ?string $id,
     ): JobAdding {
         return tap(
-            new JobAdding($this, $job, $dependencies, $name, $delay, $id),
+            new JobAdding($this, $job, $name, $delay, $id),
             fn (JobAdding $event) => \event($event),
         );
     }
 
-    /**
-     * @param array<int, string> $dependencies
-     */
     private function onWorkflowAdding(
         self $definition,
-        array $dependencies,
         ?string $id,
     ): WorkflowAdding {
         return tap(
-            new WorkflowAdding($this, $definition, $dependencies, $id ?: ''),
+            new WorkflowAdding($this, $definition, $id ?: ''),
             fn (WorkflowAdding $event) => \event($event),
         );
     }
