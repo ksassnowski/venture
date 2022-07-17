@@ -32,7 +32,7 @@ class DependencyGraph
     private array $nestedGraphs = [];
 
     /**
-     * @param array<int, string> $dependencies
+     * @param array<int, Dependency> $dependencies
      *
      * @throws DuplicateJobException
      */
@@ -51,6 +51,11 @@ class DependencyGraph
         foreach ($resolvedDependencies as $dependency) {
             $dependency->addDependent($node);
         }
+    }
+
+    public function has(string $id): bool
+    {
+        return isset($this->graph[$id]) || isset($this->nestedGraphs[$id]);
     }
 
     /**
@@ -82,7 +87,7 @@ class DependencyGraph
     }
 
     /**
-     * @param array<int, string> $dependencies
+     * @param array<int, Dependency> $dependencies
      *
      * @throws DuplicateJobException
      * @throws DuplicateWorkflowException
@@ -101,9 +106,14 @@ class DependencyGraph
             // The root nodes of the nested graph should be connected to
             // the provided dependencies. If the dependency happens to be
             // another graph, it will be resolved inside `addDependantJob`.
-            $nodeDependencies = $node->isRoot()
-                ? $dependencies
-                : $node->getDependencyIDs();
+            if ($node->isRoot()) {
+                $nodeDependencies = $dependencies;
+            } else {
+                $nodeDependencies = array_map(
+                    fn (string $dependency) => new StaticDependency($dependency),
+                    $node->getDependencyIDs(),
+                );
+            }
 
             $this->addDependantJob($node->getJob(), $nodeDependencies, $node->getID());
         }
@@ -117,7 +127,7 @@ class DependencyGraph
     }
 
     /**
-     * @param array<int, string> $dependencies
+     * @param array<int, Dependency> $dependencies
      *
      * @return array<int, Node>
      */
@@ -126,7 +136,13 @@ class DependencyGraph
         $resolvedDependencies = [];
 
         foreach ($dependencies as $dependency) {
-            $resolvedDependencies[] = $this->resolveDependency($dependency);
+            $id = $dependency->getID($this);
+
+            if (null === $id) {
+                continue;
+            }
+
+            $resolvedDependencies[] = $this->resolveDependency($id);
         }
 
         return \array_merge(...$resolvedDependencies);

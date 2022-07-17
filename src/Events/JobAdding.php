@@ -22,8 +22,7 @@ final class JobAdding
     use Dispatchable;
 
     /**
-     * @param array<int, string> $dependencies
-     * @param Delay              $delay
+     * @param Delay $delay
      */
     public function __construct(
         public WorkflowDefinition $definition,

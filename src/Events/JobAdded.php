@@ -18,9 +18,6 @@ use Sassnowski\Venture\WorkflowStepInterface;
 
 final class JobAdded
 {
-    /**
-     * @param array<int, string> $dependencies
-     */
     public function __construct(
         public WorkflowDefinition $definition,
         public WorkflowStepInterface $job,

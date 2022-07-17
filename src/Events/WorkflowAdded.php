@@ -17,9 +17,6 @@ use Sassnowski\Venture\WorkflowDefinition;
 
 final class WorkflowAdded
 {
-    /**
-     * @param array<int, string> $dependencies
-     */
     public function __construct(
         public WorkflowDefinition $parentDefinition,
         public WorkflowDefinition $nestedDefinition,

@@ -26,7 +26,9 @@ use Sassnowski\Venture\Events\WorkflowCreating;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\InvalidJobException;
+use Sassnowski\Venture\Graph\Dependency;
 use Sassnowski\Venture\Graph\DependencyGraph;
+use Sassnowski\Venture\Graph\StaticDependency;
 use Sassnowski\Venture\Models\Workflow;
 use Throwable;
 
@@ -67,7 +69,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string> $dependencies
+     * @param array<int, string|Dependency> $dependencies
      * @param Delay              $delay
      *
      * @throws DuplicateJobException
@@ -86,7 +88,7 @@ class WorkflowDefinition
 
         $this->graph->addDependantJob(
             $event->job,
-            $event->dependencies,
+            $this->mapDependencies($dependencies),
             $event->job->getJobId(),
         );
 
@@ -98,7 +100,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string> $dependencies
+     * @param array<int, string|Dependency> $dependencies
      *
      * @throws DuplicateJobException
      * @throws InvalidJobException
@@ -119,7 +121,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string> $dependencies
+     * @param array<int, string|Dependency> $dependencies
      *
      * @throws DuplicateJobException
      * @throws DuplicateWorkflowException
@@ -136,7 +138,7 @@ class WorkflowDefinition
         $this->graph->connectGraph(
             $definition->graph,
             $event->workflowID,
-            $event->dependencies,
+            $this->mapDependencies($dependencies),
         );
 
         foreach ($definition->jobs as $job) {
@@ -375,6 +377,26 @@ class WorkflowDefinition
         } catch (InvalidArgumentException $e) {
             throw InvalidJobException::jobNotUsingTrait($step, $e);
         }
+    }
+
+    /**
+     * @param array<int, string|Dependency> $dependencies
+     *
+     * @return array<int, Dependency>
+     */
+    private function mapDependencies(array $dependencies): array
+    {
+        $result = [];
+
+        foreach ($dependencies as $dependency) {
+            if (is_string($dependency)) {
+                $dependency = new StaticDependency($dependency);
+            }
+
+            $result[] = $dependency;
+        }
+
+        return $result;
     }
 
     private function pushJob(WorkflowStepInterface $job): void
