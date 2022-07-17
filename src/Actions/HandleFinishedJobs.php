@@ -13,13 +13,16 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Actions;
 
+use Sassnowski\Venture\Dispatcher\JobDispatcher;
 use Sassnowski\Venture\Events\WorkflowFinished;
-use Sassnowski\Venture\Models\WorkflowJob;
-use Sassnowski\Venture\Venture;
 use Sassnowski\Venture\WorkflowStepInterface;
 
 final class HandleFinishedJobs implements HandlesFinishedJobs
 {
+    public function __construct(private JobDispatcher $dispatcher)
+    {
+    }
+
     public function __invoke(WorkflowStepInterface $step): void
     {
         $workflow = $step->workflow();
@@ -43,24 +46,6 @@ final class HandleFinishedJobs implements HandlesFinishedJobs
             return;
         }
 
-        $this->dispatchReadyDependentJobs($step);
-    }
-
-    private function dispatchReadyDependentJobs(WorkflowStepInterface $step): void
-    {
-        if (empty($step->getDependantJobs())) {
-            return;
-        }
-
-        /** @var WorkflowJob $jobModel */
-        $jobModel = \app(Venture::$workflowJobModel);
-
-        $jobModel::query()
-            ->whereIn('uuid', $step->getDependantJobs())
-            ->with('workflow')
-            ->get()
-            ->each(fn (WorkflowJob $job) => $job->transition())
-            ->filter(fn (WorkflowJob $job): bool => $job->canRun())
-            ->each(fn (WorkflowJob $job) => $job->start());
+        $this->dispatcher->dispatchDependentJobs($step);
     }
 }

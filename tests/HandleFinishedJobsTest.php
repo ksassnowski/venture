@@ -14,13 +14,12 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Event;
 use Sassnowski\Venture\Actions\HandleFinishedJobs;
+use Sassnowski\Venture\Dispatcher\FakeDispatcher;
 use Sassnowski\Venture\Events\WorkflowFinished;
-use Sassnowski\Venture\State\FakeWorkflowJobState;
 use Sassnowski\Venture\State\FakeWorkflowState;
 use Sassnowski\Venture\State\WorkflowStateStore;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
-use Stubs\TestJob3;
 use Stubs\ThenCallback;
 
 uses(TestCase::class);
@@ -30,75 +29,9 @@ beforeEach(function (): void {
 
     WorkflowStateStore::fake();
 
-    $this->action = new HandleFinishedJobs();
+    $this->dispatcher = new FakeDispatcher();
+    $this->action = new HandleFinishedJobs($this->dispatcher);
     $_SERVER['__then.count'] = 0;
-});
-
-it('transitions the state of all dependant jobs of the finished job', function (): void {
-    createDefinition()
-        ->addJob($job1 = new TestJob1())
-        ->addGatedJob(new TestJob2(), [TestJob1::class])
-        ->addGatedJob(new TestJob3(), [TestJob1::class])
-        ->build();
-
-    ($this->action)($job1);
-
-    expect(WorkflowStateStore::forJob(TestJob2::class))
-        ->transitioned->toBeTrue();
-    expect(WorkflowStateStore::forJob(TestJob3::class))
-        ->transitioned->toBeTrue();
-});
-
-it('runs a finished job\'s dependency if no other dependencies exist', function (): void {
-    WorkflowStateStore::setupJobs([
-        TestJob2::class => new FakeWorkflowJobState(canRun: true),
-        TestJob3::class => new FakeWorkflowJobState(canRun: true),
-    ]);
-
-    createDefinition()
-        ->addJob($job1 = new TestJob1())
-        ->addJob(new TestJob2(), [TestJob1::class])
-        ->addJob(new TestJob3(), [TestJob1::class])
-        ->build();
-
-    ($this->action)($job1);
-
-    Bus::assertDispatched(TestJob2::class);
-    Bus::assertDispatched(TestJob3::class);
-});
-
-it('does not run dependent jobs if they are not ready to run', function (): void {
-    WorkflowStateStore::setupJobs([
-        TestJob2::class => new FakeWorkflowJobState(canRun: false),
-        TestJob3::class => new FakeWorkflowJobState(canRun: false),
-    ]);
-
-    createDefinition()
-        ->addJob($job1 = new TestJob1())
-        ->addJob(new TestJob2(), [TestJob1::class])
-        ->addJob(new TestJob3(), [TestJob1::class])
-        ->build();
-
-    ($this->action)($job1);
-
-    Bus::assertNotDispatched(TestJob2::class);
-    Bus::assertNotDispatched(TestJob3::class);
-});
-
-it('does not run jobs that are not dependent on the finished job, even if they could be run', function (): void {
-    WorkflowStateStore::setupJobs([
-        TestJob3::class => new FakeWorkflowJobState(canRun: true),
-    ]);
-
-    createDefinition()
-        ->addJob($job1 = new TestJob1())
-        ->addJob(new TestJob2())
-        ->addJob(new TestJob3(), [TestJob2::class])
-        ->build();
-
-    ($this->action)($job1);
-
-    Bus::assertNotDispatched(TestJob3::class);
 });
 
 it('marks the workflow as finished if all jobs have been processed', function (): void {
@@ -144,8 +77,18 @@ it('marks the corresponding job step finished whenever a job finishes', function
     expect($state->finishedJobs)->toHaveKey(TestJob2::class);
 });
 
-it('will not run any further jobs if the workflow has been cancelled', function (): void {
-    Bus::fake();
+it('dispatches all dependent jobs of the finished job', function (): void {
+    [$workflow, $initialJobs] = createDefinition()
+        ->addJob($job = new TestJob1())
+        ->addJob(new TestJob2(), [TestJob1::class])
+        ->build();
+
+    ($this->action)($job);
+
+    $this->dispatcher->assertDependentJobsDispatchedFor(TestJob1::class);
+});
+
+it('does not dispatch the dependent jobs if the workflow has been cancelled', function (): void {
     [$workflow, $initialJobs] = createDefinition()
         ->addJob($job = new TestJob1())
         ->addJob(new TestJob2(), [TestJob1::class])
@@ -154,7 +97,18 @@ it('will not run any further jobs if the workflow has been cancelled', function 
     $workflow->cancel();
     ($this->action)($job);
 
-    Bus::assertNotDispatched(TestJob2::class);
+    $this->dispatcher->assertDependentJobsNotDispatchedFor(TestJob1::class);
+});
+
+it('does not dispatch the dependent jobs if all jobs of the worklflow have finished', function (): void {
+    [$workflow, $initialJobs] = createDefinition()
+        ->addJob($job = new TestJob1())
+        ->build();
+    WorkflowStateStore::setupWorkflow($workflow, new FakeWorkflowState(allJobsFinished: true));
+
+    ($this->action)($job);
+
+    $this->dispatcher->assertDependentJobsNotDispatchedFor(TestJob1::class);
 });
 
 it('runs the "then" callback after every job has been processed', function (): void {

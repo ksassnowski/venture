@@ -19,6 +19,8 @@ use Sassnowski\Venture\Actions\HandleFailedJobs;
 use Sassnowski\Venture\Actions\HandleFinishedJobs;
 use Sassnowski\Venture\Actions\HandlesFailedJobs;
 use Sassnowski\Venture\Actions\HandlesFinishedJobs;
+use Sassnowski\Venture\Dispatcher\JobDispatcher;
+use Sassnowski\Venture\Dispatcher\QueueDispatcher;
 use Sassnowski\Venture\Manager\WorkflowManager;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
@@ -63,6 +65,7 @@ class VentureServiceProvider extends ServiceProvider
         $this->registerStepIdGenerator();
         $this->registerJobSerializer();
         $this->registerActions();
+        $this->registerDispatcher();
 
         if (app()->runningUnitTests()) {
             $this->registerFakeWorkflowState();
@@ -117,6 +120,14 @@ class VentureServiceProvider extends ServiceProvider
         $this->app->bind(
             HandlesFailedJobs::class,
             HandleFailedJobs::class,
+        );
+    }
+
+    private function registerDispatcher(): void
+    {
+        $this->app->bind(
+            JobDispatcher::class,
+            QueueDispatcher::class,
         );
     }
 

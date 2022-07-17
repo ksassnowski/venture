@@ -14,17 +14,16 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Manager;
 
 use Closure;
-use Illuminate\Contracts\Bus\Dispatcher;
 use Sassnowski\Venture\AbstractWorkflow;
+use Sassnowski\Venture\Dispatcher\JobDispatcher;
 use Sassnowski\Venture\Events\WorkflowStarted;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowManager implements WorkflowManagerInterface
 {
-    public function __construct(
-        private Dispatcher $dispatcher,
-    ) {
+    public function __construct(private JobDispatcher $dispatcher)
+    {
     }
 
     public function define(AbstractWorkflow $workflow, string $workflowName): WorkflowDefinition
@@ -46,15 +45,7 @@ class WorkflowManager implements WorkflowManagerInterface
             Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
         );
 
-        foreach ($initialJobs as $job) {
-            $model = $job->step();
-
-            $model?->transition();
-
-            if ($model?->canRun()) {
-                $this->dispatcher->dispatch($job);
-            }
-        }
+        $this->dispatcher->dispatch($initialJobs);
 
         event(new WorkflowStarted($abstractWorkflow, $workflow, $initialJobs));
 
