@@ -36,7 +36,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
 
     public function __get(string $name): mixed
     {
-        return $this->job->{$name};
+        return $this->job->{$name} ?? null;
     }
 
     public function __set(string $name, mixed $value): void

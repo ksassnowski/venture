@@ -99,6 +99,13 @@ it('proxies all property accesses to the underlying object', function (): void {
     expect($adapter)->foo->toBe('bar');
 });
 
+it('returns null if the property does not exist on the underlying object', function (): void {
+    $job = new LegacyWorkflowJob();
+    $adapter = WorkflowStepAdapter::fromJob($job);
+
+    expect($adapter)->bla->toBeNull();
+});
+
 it('proxies all unknown method calls to the underlying object', function (): void {
     $job = new LegacyWorkflowJob();
     $adapter = WorkflowStepAdapter::fromJob($job);
