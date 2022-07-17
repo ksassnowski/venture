@@ -15,20 +15,13 @@ namespace Stubs;
 
 use Sassnowski\Venture\WorkflowStep;
 
-final class LegacyWorkflowJob
+final class LegacyJobWithInvokeMethod
 {
     use WorkflowStep;
 
-    public string $foo = 'bar';
-
     public bool $handled = false;
 
-    public function baz(): string
-    {
-        return 'qux';
-    }
-
-    public function handle(): void
+    public function __invoke(): void
     {
         $this->handled = true;
     }

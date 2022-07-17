@@ -67,6 +67,13 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return new self($job);
     }
 
+    public function handle(): void
+    {
+        $method = \method_exists($this->job, 'handle') ? 'handle' : '__invoke';
+
+        /** @phpstan-ignore-next-line */
+        app()->call([$this->job, $method]);
+    }
 
     public function displayName(): string
     {

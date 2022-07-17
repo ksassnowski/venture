@@ -13,7 +13,11 @@ declare(strict_types=1);
 
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
+use Sassnowski\Venture\Dispatcher\FakeDispatcher;
+use Sassnowski\Venture\Dispatcher\JobDispatcher;
+use Sassnowski\Venture\WorkflowStep;
 use Sassnowski\Venture\WorkflowStepAdapter;
+use Stubs\LegacyJobWithInvokeMethod;
 use Stubs\LegacyWorkflowJob;
 use Stubs\NonWorkflowJob;
 use Stubs\TestJob1;
@@ -134,4 +138,43 @@ it('can return the wrapped job', function (): void {
     $adapter = WorkflowStepAdapter::fromJob($job);
 
     expect($adapter->unwrap())->toBe($job);
+});
+
+it('runs the underlying job\'s handle method if it exists', function (): void {
+    $job = new LegacyWorkflowJob();
+    $adapter = WorkflowStepAdapter::fromJob($job);
+
+    $adapter->handle();
+
+    expect($job)->handled->toBeTrue();
+});
+
+it('runs the underlying job\'s __invoke method if no handle method exists', function (): void {
+    $job = new LegacyJobWithInvokeMethod();
+    $adapter = WorkflowStepAdapter::fromJob($job);
+
+    $adapter->handle();
+
+    expect($job)->handled->toBeTrue();
+});
+
+it('resolves the underlying job\'s dependencies', function (): void {
+    $dispatcher = new FakeDispatcher();
+    app()->instance(JobDispatcher::class, $dispatcher);
+
+    $job = new class() {
+        use WorkflowStep;
+
+        public ?JobDispatcher $dispatcher = null;
+
+        public function handle(JobDispatcher $dispatcher): void
+        {
+            $this->dispatcher = $dispatcher;
+        }
+    };
+    $adapter = WorkflowStepAdapter::fromJob($job);
+
+    $adapter->handle();
+
+    expect($job->dispatcher)->toBe($dispatcher);
 });
