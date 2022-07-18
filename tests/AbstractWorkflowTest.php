@@ -67,3 +67,15 @@ it('can start a workflow synchronously', function (): void {
         fn (WorkflowWithParameter $workflow) => '::param::' === $workflow->something,
     );
 });
+
+it('returns the same definition instance', function (): void {
+    $workflow = new TestAbstractWorkflow();
+
+    $definition = $workflow->getDefinition();
+    expect($definition)->toBe($workflow->getDefinition());
+
+    $workflow->withDefinition(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob4(), [TestJob1::class]);
+    });
+    expect($workflow->getDefinition())->toBe($definition);
+});

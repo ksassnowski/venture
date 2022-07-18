@@ -35,7 +35,7 @@ class WorkflowManager implements WorkflowManagerInterface
         AbstractWorkflow $abstractWorkflow,
         ?string $connection = null,
     ): Workflow {
-        $definition = $abstractWorkflow->definition();
+        $definition = $abstractWorkflow->getDefinition();
 
         if (null !== $connection) {
             $definition->allOnConnection($connection);

@@ -28,7 +28,7 @@ final class WorkflowTester
 
     public function __construct(private AbstractWorkflow $workflow)
     {
-        $this->definition = $this->workflow->definition();
+        $this->definition = $this->workflow->getDefinition();
     }
 
     /**

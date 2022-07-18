@@ -20,6 +20,8 @@ use Sassnowski\Venture\Testing\WorkflowTester;
 
 abstract class AbstractWorkflow
 {
+    private ?WorkflowDefinition $definition = null;
+
     public static function start(): Workflow
     {
         /** @phpstan-ignore-next-line */
@@ -42,6 +44,15 @@ abstract class AbstractWorkflow
     {
         /** @phpstan-ignore-next-line */
         return new WorkflowTester(new static(...$arguments));
+    }
+
+    final public function getDefinition(): WorkflowDefinition
+    {
+        if (null === $this->definition) {
+            $this->definition = $this->definition();
+        }
+
+        return $this->definition;
     }
 
     abstract public function definition(): WorkflowDefinition;

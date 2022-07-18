@@ -30,7 +30,7 @@ beforeEach(function (): void {
 it('generates an ID for a nested workflow if no explicit ID was provided', function (): void {
     $definition = createDefinition();
     $workflow = new WorkflowWithJob();
-    $event = new WorkflowAdding($definition, $workflow->definition(), '');
+    $event = new WorkflowAdding($definition, $workflow->getDefinition(), '');
 
     ($this->listener)($event);
 
@@ -40,7 +40,7 @@ it('generates an ID for a nested workflow if no explicit ID was provided', funct
 it('does not overwrite the workflow ID if it was provided', function (): void {
     $definition = createDefinition();
     $workflow = new WorkflowWithJob();
-    $event = new WorkflowAdding($definition, $workflow->definition(), '::workflow-id::');
+    $event = new WorkflowAdding($definition, $workflow->getDefinition(), '::workflow-id::');
 
     ($this->listener)($event);
 
@@ -49,7 +49,7 @@ it('does not overwrite the workflow ID if it was provided', function (): void {
 
 it('namespaces the nested workflow\'s job ids', function (): void {
     $definition = createDefinition();
-    $nestedDefinition = (new WorkflowWithJob())->definition();
+    $nestedDefinition = (new WorkflowWithJob())->getDefinition();
     $event = new WorkflowAdding($definition, $nestedDefinition, '::workflow-id::');
 
     ($this->listener)($event);

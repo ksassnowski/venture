@@ -137,7 +137,7 @@ class WorkflowDefinition
      */
     public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = [], ?string $id = null): self
     {
-        $definition = $workflow->definition();
+        $definition = $workflow->getDefinition();
 
         $event = $this->onWorkflowAdding($definition, $id);
 

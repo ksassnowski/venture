@@ -42,7 +42,7 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         AbstractWorkflow $abstractWorkflow,
         ?string $connection = null,
     ): Workflow {
-        $pendingWorkflow = $abstractWorkflow->definition();
+        $pendingWorkflow = $abstractWorkflow->getDefinition();
 
         [$workflow, $initialBatch] = $pendingWorkflow->build(
             Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),

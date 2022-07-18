@@ -51,7 +51,7 @@ it('it stores finished job id for nested workflow jobs', function (): void {
     $workflow = new WorkflowWithWorkflow(new NestedWorkflow(
         $job = new TestJob1(),
     ));
-    $definition = $workflow->definition();
+    $definition = $workflow->getDefinition();
     [$model, $initial] = $definition->build();
     $state = new DefaultWorkflowState($model);
 

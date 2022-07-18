@@ -28,7 +28,7 @@ it('associates the workflowable with the workflow if the workflow implements the
     $entity = new TestModel(['id' => 5]);
     $workflow = new EntityAwareTestWorkflow($entity);
     $model = new Workflow();
-    $event = new WorkflowCreating($workflow->definition(), $model);
+    $event = new WorkflowCreating($workflow->getDefinition(), $model);
 
     ($this->listener)($event);
 
@@ -38,7 +38,7 @@ it('associates the workflowable with the workflow if the workflow implements the
 it('does not associate a model with the workflow if the workflow does not implement the interface', function (): void {
     $workflow = new TestWorkflow();
     $model = new Workflow();
-    $event = new WorkflowCreating($workflow->definition(), $model);
+    $event = new WorkflowCreating($workflow->getDefinition(), $model);
 
     ($this->listener)($event);
 

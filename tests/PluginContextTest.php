@@ -49,39 +49,39 @@ it('registers an event listener', function (string $method, object $event): void
 })->with([
     'JobAdding' => [
         'onJobAdding',
-        new JobAdding((new TestWorkflow())->definition(), new TestJob1(), null, null, null),
+        new JobAdding((new TestWorkflow())->getDefinition(), new TestJob1(), null, null, null),
     ],
     'JobAdded' => [
         'onJobAdded',
-        new JobAdded((new TestWorkflow())->definition(), new TestJob1(), '::name::'),
+        new JobAdded((new TestWorkflow())->getDefinition(), new TestJob1(), '::name::'),
     ],
     'WorkflowAdding' => [
         'onWorkflowAdding',
         new WorkflowAdding(
-            (new TestWorkflow())->definition(),
-            (new TestWorkflow())->definition(),
+            (new TestWorkflow())->getDefinition(),
+            (new TestWorkflow())->getDefinition(),
             '::workflow-id::',
         ),
     ],
     'WorkflowAdded' => [
         'onWorkflowAdded',
         new WorkflowAdded(
-            (new TestWorkflow())->definition(),
-            (new TestWorkflow())->definition(),
+            (new TestWorkflow())->getDefinition(),
+            (new TestWorkflow())->getDefinition(),
             '::workflow-id::',
         ),
     ],
     'WorkflowCreating' => [
         'onWorkflowCreating',
         fn () => new WorkflowCreating(
-            (new TestWorkflow())->definition(),
+            (new TestWorkflow())->getDefinition(),
             new Workflow(),
         ),
     ],
     'WorkflowCreated' => [
         'onWorkflowCreated',
         fn () => new WorkflowCreated(
-            (new TestWorkflow())->definition(),
+            (new TestWorkflow())->getDefinition(),
             new Workflow(),
         ),
     ],

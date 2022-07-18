@@ -22,7 +22,7 @@ it('does not store an associated entity if the plugin is not registered', functi
     $entity = new TestModel(['id' => 5]);
     $workflow = new EntityAwareTestWorkflow($entity);
 
-    [$model, $initialJobs] = $workflow->definition()->build();
+    [$model, $initialJobs] = $workflow->getDefinition()->build();
 
     expect($model)
         ->workflowable_type->toBeNull()
@@ -36,7 +36,7 @@ it('stores the associated entity in the database if the plugin was registered', 
     $entity = new TestModel(['id' => 5]);
     $workflow = new EntityAwareTestWorkflow($entity);
 
-    [$model, $initialJobs] = $workflow->definition()->build();
+    [$model, $initialJobs] = $workflow->getDefinition()->build();
 
     expect($model)
         ->workflowable_type->toBe(TestModel::class)
