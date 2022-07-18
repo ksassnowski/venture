@@ -50,7 +50,7 @@ it('returns the jobs direct dependencies', function (): void {
             new StaticDependency(TestJob1::class),
             new StaticDependency(TestJob2::class),
         ],
-        TestJob3::class
+        TestJob3::class,
     );
 
     expect($this->graph->getDependencies(TestJob1::class))
@@ -227,7 +227,7 @@ test('has returns true if a job exists for the provided id', function (): void {
     expect($graph)->has(TestJob1::class)->toBeTrue();
 });
 
-test ('has returns true if a nested graph exists for the provided id', function (): void {
+test('has returns true if a nested graph exists for the provided id', function (): void {
     $graph1 = new DependencyGraph();
     $graph2 = new DependencyGraph();
 
@@ -236,14 +236,14 @@ test ('has returns true if a nested graph exists for the provided id', function 
     expect($graph1)->has('::nested-graph::')->toBeTrue();
 });
 
-test ('has returns false if no job or nested graph exists for the provided id', function (): void {
+test('has returns false if no job or nested graph exists for the provided id', function (): void {
     $graph1 = new DependencyGraph();
 
     expect($graph1)->has(TestJob1::class)->toBeFalse();
 });
 
 it('does not add dependencies if the returned ID is null', function (): void {
-    $dependency = new class implements Dependency {
+    $dependency = new class() implements Dependency {
         public function getID(DependencyGraph $graph): ?string
         {
             return null;
@@ -255,4 +255,25 @@ it('does not add dependencies if the returned ID is null', function (): void {
     $graph->addDependantJob(new TestJob3(), [new StaticDependency(TestJob1::class), $dependency], TestJob3::class);
 
     expect($graph->getDependencies(TestJob3::class))->toEqual([TestJob1::class]);
+});
+
+it('can retrieve a node by its id', function (): void {
+    $graph = new DependencyGraph();
+    $graph->addDependantJob($job1 = new TestJob1(), [], TestJob1::class);
+    $graph->addDependantJob($job2 = new TestJob2(), [new StaticDependency(TestJob1::class)], '::job-2-id::');
+
+    expect($graph->get(TestJob1::class))
+        ->getID()->toBe(TestJob1::class)
+        ->getDependencyIDs()->toBeEmpty()
+        ->getDependentJobs()->toEqual([$job2]);
+    expect($graph->get('::job-2-id::'))
+        ->getId()->toBe('::job-2-id::')
+        ->getDependencyIDs()->toEqual([TestJob1::class]);
+});
+
+it('returns null if no node exists for the provided id', function (): void {
+    $graph = new DependencyGraph();
+    $graph->addDependantJob(new TestJob1(), [], TestJob1::class);
+
+    expect($graph->get(TestJob2::class))->toBeNull();
 });

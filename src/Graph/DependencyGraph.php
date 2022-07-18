@@ -58,6 +58,11 @@ class DependencyGraph
         return isset($this->graph[$id]) || isset($this->nestedGraphs[$id]);
     }
 
+    public function get(string $id): ?Node
+    {
+        return $this->graph[$id] ?? null;
+    }
+
     /**
      * @return array<int, WorkflowStepInterface>
      */
@@ -109,7 +114,7 @@ class DependencyGraph
             if ($node->isRoot()) {
                 $nodeDependencies = $dependencies;
             } else {
-                $nodeDependencies = array_map(
+                $nodeDependencies = \array_map(
                     fn (string $dependency) => new StaticDependency($dependency),
                     $node->getDependencyIDs(),
                 );
