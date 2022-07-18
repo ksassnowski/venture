@@ -48,7 +48,7 @@ class WorkflowDefinition
     protected ?string $catchCallback = null;
 
     /**
-     * @var array<string, array<int, string>>
+     * @var array<string, array<int, Dependency|string>>
      */
     protected array $nestedWorkflows = [];
 
@@ -69,8 +69,8 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string|Dependency> $dependencies
-     * @param Delay              $delay
+     * @param array<int, Dependency|string> $dependencies
+     * @param Delay                         $delay
      *
      * @throws DuplicateJobException
      * @throws InvalidJobException
@@ -100,7 +100,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string|Dependency> $dependencies
+     * @param array<int, Dependency|string> $dependencies
      *
      * @throws DuplicateJobException
      * @throws InvalidJobException
@@ -121,7 +121,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string|Dependency> $dependencies
+     * @param array<int, Dependency|string> $dependencies
      *
      * @throws DuplicateJobException
      * @throws DuplicateWorkflowException
@@ -314,8 +314,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string> $dependencies
-     * @param Delay              $delay
+     * @param Delay $delay
      */
     private function onJobAdding(
         WorkflowStepInterface $job,
@@ -380,7 +379,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, string|Dependency> $dependencies
+     * @param array<int, Dependency|string> $dependencies
      *
      * @return array<int, Dependency>
      */
@@ -389,7 +388,7 @@ class WorkflowDefinition
         $result = [];
 
         foreach ($dependencies as $dependency) {
-            if (is_string($dependency)) {
+            if (\is_string($dependency)) {
                 $dependency = new StaticDependency($dependency);
             }
 
