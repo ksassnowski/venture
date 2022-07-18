@@ -29,6 +29,6 @@ final class ClosureWorkflowStep implements WorkflowStepInterface
 
     public function handle(): void
     {
-        ($this->callback)();
+        app()->call($this->callback->getClosure());
     }
 }

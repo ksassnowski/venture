@@ -12,6 +12,10 @@ declare(strict_types=1);
  */
 
 use Sassnowski\Venture\ClosureWorkflowStep;
+use Sassnowski\Venture\Dispatcher\FakeDispatcher;
+use Sassnowski\Venture\Dispatcher\JobDispatcher;
+
+uses(TestCase::class);
 
 beforeEach(function (): void {
     $_SERVER['__callback.called'] = 0;
@@ -36,4 +40,15 @@ it('can be serialized', function (): void {
     $step->handle();
 
     expect($_SERVER['__callback.called'])->toBe(1);
+});
+
+it('resolves the closure\'s dependencies from the container', function (): void {
+    app()->instance(JobDispatcher::class, new FakeDispatcher());
+
+    $step = new ClosureWorkflowStep(function (JobDispatcher $dispatcher): void {
+        expect($dispatcher)->toBeInstanceOf(FakeDispatcher::class);
+    });
+
+    $step = \unserialize(\serialize($step));
+    $step->handle();
 });
