@@ -169,7 +169,10 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->getDelay();
     }
 
-    public function withConnection(?string $connection): WorkflowStepInterface
+    /**
+     * @param null|string $connection
+     */
+    public function onConnection($connection): WorkflowStepInterface
     {
         $this->job->onConnection($connection);
 

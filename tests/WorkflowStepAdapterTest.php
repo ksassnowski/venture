@@ -87,7 +87,7 @@ it('proxies all interface methods to the underlying object', function (): void {
     expect($adapter)->getDependencies()->toEqual([TestJob2::class, TestJob3::class]);
     expect($job)->dependencies->toEqual([TestJob2::class, TestJob3::class]);
 
-    $adapter->withConnection('::connection::');
+    $adapter->onConnection('::connection::');
     expect($adapter)->getConnection()->toBe('::connection::');
     expect($job)->connection->toBe('::connection::');
 

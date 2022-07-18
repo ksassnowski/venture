@@ -34,13 +34,13 @@ test('assertJobWasDispatched fails if no job with the same id was dispatched', f
 })->throws(AssertionFailedError::class);
 
 test('assertJobWasDispatched fails if a job with the same id was dispatched but on a different connection', function (): void {
-    $this->dispatcher->dispatch([(new TestJob1())->withConnection('::connection::')]);
+    $this->dispatcher->dispatch([(new TestJob1())->onConnection('::connection::')]);
 
     $this->dispatcher->assertJobWasDispatched(TestJob1::class, '::different-connection::');
 })->throws(AssertionFailedError::class);
 
 test('assertJobWasDispatched passes if a job with the same id was dispatched on the same connection', function (): void {
-    $this->dispatcher->dispatch([(new TestJob1())->withConnection('::connection::')]);
+    $this->dispatcher->dispatch([(new TestJob1())->onConnection('::connection::')]);
 
     $this->dispatcher->assertJobWasDispatched(TestJob1::class, '::connection::');
 });

@@ -160,9 +160,9 @@ trait WorkflowStep
         return $this->delay;
     }
 
-    public function withConnection(?string $connection): self
+    public function getConnection(): ?string
     {
-        return $this->onConnection($connection);
+        return $this->connection;
     }
 
     public function getConnection(): ?string

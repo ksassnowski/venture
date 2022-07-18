@@ -139,13 +139,13 @@ test('assertJobExistsWithDependency fails if the workflow contains no job with t
 
 test('assertJobExistsOnConnection passes if the workflow contains a job with the provided id and the correct queue connection', function (): void {
     testWorkflow(function (WorkflowDefinition $definition): void {
-        $definition->addJob((new TestJob1())->withConnection('::connection::'));
+        $definition->addJob((new TestJob1())->onConnection('::connection::'));
     })->assertJobExistsOnConnection(TestJob1::class, '::connection::');
 });
 
 test('assertJobExistsOnConnection fails if the workflow contains a job with the provided id but a different queue connection', function (): void {
     testWorkflow(function (WorkflowDefinition $definition): void {
-        $definition->addJob((new TestJob1())->withConnection('::different-connection::'));
+        $definition->addJob((new TestJob1())->onConnection('::different-connection::'));
     })->assertJobExistsOnConnection(TestJob1::class, '::connection::');
 })->throws(AssertionFailedError::class);
 

@@ -541,8 +541,8 @@ it('can check if a workflow contains a nested workflow', function (callable $con
 it('can configure the connection on all jobs', function (): void {
     $definition = createDefinition()
         ->allOnConnection('::connection::')
-        ->addJob((new TestJob1())->withConnection('::job-1-connection::'))
-        ->addJob((new TestJob2())->withConnection('::job-2-connection::'))
+        ->addJob((new TestJob1())->onConnection('::job-1-connection::'))
+        ->addJob((new TestJob2())->onConnection('::job-2-connection::'))
         ->addJob(new TestJob3(), [TestJob1::class]);
 
     $definition->build();
@@ -554,8 +554,8 @@ it('can configure the connection on all jobs', function (): void {
 
 it('does not override job connections if no explicit connection was provided', function (): void {
     $definition = createDefinition()
-        ->addJob((new TestJob1())->withConnection('::job-1-connection::'))
-        ->addJob((new TestJob2())->withConnection('::job-2-connection::'))
+        ->addJob((new TestJob1())->onConnection('::job-1-connection::'))
+        ->addJob((new TestJob2())->onConnection('::job-2-connection::'))
         ->addJob(new TestJob3(), [TestJob1::class]);
 
     $definition->build();
