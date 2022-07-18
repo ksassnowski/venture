@@ -36,105 +36,105 @@ final class PluginContext
     }
 
     /**
-     * @param callable(JobAdding): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobAdding): void|string $listener
      */
-    public function onJobAdding(callable $listener): self
+    public function onJobAdding(string|array|Closure $listener): self
     {
         return $this->registerListener(JobAdding::class, $listener);
     }
 
     /**
-     * @param callable(JobAdded): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobAdded): void|string $listener
      */
-    public function onJobAdded(callable $listener): self
+    public function onJobAdded(string|array|Closure $listener): self
     {
         return $this->registerListener(JobAdded::class, $listener);
     }
 
     /**
-     * @param callable(WorkflowAdding): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowAdding): void|string $listener
      */
-    public function onWorkflowAdding(callable $listener): self
+    public function onWorkflowAdding(string|array|Closure $listener): self
     {
         return $this->registerListener(WorkflowAdding::class, $listener);
     }
 
     /**
-     * @param callable(WorkflowAdded): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowAdded): void|string $listener
      */
-    public function onWorkflowAdded(callable $listener): self
+    public function onWorkflowAdded(string|array|Closure $listener): self
     {
         return $this->registerListener(WorkflowAdded::class, $listener);
     }
 
     /**
-     * @param callable(WorkflowCreating): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowCreating): void|string $listener
      */
-    public function onWorkflowCreating(callable $listener): self
+    public function onWorkflowCreating(string|array|Closure $listener): self
     {
         return $this->registerListener(WorkflowCreating::class, $listener);
     }
 
     /**
-     * @param callable(WorkflowCreated): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowCreated): void|string $listener
      */
-    public function onWorkflowCreated(callable $listener): self
+    public function onWorkflowCreated(string|array|Closure $listener): self
     {
         return $this->registerListener(WorkflowCreated::class, $listener);
     }
 
     /**
-     * @param callable(JobCreating): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobCreating): void|string $listener
      */
-    public function onJobCreating(callable $listener): self
+    public function onJobCreating(string|array|Closure $listener): self
     {
         return $this->registerListener(JobCreating::class, $listener);
     }
 
     /**
-     * @param callable(JobCreated): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobCreated): void|string $listener
      */
-    public function onJobCreated(callable $listener): self
+    public function onJobCreated(string|array|Closure $listener): self
     {
         return $this->registerListener(JobCreated::class, $listener);
     }
 
     /**
-     * @param callable(JobProcessing): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobProcessing): void|string $listener
      */
-    public function onJobProcessing(callable $listener): self
+    public function onJobProcessing(string|array|Closure $listener): self
     {
         return $this->registerListener(JobProcessing::class, $listener);
     }
 
     /**
-     * @param callable(JobFinished): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobFinished): void|string $listener
      */
-    public function onJobFinished(callable $listener): self
+    public function onJobFinished(string|array|Closure $listener): self
     {
         return $this->registerListener(JobFinished::class, $listener);
     }
 
     /**
-     * @param callable(JobFailed): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobFailed): void|string $listener
      */
-    public function onJobFailed(callable $listener): self
+    public function onJobFailed(string|array|Closure $listener): self
     {
         return $this->registerListener(JobFailed::class, $listener);
     }
 
     /**
-     * @param callable(WorkflowStarted): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowStarted): void|string $listener
      */
-    public function onWorkflowStarted(callable $listener): self
+    public function onWorkflowStarted(string|array|Closure $listener): self
     {
         return $this->registerListener(WorkflowStarted::class, $listener);
     }
 
     /**
-     * @param callable(WorkflowFinished): void $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowFinished): void|string $listener
      */
-    public function onWorkflowFinished(callable $listener): self
+    public function onWorkflowFinished(string|array|Closure $listener): self
     {
         return $this->registerListener(WorkflowFinished::class, $listener);
     }
@@ -142,12 +142,12 @@ final class PluginContext
     /**
      * @template T
      *
-     * @param class-string<T>   $event
-     * @param callable(T): void $listener
+     * @param class-string<T>                                                  $event
+     * @param array{0: class-string|object, 1: string}|Closure(T): void|string $listener
      */
-    private function registerListener(string $event, callable $listener): self
+    private function registerListener(string $event, string|array|Closure $listener): self
     {
-        $this->dispatcher->listen($event, Closure::fromCallable($listener));
+        $this->dispatcher->listen($event, $listener);
 
         return $this;
     }
