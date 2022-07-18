@@ -41,11 +41,11 @@ class VentureServiceProvider extends ServiceProvider
             __DIR__ . '/../config/venture.php' => config_path('venture.php'),
         ], ['config', 'venture-config']);
 
-        $this->publishes([
-            __DIR__ . '/../database/migrations/' => database_path('migrations'),
-        ], ['migrations', 'venture-migrations']);
-
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        if (!\class_exists('CreateWorkflowTables')) {
+            $this->publishes([
+                __DIR__ . '/../database/migrations/create_media_table.php.stub' => database_path('migrations/' . \date('Y_m_d_His', \time()) . '_create_workflow_tables.php'),
+            ], ['migrations']);
+        }
 
         /** @phpstan-ignore-next-line */
         $this->app['events']->subscribe(WorkflowEventSubscriber::class);

@@ -21,6 +21,13 @@ class TestCase extends OrchestraTestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->setUpDatabase();
+    }
+
     protected function tearDown(): void
     {
         WorkflowStateStore::restore();
@@ -51,5 +58,12 @@ class TestCase extends OrchestraTestCase
 
         config()->set('venture.workflow_table', 'workflows');
         config()->set('venture.jobs_table', 'workflow_jobs');
+    }
+
+    private function setUpDatabase(): void
+    {
+        $ventureMigration = require __DIR__ . '/../database/migrations/create_workflow_tables.php.stub';
+
+        $ventureMigration->up();
     }
 }

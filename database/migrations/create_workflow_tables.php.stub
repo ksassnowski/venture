@@ -4,8 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateWorkflowTable extends Migration
-{
+return new class() extends Migration {
     public function up()
     {
         Schema::create(config('venture.workflow_table'), function (Blueprint $table) {
@@ -17,6 +16,8 @@ class CreateWorkflowTable extends Migration
             $table->json('finished_jobs');
             $table->text('then_callback')->nullable();
             $table->timestamp('finished_at')->nullable();
+            $table->timestamp('cancelled_at')->nullable();
+            $table->text('catch_callback')->nullable();
             $table->timestamps();
         });
 
@@ -26,10 +27,19 @@ class CreateWorkflowTable extends Migration
             $table->string('name');
             $table->text('job');
             $table->unsignedBigInteger('workflow_id');
+            $table->json('edges')->nullable();
+            $table->longText('exception')->nullable();
             $table->timestamp('finished_at')->nullable();
+            $table->timestamp('failed_at')->nullable();
+            $table->timestamp('gated_at')->nullable();
+            $table->timestamp('started_at')->nullable();
+            $table->boolean('gated')->default(false);
 
-            $table->foreign('workflow_id')->references('id')->on(config('venture.workflow_table'))
-                ->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('workflow_id')
+                ->references('id')
+                ->on(config('venture.workflow_table'))
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
         });
     }
-}
+};
