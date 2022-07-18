@@ -165,9 +165,9 @@ trait WorkflowStep
         return $this->connection;
     }
 
-    public function getConnection(): ?string
+    public function getQueue(): ?string
     {
-        return $this->connection;
+        return $this->queue;
     }
 
     public function withGate(bool $gated = true): self

@@ -184,6 +184,21 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->connection;
     }
 
+    /**
+     * @param null|string $queue
+     */
+    public function onQueue($queue): WorkflowStepInterface
+    {
+        $this->job->onQueue($queue);
+
+        return $this;
+    }
+
+    public function getQueue(): ?string
+    {
+        return $this->job->queue;
+    }
+
     public function withGate(bool $gated = true): WorkflowStepInterface
     {
         $this->job->gated = $gated;

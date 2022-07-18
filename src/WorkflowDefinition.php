@@ -54,6 +54,8 @@ class WorkflowDefinition
 
     protected ?string $connection = null;
 
+    protected ?string $queue = null;
+
     public function __construct(
         protected AbstractWorkflow $workflow,
         protected string $workflowName = '',
@@ -64,6 +66,13 @@ class WorkflowDefinition
     public function allOnConnection(string $connection): self
     {
         $this->connection = $connection;
+
+        return $this;
+    }
+
+    public function allOnQueue(string $queue): self
+    {
+        $this->queue = $queue;
 
         return $this;
     }
@@ -179,7 +188,7 @@ class WorkflowDefinition
      */
     public function build(?Closure $beforeCreate = null): array
     {
-        $this->setConnectionOnJobs();
+        $this->setQueueParametersOnJobs();
 
         $workflow = $this->makeWorkflow([
             'name' => $this->workflowName,
@@ -403,14 +412,15 @@ class WorkflowDefinition
         $this->jobs[$job->getJobId()] = $job;
     }
 
-    private function setConnectionOnJobs(): void
+    private function setQueueParametersOnJobs(): void
     {
-        if (null === $this->connection) {
+        if (null === $this->connection && null === $this->queue) {
             return;
         }
 
         foreach ($this->jobs as $job) {
-            $job->withConnection($this->connection);
+            $job->onQueue($this->queue ?: $job->getQueue());
+            $job->onConnection($this->connection ?: $job->getConnection());
         }
     }
 }

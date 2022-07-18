@@ -569,6 +569,37 @@ it('does not override job connections if no explicit connection was provided', f
     }
 });
 
+it('can configure the queue on all jobs', function (): void {
+    $definition = createDefinition()
+        ->allOnQueue('::queue::')
+        ->addJob((new TestJob1())->onQueue('::job-1-queue::'))
+        ->addJob((new TestJob2())->onQueue('::job-2-queue::'))
+        ->addJob(new TestJob3(), [TestJob1::class]);
+
+    $definition->build();
+
+    foreach ($definition->jobs() as $job) {
+        expect($job->getQueue())->toBe('::queue::');
+    }
+});
+
+it('does not override the job queues if no explicit queue was provided', function (): void {
+    $definition = createDefinition()
+        ->addJob((new TestJob1())->onQueue('::job-1-queue::'))
+        ->addJob((new TestJob2())->onQueue('::job-2-queue::'))
+        ->addJob(new TestJob3(), [TestJob1::class]);
+
+    $definition->build();
+
+    foreach ($definition->jobs() as $job) {
+        expect($job->getQueue())->match($job::class, [
+            TestJob1::class => '::job-1-queue::',
+            TestJob2::class => '::job-2-queue::',
+            TestJob3::class => null,
+        ]);
+    }
+});
+
 it('fires an event after a job was added', function (): void {
     Event::fake([JobAdded::class]);
     $job = new TestJob1();

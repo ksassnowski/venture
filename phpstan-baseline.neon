@@ -31,6 +31,11 @@ parameters:
 			path: src/WorkflowStepAdapter.php
 
 		-
+			message: "#^Access to an undefined property object\\:\\:\\$queue\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
 			message: "#^Call to an undefined method object\\:\\:getDelay\\(\\)\\.$#"
 			count: 1
 			path: src/WorkflowStepAdapter.php
@@ -62,6 +67,11 @@ parameters:
 
 		-
 			message: "#^Call to an undefined method object\\:\\:onConnection\\(\\)\\.$#"
+			count: 1
+			path: src/WorkflowStepAdapter.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:onQueue\\(\\)\\.$#"
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
