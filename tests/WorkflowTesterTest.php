@@ -11,9 +11,15 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
+use PHPUnit\Framework\AssertionFailedError;
+use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Testing\WorkflowTester;
+use Sassnowski\Venture\WorkflowDefinition;
+use Sassnowski\Venture\WorkflowStepInterface;
 use Stubs\TestJob1;
+use Stubs\TestJob2;
+use Stubs\TestJob3;
 use Stubs\WorkflowWithCallbacks;
 
 uses(TestCase::class);
@@ -79,3 +85,153 @@ it('can configure the workflow before calling the catch-callback', function (): 
 
     expect($_SERVER['__workflow'])->jobs_processed->toBe(200);
 });
+
+test('assertJobExists passes if the workflow contains a job with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertJobExists(TestJob1::class);
+});
+
+test('assertJobExists fails if the workflow contains no job with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertJobExists(TestJob2::class);
+})->throws(AssertionFailedError::class);
+
+test('assertJobExists passes if the workflow contains a job with the provided id and the callback returns true', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition
+            ->addJob(new TestJob1())
+            ->addJob(new TestJob2(), [TestJob1::class]);
+    })->assertJobExists(TestJob2::class, function (WorkflowStepInterface $step) {
+        return $step->getDependencies() == [TestJob1::class];
+    });
+});
+
+test('assertJobExists fails if the workflow contains a job with the provided id but the callback returns false', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertJobExists(TestJob1::class, fn () => false);
+})->throws(AssertionFailedError::class);
+
+test('assertJobExistsWithDependencies passes if the workflow contains a job with the provided id and the correct dependencies', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition
+            ->addJob(new TestJob1())
+            ->addJob(new TestJob2())
+            ->addJob(new TestJob3(), [TestJob1::class, TestJob2::class]);
+    })->assertJobExistsWithDependencies(TestJob3::class, [TestJob2::class, TestJob1::class]);
+});
+
+test('assertJobExistsWithDependency fails if the workflow contains a job with the provided id but different dependencies', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition
+            ->addJob(new TestJob1())
+            ->addJob(new TestJob2());
+    })->assertJobExistsWithDependencies(TestJob2::class, [TestJob1::class]);
+})->throws(AssertionFailedError::class);
+
+test('assertJobExistsWithDependency fails if the workflow contains no job with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertJobExistsWithDependencies(TestJob2::class, [TestJob1::class]);
+})->throws(AssertionFailedError::class);
+
+test('assertJobExistsOnConnection passes if the workflow contains a job with the provided id and the correct queue connection', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob((new TestJob1())->withConnection('::connection::'));
+    })->assertJobExistsOnConnection(TestJob1::class, '::connection::');
+});
+
+test('assertJobExistsOnConnection fails if the workflow contains a job with the provided id but a different queue connection', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob((new TestJob1())->withConnection('::different-connection::'));
+    })->assertJobExistsOnConnection(TestJob1::class, '::connection::');
+})->throws(AssertionFailedError::class);
+
+test('assertJobExistsOnConnection fails if the workflow contains no job with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertJobExistsOnConnection(TestJob2::class, '::connection::');
+})->throws(AssertionFailedError::class);
+
+test('assertJobMissing passes if the workflow contains no job with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertJobMissing(TestJob2::class);
+});
+
+test('assertJobMissing passes if the workflow contains a job with the provided id and the callback returns false', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertJobMissing(TestJob1::class, fn () => false);
+});
+
+test('assertJobMissing fails if the workflow contains a job with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertJobMissing(TestJob1::class);
+})->throws(AssertionFailedError::class);
+
+test('assertJobMissing fails if the workflow contains a job with the provided id and the callback returns true', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertJobMissing(TestJob1::class, fn () => true);
+})->throws(AssertionFailedError::class);
+
+test('assertGatedJobExists passes if the workflow contains a gated job with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addGatedJob(new TestJob1());
+    })->assertGatedJobExists(TestJob1::class);
+});
+
+test('assertGatedJobExists  if the workflow contains a job with the provided id and the correct dependencies', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition
+            ->addJob(new TestJob1())
+            ->addGatedJob(new TestJob2(), [TestJob1::class]);
+    })->assertGatedJobExists(TestJob2::class, [TestJob1::class]);
+});
+
+test('assertGatedJobExists fails if the workflow contains no job with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertGatedJobExists(TestJob2::class);
+})->throws(AssertionFailedError::class);
+
+test('assertGatedJobExists fails if the workflow contains a non-gated job with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertGatedJobExists(TestJob1::class);
+})->throws(AssertionFailedError::class);
+
+test('assertGatedJobExists fails if the workflow contains a gated job with the provided id but different dependencies', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition
+            ->addJob(new TestJob1())
+            ->addJob(new TestJob2())
+            ->addGatedJob(new TestJob3(), [TestJob2::class]);
+    })->assertGatedJobExists(TestJob3::class, [TestJob1::class]);
+})->throws(AssertionFailedError::class);
+
+/**
+ * @param Closure(WorkflowDefinition): void $callback
+ */
+function testWorkflow(Closure $callback): WorkflowTester
+{
+    $workflow = new class($callback) extends AbstractWorkflow {
+        /**
+         * @param Closure(WorkflowDefinition): void $callback
+         */
+        public function __construct(private Closure $callback)
+        {
+        }
+
+        public function definition(): WorkflowDefinition
+        {
+            return tap($this->define('Test Workflow'), $this->callback);
+        }
+    };
+
+    return new WorkflowTester($workflow);
+}
