@@ -18,6 +18,7 @@ use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
 use Sassnowski\Venture\Events\JobCreated;
 use Sassnowski\Venture\Events\JobCreating;
@@ -41,6 +42,7 @@ use Throwable;
  * @property int                                  $jobs_processed
  * @property string                               $name
  * @property ?string                              $then_callback
+ * @property ?Model                               $workflowable
  */
 class Workflow extends Model
 {
@@ -85,6 +87,14 @@ class Workflow extends Model
     public function jobs(): HasMany
     {
         return $this->hasMany(Venture::$workflowJobModel, 'workflow_id');
+    }
+
+    /**
+     * @return MorphTo<Model, Workflow>
+     */
+    public function workflowable(): MorphTo
+    {
+        return $this->morphTo('workflowable');
     }
 
     /**
