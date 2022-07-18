@@ -14,7 +14,10 @@ declare(strict_types=1);
 use Sassnowski\Venture\Facades\Workflow;
 use Sassnowski\Venture\Models;
 use Sassnowski\Venture\Testing\WorkflowTester;
+use Sassnowski\Venture\WorkflowDefinition;
 use Stubs\TestAbstractWorkflow;
+use Stubs\TestJob1;
+use Stubs\TestJob4;
 use Stubs\TestWorkflow;
 use Stubs\WorkflowWithParameter;
 
@@ -66,6 +69,20 @@ it('can start a workflow synchronously', function (): void {
         'sync',
         fn (WorkflowWithParameter $workflow) => '::param::' === $workflow->something,
     );
+});
+
+it('can change the definition of a workflow instance', function (): void {
+    $workflow = new TestAbstractWorkflow();
+
+    $workflow->withDefinition(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob4(), [TestJob1::class]);
+    });
+
+    (new WorkflowTester($workflow))
+        ->assertJobExistsWithDependencies(
+            TestJob4::class,
+            [TestJob1::class],
+        );
 });
 
 it('returns the same definition instance', function (): void {

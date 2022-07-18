@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
+use Closure;
 use Illuminate\Container\Container;
 use Sassnowski\Venture\Manager\WorkflowManagerInterface;
 use Sassnowski\Venture\Models\Workflow;
@@ -56,6 +57,16 @@ abstract class AbstractWorkflow
     }
 
     abstract public function definition(): WorkflowDefinition;
+
+    /**
+     * @param Closure(WorkflowDefinition): void $callback
+     */
+    final public function withDefinition(Closure $callback): self
+    {
+        $callback($this->getDefinition());
+
+        return $this;
+    }
 
     public function beforeCreate(Workflow $workflow): void
     {
