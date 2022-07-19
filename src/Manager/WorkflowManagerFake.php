@@ -57,7 +57,7 @@ class WorkflowManagerFake implements WorkflowManagerInterface
     }
 
     /**
-     * @param class-string<AbstractWorkflow> $workflowClass
+     * @param class-string<AbstractWorkflow>                 $workflowClass
      * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
     public function hasStarted(string $workflowClass, ?callable $callback = null): bool
@@ -77,7 +77,7 @@ class WorkflowManagerFake implements WorkflowManagerInterface
     }
 
     /**
-     * @param class-string<AbstractWorkflow> $workflowClass
+     * @param class-string<AbstractWorkflow>                 $workflowClass
      * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
     public function assertStarted(string $workflowClass, ?callable $callback = null): void
@@ -89,7 +89,7 @@ class WorkflowManagerFake implements WorkflowManagerInterface
     }
 
     /**
-     * @param class-string<AbstractWorkflow> $workflowClass
+     * @param class-string<AbstractWorkflow>                 $workflowClass
      * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
     public function assertNotStarted(string $workflowClass, ?callable $callback = null): void
@@ -101,12 +101,12 @@ class WorkflowManagerFake implements WorkflowManagerInterface
     }
 
     /**
-     * @param class-string<AbstractWorkflow> $workflowClass
+     * @param class-string<AbstractWorkflow>                 $workflowClass
      * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
     public function assertStartedOnConnection(
-        string    $workflowClass,
-        string    $connection,
+        string $workflowClass,
+        string $connection,
         ?callable $callback = null,
     ): void {
         $this->assertStarted($workflowClass, $callback);
