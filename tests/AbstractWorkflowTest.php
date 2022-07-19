@@ -74,7 +74,7 @@ it('can start a workflow synchronously', function (): void {
 it('can change the definition of a workflow instance', function (): void {
     $workflow = new TestAbstractWorkflow();
 
-    $workflow->withDefinition(function (WorkflowDefinition $definition): void {
+    $workflow->tapDefinition(function (WorkflowDefinition $definition): void {
         $definition->addJob(new TestJob4(), [TestJob1::class]);
     });
 
@@ -91,7 +91,7 @@ it('returns the same definition instance', function (): void {
     $definition = $workflow->getDefinition();
     expect($definition)->toBe($workflow->getDefinition());
 
-    $workflow->withDefinition(function (WorkflowDefinition $definition): void {
+    $workflow->tapDefinition(function (WorkflowDefinition $definition): void {
         $definition->addJob(new TestJob4(), [TestJob1::class]);
     });
     expect($workflow->getDefinition())->toBe($definition);

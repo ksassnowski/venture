@@ -61,7 +61,7 @@ abstract class AbstractWorkflow
     /**
      * @param Closure(WorkflowDefinition): void $callback
      */
-    final public function withDefinition(Closure $callback): self
+    final public function tapDefinition(Closure $callback): self
     {
         $callback($this->getDefinition());
 
