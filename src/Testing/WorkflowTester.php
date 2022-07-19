@@ -130,6 +130,25 @@ final class WorkflowTester
     }
 
     /**
+     * @param array<int, string> $dependencies
+     */
+    public function assertWorkflowExists(string $workflowID, ?array $dependencies = null): void
+    {
+        Assert::assertTrue(
+            $this->definition->hasWorkflow($workflowID, $dependencies),
+            "Workflow does not contain the expected nested workflow {$workflowID}",
+        );
+    }
+
+    public function assertWorkflowMissing(string $workflowID): void
+    {
+        Assert::assertFalse(
+            $this->definition->hasWorkflow($workflowID),
+            "Workflow contains unexpected nested workflow {$workflowID}",
+        );
+    }
+
+    /**
      * @param null|Closure(Workflow): void $configureWorkflowCallback
      */
     public function runThenCallback(?Closure $configureWorkflowCallback = null): void

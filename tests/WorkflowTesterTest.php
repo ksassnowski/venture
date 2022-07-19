@@ -20,7 +20,9 @@ use Sassnowski\Venture\WorkflowStepInterface;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
+use Stubs\TestWorkflow;
 use Stubs\WorkflowWithCallbacks;
+use Stubs\WorkflowWithParameter;
 
 uses(TestCase::class);
 
@@ -232,6 +234,47 @@ test('assertJobExistsOnQueue fails if the workflow contains no job with the prov
     })->assertJobExistsOnConnection(TestJob2::class, '::queue::');
 })->throws(AssertionFailedError::class);
 
+test('assertWorkflowExists passes if the workflow contains a nested workflow with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addWorkflow(new TestWorkflow());
+    })->assertWorkflowExists(TestWorkflow::class);
+});
+
+test('assertWorkflowExists fails if the workflow does not contain a nested workflow with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addWorkflow(new TestWorkflow());
+    })->assertWorkflowExists(WorkflowWithParameter::class);
+})->throws(AssertionFailedError::class);
+
+test('assertWorkflowExists passes if the workflow contains a nested workflow with the provided id and correct dependencies', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition
+            ->addJob(new TestJob1())
+            ->addJob(new TestJob2())
+            ->addWorkflow(new TestWorkflow(), [TestJob1::class, TestJob2::class]);
+    })->assertWorkflowExists(TestWorkflow::class, [TestJob1::class, TestJob2::class]);
+});
+
+test('assertWorkflowExists fails if the workflow contains a nested workflow with the provided id but different dependencies', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition
+            ->addJob(new TestJob1())
+            ->addJob(new TestJob2())
+            ->addWorkflow(new TestWorkflow(), [TestJob1::class]);
+    })->assertWorkflowExists(TestWorkflow::class, [TestJob1::class, TestJob2::class]);
+})->throws(AssertionFailedError::class);
+
+test('assertWorkflowMissing passes if the workflow does not contain a nested workflow with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertWorkflowMissing(TestWorkflow::class);
+});
+
+test('assertWorkflowMissing fails if the workflow contains a nested workflow with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addWorkflow(new TestWorkflow());
+    })->assertWorkflowMissing(TestWorkflow::class);
+})->throws(AssertionFailedError::class);
 
 /**
  * @param Closure(WorkflowDefinition): void $callback
