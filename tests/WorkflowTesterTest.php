@@ -17,6 +17,7 @@ use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Testing\WorkflowTester;
 use Sassnowski\Venture\WorkflowDefinition;
 use Sassnowski\Venture\WorkflowStepInterface;
+use Stubs\LegacyWorkflowJob;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
 use Stubs\TestJob3;
@@ -116,6 +117,12 @@ test('assertJobExists fails if the workflow contains a job with the provided id 
     })->assertJobExists(TestJob1::class, fn () => false);
 })->throws(AssertionFailedError::class);
 
+test('assertJobExists unwraps WorkflowStepAdapter jobs before passing them to the callback', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new LegacyWorkflowJob());
+    })->assertJobExists(LegacyWorkflowJob::class, fn (LegacyWorkflowJob $job) => true);
+});
+
 test('assertJobExistsWithDependencies passes if the workflow contains a job with the provided id and the correct dependencies', function (): void {
     testWorkflow(function (WorkflowDefinition $definition): void {
         $definition
@@ -180,6 +187,12 @@ test('assertJobMissing fails if the workflow contains a job with the provided id
         $definition->addJob(new TestJob1());
     })->assertJobMissing(TestJob1::class, fn () => true);
 })->throws(AssertionFailedError::class);
+
+test('assertJobMissing unwraps WorkflowStepAdapter jobs before passing them to the callback', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new LegacyWorkflowJob());
+    })->assertJobMissing(LegacyWorkflowJob::class, fn (LegacyWorkflowJob $job) => false);
+});
 
 test('assertGatedJobExists passes if the workflow contains a gated job with the provided id', function (): void {
     testWorkflow(function (WorkflowDefinition $definition): void {

@@ -19,6 +19,7 @@ use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Graph\Node;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
+use Sassnowski\Venture\WorkflowStepAdapter;
 use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
 
@@ -40,7 +41,7 @@ final class WorkflowTester
 
         if (null !== $callback) {
             Assert::assertTrue(
-                $callback($node->getJob()),
+                $this->runCallbackForNode($callback, $node),
                 "Workflow contains expected job {$jobID} but callback returned false",
             );
         }
@@ -110,7 +111,7 @@ final class WorkflowTester
             Assert::assertNull($node, $message);
         } else {
             Assert::assertTrue(
-                null === $node || !$callback($node->getJob()),
+                null === $node || !$this->runCallbackForNode($callback, $node),
                 $message,
             );
         }
@@ -278,5 +279,19 @@ TEXT;
             \json_encode($expected, \JSON_PRETTY_PRINT),
             \json_encode($actual, \JSON_PRETTY_PRINT),
         );
+    }
+
+    /**
+     * @param Closure(WorkflowStepInterface): bool $callback
+     */
+    private function runCallbackForNode(Closure $callback, Node $node): bool
+    {
+        $job = $node->getJob();
+
+        if ($job instanceof WorkflowStepAdapter) {
+            $job = $job->unwrap();
+        }
+
+        return $callback($job);
     }
 }
