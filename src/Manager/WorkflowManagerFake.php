@@ -57,6 +57,7 @@ class WorkflowManagerFake implements WorkflowManagerInterface
     }
 
     /**
+     * @param class-string<AbstractWorkflow> $workflowClass
      * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
     public function hasStarted(string $workflowClass, ?callable $callback = null): bool
@@ -76,43 +77,46 @@ class WorkflowManagerFake implements WorkflowManagerInterface
     }
 
     /**
+     * @param class-string<AbstractWorkflow> $workflowClass
      * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
-    public function assertStarted(string $workflowDefinition, ?callable $callback = null): void
+    public function assertStarted(string $workflowClass, ?callable $callback = null): void
     {
         PHPUnit::assertTrue(
-            $this->hasStarted($workflowDefinition, $callback),
-            "The expected workflow [{$workflowDefinition}] was not started.",
+            $this->hasStarted($workflowClass, $callback),
+            "The expected workflow [{$workflowClass}] was not started.",
         );
     }
 
     /**
+     * @param class-string<AbstractWorkflow> $workflowClass
      * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
-    public function assertNotStarted(string $workflowDefinition, ?callable $callback = null): void
+    public function assertNotStarted(string $workflowClass, ?callable $callback = null): void
     {
         PHPUnit::assertFalse(
-            $this->hasStarted($workflowDefinition, $callback),
-            "The unexpected [{$workflowDefinition}] workflow was started.",
+            $this->hasStarted($workflowClass, $callback),
+            "The unexpected [{$workflowClass}] workflow was started.",
         );
     }
 
     /**
+     * @param class-string<AbstractWorkflow> $workflowClass
      * @param null|callable(AbstractWorkflow, ?string): bool $callback
      */
     public function assertStartedOnConnection(
-        string $workflowDefinition,
-        string $connection,
+        string    $workflowClass,
+        string    $connection,
         ?callable $callback = null,
     ): void {
-        $this->assertStarted($workflowDefinition, $callback);
+        $this->assertStarted($workflowClass, $callback);
 
-        $actualConnection = $this->started[$workflowDefinition]['connection'];
+        $actualConnection = $this->started[$workflowClass]['connection'];
 
         PHPUnit::assertSame(
             $connection,
             $actualConnection,
-            "The workflow [{$workflowDefinition}] was started, but on unexpected connection [{$actualConnection}]",
+            "The workflow [{$workflowClass}] was started, but on unexpected connection [{$actualConnection}]",
         );
     }
 }
