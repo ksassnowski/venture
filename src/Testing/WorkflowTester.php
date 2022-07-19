@@ -34,7 +34,7 @@ final class WorkflowTester
     /**
      * @param null|Closure(WorkflowStepInterface): bool $callback
      */
-    public function assertJobExists(string $jobID, ?Closure $callback = null): void
+    public function assertJobExists(string $jobID, ?Closure $callback = null): self
     {
         $node = $this->mustFindNode($jobID);
 
@@ -44,12 +44,14 @@ final class WorkflowTester
                 "Workflow contains expected job {$jobID} but callback returned false",
             );
         }
+
+        return $this;
     }
 
     /**
      * @param array<int, string> $dependencies
      */
-    public function assertJobExistsWithDependencies(string $jobID, array $dependencies): void
+    public function assertJobExistsWithDependencies(string $jobID, array $dependencies): self
     {
         $node = $this->mustFindNode($jobID);
 
@@ -58,9 +60,11 @@ final class WorkflowTester
             $dependencies,
             "Workflow contains job {$jobID} but with incorrect dependencies.",
         );
+
+        return $this;
     }
 
-    public function assertJobExistsOnConnection(string $jobID, string $connection): void
+    public function assertJobExistsOnConnection(string $jobID, string $connection): self
     {
         $node = $this->mustFindNode($jobID);
 
@@ -73,9 +77,11 @@ final class WorkflowTester
                 $node->getJob()->getConnection(),
             ),
         );
+
+        return $this;
     }
 
-    public function assertJobExistsOnQueue(string $jobID, string $queue): void
+    public function assertJobExistsOnQueue(string $jobID, string $queue): self
     {
         $node = $this->mustFindNode($jobID);
 
@@ -88,12 +94,14 @@ final class WorkflowTester
                 $node->getJob()->getQueue(),
             ),
         );
+
+        return $this;
     }
 
     /**
      * @param null|Closure(WorkflowStepInterface): bool $callback
      */
-    public function assertJobMissing(string $jobID, ?Closure $callback = null): void
+    public function assertJobMissing(string $jobID, ?Closure $callback = null): self
     {
         $node = $this->getNode($jobID);
         $message = "Workflow contains unexpected job {$jobID}";
@@ -106,12 +114,14 @@ final class WorkflowTester
                 $message,
             );
         }
+
+        return $this;
     }
 
     /**
      * @param null|array<int, string> $dependencies
      */
-    public function assertGatedJobExists(string $jobID, ?array $dependencies = null): void
+    public function assertGatedJobExists(string $jobID, ?array $dependencies = null): self
     {
         $node = $this->mustFindNode($jobID);
 
@@ -127,34 +137,42 @@ final class WorkflowTester
                 "Workflow contains expected gated job {$jobID} but with incorrect dependencies",
             );
         }
+
+        return $this;
     }
 
     /**
      * @param array<int, string> $dependencies
      */
-    public function assertWorkflowExists(string $workflowID, ?array $dependencies = null): void
+    public function assertWorkflowExists(string $workflowID, ?array $dependencies = null): self
     {
         Assert::assertTrue(
             $this->definition->hasWorkflow($workflowID, $dependencies),
             "Workflow does not contain the expected nested workflow {$workflowID}",
         );
+
+        return $this;
     }
 
-    public function assertWorkflowMissing(string $workflowID): void
+    public function assertWorkflowMissing(string $workflowID): self
     {
         Assert::assertFalse(
             $this->definition->hasWorkflow($workflowID),
             "Workflow contains unexpected nested workflow {$workflowID}",
         );
+
+        return $this;
     }
 
     /**
      * @param null|Closure(Workflow): void $configureWorkflowCallback
      */
-    public function runThenCallback(?Closure $configureWorkflowCallback = null): void
+    public function runThenCallback(?Closure $configureWorkflowCallback = null): self
     {
         $this->getWorkflow($configureWorkflowCallback)
             ->runThenCallback();
+
+        return $this;
     }
 
     /**
@@ -164,9 +182,11 @@ final class WorkflowTester
         WorkflowStepInterface $failedJob,
         Throwable $exception,
         ?Closure $configureWorkflowCallback = null,
-    ): void {
+    ): self {
         $this->getWorkflow($configureWorkflowCallback)
             ->runCatchCallback($failedJob, $exception);
+
+        return $this;
     }
 
     private function getWorkflow(?Closure $callback = null): Workflow
