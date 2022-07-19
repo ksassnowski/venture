@@ -21,7 +21,6 @@ final class JobAdded
     public function __construct(
         public WorkflowDefinition $definition,
         public WorkflowStepInterface $job,
-        public string $name,
     ) {
     }
 }

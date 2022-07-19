@@ -103,7 +103,7 @@ class WorkflowDefinition
 
         $this->pushJob($event->job);
 
-        event(new JobAdded($this, $event->job, $event->job->getName()));
+        event(new JobAdded($this, $event->job));
 
         return $this;
     }
