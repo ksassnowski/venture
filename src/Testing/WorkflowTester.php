@@ -33,7 +33,7 @@ final class WorkflowTester
     }
 
     /**
-     * @param null|Closure(WorkflowStepInterface): bool $callback
+     * @param null|Closure(object): bool $callback
      */
     public function assertJobExists(string $jobID, ?Closure $callback = null): self
     {
@@ -100,7 +100,7 @@ final class WorkflowTester
     }
 
     /**
-     * @param null|Closure(WorkflowStepInterface): bool $callback
+     * @param null|Closure(object): bool $callback
      */
     public function assertJobMissing(string $jobID, ?Closure $callback = null): self
     {
@@ -282,7 +282,7 @@ TEXT;
     }
 
     /**
-     * @param Closure(WorkflowStepInterface): bool $callback
+     * @param Closure(object): bool $callback
      */
     private function runCallbackForNode(Closure $callback, Node $node): bool
     {
