@@ -64,12 +64,28 @@ final class WorkflowTester
     {
         $node = $this->mustFindNode($jobID);
 
-        Assert::assertTrue(
-            $node->getJob()->getConnection() === $connection,
+        Assert::assertSame(
+            $connection,
+            $node->getJob()->getConnection(),
             $this->formatAssertErrorMessage(
                 "Workflow contains job {$jobID} but on different connection",
                 $connection,
                 $node->getJob()->getConnection(),
+            ),
+        );
+    }
+
+    public function assertJobExistsOnQueue(string $jobID, string $queue): void
+    {
+        $node = $this->mustFindNode($jobID);
+
+        Assert::assertSame(
+            $queue,
+            $node->getJob()->getQueue(),
+            $this->formatAssertErrorMessage(
+                "Workflow contains job {$jobID} but on different queue",
+                $queue,
+                $node->getJob()->getQueue(),
             ),
         );
     }

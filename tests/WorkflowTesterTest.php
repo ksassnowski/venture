@@ -214,6 +214,25 @@ test('assertGatedJobExists fails if the workflow contains a gated job with the p
     })->assertGatedJobExists(TestJob3::class, [TestJob1::class]);
 })->throws(AssertionFailedError::class);
 
+test('assertJobExistsOnQueue passes if the workflow contains a job with the provided id and on the correct queue', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob((new TestJob1())->onQueue('::queue::'));
+    })->assertJobExistsOnQueue(TestJob1::class, '::queue::');
+});
+
+test('assertJobExistsOnQueue fails if the workflow contains a job with the provided id but on a different queue', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob((new TestJob1())->onConnection('::different-queue::'));
+    })->assertJobExistsOnQueue(TestJob1::class, '::queue::');
+})->throws(AssertionFailedError::class);
+
+test('assertJobExistsOnQueue fails if the workflow contains no job with the provided id', function (): void {
+    testWorkflow(function (WorkflowDefinition $definition): void {
+        $definition->addJob(new TestJob1());
+    })->assertJobExistsOnConnection(TestJob2::class, '::queue::');
+})->throws(AssertionFailedError::class);
+
+
 /**
  * @param Closure(WorkflowDefinition): void $callback
  */
