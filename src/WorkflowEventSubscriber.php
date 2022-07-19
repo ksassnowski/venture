@@ -56,9 +56,9 @@ class WorkflowEventSubscriber
         }
 
         $this->withWorkflowJob($event, function (WorkflowStepInterface $jobInstance): void {
-            event(new Events\JobFinished($jobInstance));
-
             ($this->handleFinishedJobs)($jobInstance);
+
+            event(new Events\JobFinished($jobInstance));
         });
     }
 
