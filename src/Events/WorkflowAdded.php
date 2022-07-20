@@ -20,7 +20,7 @@ final class WorkflowAdded
     public function __construct(
         public WorkflowDefinition $parentDefinition,
         public WorkflowDefinition $nestedDefinition,
-        public ?string $id,
+        public string $workflowID,
     ) {
     }
 }

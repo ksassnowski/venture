@@ -624,7 +624,7 @@ it('fires an event after a workflow was added', function (): void {
         function (WorkflowAdded $event) use ($definition, $nestedWorkflow) {
             return $event->parentDefinition === $definition
                 && $event->nestedDefinition->workflow() === $nestedWorkflow
-                && '::id::' === $event->id;
+                && '::id::' === $event->workflowID;
         },
     );
 });

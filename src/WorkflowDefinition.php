@@ -143,7 +143,6 @@ class WorkflowDefinition
 
         $workflow->beforeNesting($definition->jobs);
 
-        /** @psalm-suppress PossiblyNullArgument */
         $this->graph->connectGraph(
             $definition->graph,
             $event->workflowID,
