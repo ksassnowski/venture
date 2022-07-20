@@ -79,16 +79,16 @@ abstract class AbstractWorkflow
     {
     }
 
-    protected function define(string $workflowName = ''): WorkflowDefinition
-    {
-        return new WorkflowDefinition($this, $workflowName);
-    }
-
-    private function run(?string $connection = null): Workflow
+    public function run(?string $connection = null): Workflow
     {
         /** @var WorkflowManagerInterface $manager */
         $manager = Container::getInstance()->make('venture.manager');
 
         return $manager->startWorkflow($this, $connection);
+    }
+
+    protected function define(string $workflowName = ''): WorkflowDefinition
+    {
+        return new WorkflowDefinition($this, $workflowName);
     }
 }
