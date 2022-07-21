@@ -106,6 +106,11 @@ class WorkflowJob extends Model
         return $this->step;
     }
 
+    public function isPending(): bool
+    {
+        return $this->getState()->isPending();
+    }
+
     public function isFinished(): bool
     {
         return $this->getState()->hasFinished();
