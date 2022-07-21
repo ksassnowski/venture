@@ -18,7 +18,6 @@
         "illuminate/queue": "^9.0",
         "illuminate/support": "^9.0",
         "laravel/serializable-closure": "^1.1",
-        "opis/closure": "^3.6",
         "ramsey/uuid": "^4.0"
     },
     "require-dev": {
