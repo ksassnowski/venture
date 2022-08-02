@@ -1,7 +1,7 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Method Sassnowski\\\\Venture\\\\Models\\\\Workflow\\:\\:serializer\\(\\) should return Sassnowski\\\\Venture\\\\Serializer\\\\WorkflowJobSerializer but returns mixed\\.$#"
+			message: "#^Method Sassnowski\\\\Venture\\\\Models\\\\Workflow\\:\\:serializer\\(\\) should return Sassnowski\\\\Venture\\\\Serializer\\\\WorkflowJobSerializerInterface but returns mixed\\.$#"
 			count: 1
 			path: src/Models/Workflow.php
 
