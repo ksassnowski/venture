@@ -26,8 +26,8 @@ use Sassnowski\Venture\Events\WorkflowCreating;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\InvalidJobException;
-use Sassnowski\Venture\Graph\DependencyInterface;
 use Sassnowski\Venture\Graph\DependencyGraph;
+use Sassnowski\Venture\Graph\DependencyInterface;
 use Sassnowski\Venture\Graph\StaticDependency;
 use Sassnowski\Venture\Models\Workflow;
 use Throwable;
@@ -79,7 +79,7 @@ class WorkflowDefinition
 
     /**
      * @param array<int, DependencyInterface|string> $dependencies
-     * @param Delay                         $delay
+     * @param Delay                                  $delay
      *
      * @throws DuplicateJobException
      * @throws InvalidJobException
