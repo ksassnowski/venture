@@ -20,7 +20,7 @@ return [
      * job if no explicit id was provided. In most cases, you won't have
      * to change this.
      *
-     * Needs to implement `Sassnowski\Venture\StepIdGenerator`.
+     * Needs to implement `Sassnowski\Venture\StepIdGeneratorInterface`.
      */
     'workflow_step_id_generator_class' => ClassNameStepIdGenerator::class,
 
@@ -28,7 +28,7 @@ return [
      * The class that should be used to extract the workflow job instance
      * from a Laravel queue job. In most cases, you won't have to change this.
      *
-     * Needs to implement `Sassnowski\Venture\JobExtractor`.
+     * Needs to implement `Sassnowski\Venture\JobExtractorInterface`.
      */
     'workflow_job_extractor_class' => UnserializeJobExtractor::class,
 
@@ -36,7 +36,7 @@ return [
      * The class that should be used to serialize and unserialize workflow jobs.
      * In most cases, you won't have to change this.
      *
-     * Needs to implement `Sassnowski\Venture\Serializer\WorkflowJobSerializer`.
+     * Needs to implement `Sassnowski\Venture\Serializer\WorkflowJobSerializerInterface`.
      */
     'workflow_job_serializer_class' => Base64WorkflowSerializer::class,
 ];
