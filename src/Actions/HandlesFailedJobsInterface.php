@@ -11,9 +11,15 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-namespace Sassnowski\Venture;
+namespace Sassnowski\Venture\Actions;
 
-interface StepIdGenerator
+use Sassnowski\Venture\WorkflowStepInterface;
+use Throwable;
+
+interface HandlesFailedJobsInterface
 {
-    public function generateId(object $job): string;
+    public function __invoke(
+        WorkflowStepInterface $step,
+        Throwable $exception,
+    ): void;
 }

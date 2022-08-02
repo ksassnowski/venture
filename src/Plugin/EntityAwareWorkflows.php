@@ -15,7 +15,7 @@ namespace Sassnowski\Venture\Plugin;
 
 use Sassnowski\Venture\Listeners\AssociateEntityWithWorkflow;
 
-final class EntityAwareWorkflows implements Plugin
+final class EntityAwareWorkflows implements PluginInterface
 {
     public function install(PluginContext $context): void
     {

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Graph;
 
-final class StaticDependency implements Dependency
+final class StaticDependency implements DependencyInterface
 {
     public function __construct(private string $dependencyID)
     {

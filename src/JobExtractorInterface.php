@@ -15,7 +15,7 @@ namespace Sassnowski\Venture;
 
 use Illuminate\Contracts\Queue\Job;
 
-interface JobExtractor
+interface JobExtractorInterface
 {
     /**
      * Extracts a workflow job instance from a queue job. Should return

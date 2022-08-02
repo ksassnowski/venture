@@ -22,8 +22,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Collection;
 use Sassnowski\Venture\Events\JobCreated;
 use Sassnowski\Venture\Events\JobCreating;
-use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
-use Sassnowski\Venture\State\WorkflowState;
+use Sassnowski\Venture\Serializer\WorkflowJobSerializerInterface;
+use Sassnowski\Venture\State\WorkflowStateInterface;
 use Sassnowski\Venture\Venture;
 use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
@@ -69,7 +69,7 @@ class Workflow extends Model
         'cancelled_at',
     ];
 
-    private ?WorkflowState $state = null;
+    private ?WorkflowStateInterface $state = null;
 
     /**
      * @param array<string, mixed> $attributes
@@ -245,7 +245,7 @@ class Workflow extends Model
         $callback(...$args);
     }
 
-    private function getState(): WorkflowState
+    private function getState(): WorkflowStateInterface
     {
         if (null === $this->state) {
             $this->state = app(Venture::$workflowState, ['workflow' => $this]);
@@ -254,8 +254,8 @@ class Workflow extends Model
         return $this->state;
     }
 
-    private function serializer(): WorkflowJobSerializer
+    private function serializer(): WorkflowJobSerializerInterface
     {
-        return Container::getInstance()->make(WorkflowJobSerializer::class);
+        return Container::getInstance()->make(WorkflowJobSerializerInterface::class);
     }
 }

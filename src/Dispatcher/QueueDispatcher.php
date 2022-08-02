@@ -18,7 +18,7 @@ use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\Venture;
 use Sassnowski\Venture\WorkflowStepInterface;
 
-final class QueueDispatcher implements JobDispatcher
+final class QueueDispatcher implements JobDispatcherInterface
 {
     /**
      * @param array<int, WorkflowStepInterface> $jobs

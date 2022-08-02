@@ -16,7 +16,7 @@ namespace Sassnowski\Venture\Dispatcher;
 use PHPUnit\Framework\Assert;
 use Sassnowski\Venture\WorkflowStepInterface;
 
-final class FakeDispatcher implements JobDispatcher
+final class FakeDispatcher implements JobDispatcherInterface
 {
     /**
      * @var array<string, ?string>

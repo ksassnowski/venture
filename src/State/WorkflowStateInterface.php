@@ -16,7 +16,7 @@ namespace Sassnowski\Venture\State;
 use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
 
-interface WorkflowState
+interface WorkflowStateInterface
 {
     public function markJobAsFinished(WorkflowStepInterface $job): void;
 

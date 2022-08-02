@@ -18,7 +18,7 @@ use Throwable;
 /**
  * @internal
  */
-final class FakeWorkflowJobState implements WorkflowJobState
+final class FakeWorkflowJobState implements WorkflowJobStateInterface
 {
     public function __construct(
         public bool $finished = false,

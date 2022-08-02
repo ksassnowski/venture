@@ -14,7 +14,7 @@ declare(strict_types=1);
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
-use Sassnowski\Venture\Graph\Dependency;
+use Sassnowski\Venture\Graph\DependencyInterface;
 use Sassnowski\Venture\Graph\DependencyGraph;
 use Sassnowski\Venture\Graph\StaticDependency;
 use Stubs\TestJob1;
@@ -243,7 +243,7 @@ test('has returns false if no job or nested graph exists for the provided id', f
 });
 
 it('does not add dependencies if the returned ID is null', function (): void {
-    $dependency = new class() implements Dependency {
+    $dependency = new class() implements DependencyInterface {
         public function getID(DependencyGraph $graph): ?string
         {
             return null;

@@ -17,19 +17,19 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Sassnowski\Venture\Actions\HandleFailedJobs;
 use Sassnowski\Venture\Actions\HandleFinishedJobs;
-use Sassnowski\Venture\Actions\HandlesFailedJobs;
-use Sassnowski\Venture\Actions\HandlesFinishedJobs;
-use Sassnowski\Venture\Dispatcher\JobDispatcher;
+use Sassnowski\Venture\Actions\HandlesFailedJobsInterface;
+use Sassnowski\Venture\Actions\HandlesFinishedJobsInterface;
+use Sassnowski\Venture\Dispatcher\JobDispatcherInterface;
 use Sassnowski\Venture\Dispatcher\QueueDispatcher;
 use Sassnowski\Venture\Manager\WorkflowManager;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
-use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
+use Sassnowski\Venture\Serializer\WorkflowJobSerializerInterface;
 use Sassnowski\Venture\State\FakeWorkflowJobState;
 use Sassnowski\Venture\State\FakeWorkflowState;
-use Sassnowski\Venture\State\WorkflowJobState;
-use Sassnowski\Venture\State\WorkflowState;
+use Sassnowski\Venture\State\WorkflowJobStateInterface;
+use Sassnowski\Venture\State\WorkflowStateInterface;
 use Sassnowski\Venture\State\WorkflowStateStore;
 use function config;
 
@@ -80,7 +80,7 @@ class VentureServiceProvider extends ServiceProvider
     private function registerJobExtractor(): void
     {
         $this->app->bind(
-            JobExtractor::class,
+            JobExtractorInterface::class,
             config(
                 'venture.workflow_job_extractor_class',
                 UnserializeJobExtractor::class,
@@ -91,7 +91,7 @@ class VentureServiceProvider extends ServiceProvider
     private function registerStepIdGenerator(): void
     {
         $this->app->bind(
-            StepIdGenerator::class,
+            StepIdGeneratorInterface::class,
             config(
                 'venture.workflow_step_id_generator_class',
                 ClassNameStepIdGenerator::class,
@@ -102,7 +102,7 @@ class VentureServiceProvider extends ServiceProvider
     private function registerJobSerializer(): void
     {
         $this->app->bind(
-            WorkflowJobSerializer::class,
+            WorkflowJobSerializerInterface::class,
             config(
                 'venture.workflow_job_serializer_class',
                 Base64WorkflowSerializer::class,
@@ -113,12 +113,12 @@ class VentureServiceProvider extends ServiceProvider
     private function registerActions(): void
     {
         $this->app->bind(
-            HandlesFinishedJobs::class,
+            HandlesFinishedJobsInterface::class,
             HandleFinishedJobs::class,
         );
 
         $this->app->bind(
-            HandlesFailedJobs::class,
+            HandlesFailedJobsInterface::class,
             HandleFailedJobs::class,
         );
     }
@@ -126,7 +126,7 @@ class VentureServiceProvider extends ServiceProvider
     private function registerDispatcher(): void
     {
         $this->app->bind(
-            JobDispatcher::class,
+            JobDispatcherInterface::class,
             QueueDispatcher::class,
         );
     }
@@ -135,7 +135,7 @@ class VentureServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             FakeWorkflowJobState::class,
-            function (Application $app, array $args): WorkflowJobState {
+            function (Application $app, array $args): WorkflowJobStateInterface {
                 /** @var array{job: WorkflowJob} $args */
                 return WorkflowStateStore::forJob($args['job']->step()->getJobId());
             },
@@ -143,7 +143,7 @@ class VentureServiceProvider extends ServiceProvider
 
         $this->app->bind(
             FakeWorkflowState::class,
-            function (Application $app, array $args): WorkflowState {
+            function (Application $app, array $args): WorkflowStateInterface {
                 /** @var array{workflow: Workflow} $args */
                 return WorkflowStateStore::forWorkflow($args['workflow']);
             },

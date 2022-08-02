@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Plugin;
 
-interface Plugin
+interface PluginInterface
 {
     public function install(PluginContext $context): void;
 }

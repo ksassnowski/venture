@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace Sassnowski\Venture;
 
 use Illuminate\Contracts\Queue\Job;
-use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
+use Sassnowski\Venture\Serializer\WorkflowJobSerializerInterface;
 
-final class UnserializeJobExtractor implements JobExtractor
+final class UnserializeJobExtractor implements JobExtractorInterface
 {
-    public function __construct(private WorkflowJobSerializer $serializer)
+    public function __construct(private WorkflowJobSerializerInterface $serializer)
     {
     }
 

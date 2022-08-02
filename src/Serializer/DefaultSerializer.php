@@ -17,7 +17,7 @@ use InvalidArgumentException;
 use Sassnowski\Venture\WorkflowStepAdapter;
 use Sassnowski\Venture\WorkflowStepInterface;
 
-final class DefaultSerializer implements WorkflowJobSerializer
+final class DefaultSerializer implements WorkflowJobSerializerInterface
 {
     public function serialize(WorkflowStepInterface $job): string
     {

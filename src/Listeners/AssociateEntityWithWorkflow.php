@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Listeners;
 
 use Sassnowski\Venture\Events\WorkflowCreating;
-use Sassnowski\Venture\Models\EntityAwareWorkflow;
+use Sassnowski\Venture\Models\EntityAwareWorkflowInterface;
 
 final class AssociateEntityWithWorkflow
 {
@@ -22,7 +22,7 @@ final class AssociateEntityWithWorkflow
     {
         $workflow = $event->definition->workflow();
 
-        if ($workflow instanceof EntityAwareWorkflow) {
+        if ($workflow instanceof EntityAwareWorkflowInterface) {
             $event->model
                 ->workflowable()
                 ->associate($workflow->getWorkflowable());

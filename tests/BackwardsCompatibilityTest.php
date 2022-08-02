@@ -12,11 +12,11 @@ declare(strict_types=1);
  */
 
 use Sassnowski\Venture\ClassNameStepIdGenerator;
-use Sassnowski\Venture\JobExtractor;
+use Sassnowski\Venture\JobExtractorInterface;
 use Sassnowski\Venture\Manager\WorkflowManager;
 use Sassnowski\Venture\Serializer\Base64WorkflowSerializer;
-use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
-use Sassnowski\Venture\StepIdGenerator;
+use Sassnowski\Venture\Serializer\WorkflowJobSerializerInterface;
+use Sassnowski\Venture\StepIdGeneratorInterface;
 use Sassnowski\Venture\UnserializeJobExtractor;
 use Stubs\LegacyWorkflowJob;
 
@@ -42,15 +42,15 @@ it('can handle missing class keys in config', function (string $abstract, string
         WorkflowManager::class,
     ],
     'job extractor' => [
-        JobExtractor::class,
+        JobExtractorInterface::class,
         UnserializeJobExtractor::class,
     ],
     'workflow step id generator' => [
-        StepIdGenerator::class,
+        StepIdGeneratorInterface::class,
         ClassNameStepIdGenerator::class,
     ],
     'workflow serializer' => [
-        WorkflowJobSerializer::class,
+        WorkflowJobSerializerInterface::class,
         Base64WorkflowSerializer::class,
     ],
 ]);

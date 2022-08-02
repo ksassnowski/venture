@@ -32,7 +32,7 @@ class DependencyGraph
     private array $nestedGraphs = [];
 
     /**
-     * @param array<int, Dependency> $dependencies
+     * @param array<int, DependencyInterface> $dependencies
      *
      * @throws DuplicateJobException
      */
@@ -92,7 +92,7 @@ class DependencyGraph
     }
 
     /**
-     * @param array<int, Dependency> $dependencies
+     * @param array<int, DependencyInterface> $dependencies
      *
      * @throws DuplicateJobException
      * @throws DuplicateWorkflowException
@@ -132,7 +132,7 @@ class DependencyGraph
     }
 
     /**
-     * @param array<int, Dependency> $dependencies
+     * @param array<int, DependencyInterface> $dependencies
      *
      * @return array<int, Node>
      */

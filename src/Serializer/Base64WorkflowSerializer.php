@@ -20,7 +20,7 @@ use InvalidArgumentException;
 use Sassnowski\Venture\WorkflowStepAdapter;
 use Sassnowski\Venture\WorkflowStepInterface;
 
-final class Base64WorkflowSerializer implements WorkflowJobSerializer
+final class Base64WorkflowSerializer implements WorkflowJobSerializerInterface
 {
     public function __construct(private ConnectionInterface $connection)
     {

@@ -15,11 +15,11 @@ namespace Sassnowski\Venture\Listeners;
 
 use Illuminate\Support\Str;
 use Sassnowski\Venture\Events\JobAdding;
-use Sassnowski\Venture\StepIdGenerator;
+use Sassnowski\Venture\StepIdGeneratorInterface;
 
 final class ConfigureNewWorkflowJob
 {
-    public function __construct(private StepIdGenerator $stepIdGenerator)
+    public function __construct(private StepIdGeneratorInterface $stepIdGenerator)
     {
     }
 

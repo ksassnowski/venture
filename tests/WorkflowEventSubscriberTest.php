@@ -17,8 +17,8 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\Event;
 use Mockery as m;
-use Sassnowski\Venture\Actions\HandlesFailedJobs;
-use Sassnowski\Venture\Actions\HandlesFinishedJobs;
+use Sassnowski\Venture\Actions\HandlesFailedJobsInterface;
+use Sassnowski\Venture\Actions\HandlesFinishedJobsInterface;
 use Sassnowski\Venture\Events\JobFailed as JobFailedEvent;
 use Sassnowski\Venture\Events\JobFinished;
 use Sassnowski\Venture\Events\JobProcessing as JobProcessingEvent;
@@ -43,7 +43,7 @@ beforeEach(function (): void {
 });
 
 it('handles processed steps', function (): void {
-    $handleFinishedJobs = m::spy(HandlesFinishedJobs::class);
+    $handleFinishedJobs = m::spy(HandlesFinishedJobsInterface::class);
     $workflowJob = new TestJob1();
     $event = new JobProcessed('::connection::', createQueueJob($workflowJob));
 
@@ -74,7 +74,7 @@ it('fires an event after a job has been processed', function (): void {
 it('does not handle processed jobs if the job has been released back to the queue', function (): void {
     $workflowJob = new TestJob1();
     $event = new JobProcessed('::connection::', createQueueJob($workflowJob, false, true));
-    $handleFinishedJobs = m::spy(HandlesFinishedJobs::class);
+    $handleFinishedJobs = m::spy(HandlesFinishedJobsInterface::class);
 
     expect($event->job)->isReleased()->toBeTrue();
     createEventSubscriber($handleFinishedJobs)->handleJobProcessed($event);
@@ -84,7 +84,7 @@ it('does not handle processed jobs if the job has been released back to the queu
 
 it('does not handle processed non-workflow jobs', function (): void {
     $event = new JobProcessed('::connection::', createQueueJob(new NonWorkflowJob()));
-    $handleFinishedJobs = m::spy(HandlesFinishedJobs::class);
+    $handleFinishedJobs = m::spy(HandlesFinishedJobsInterface::class);
 
     createEventSubscriber($handleFinishedJobs)
         ->handleJobProcessed($event);
@@ -96,7 +96,7 @@ it('handles failed jobs', function (): void {
     $workflowJob = new TestJob1();
     $exception = new Exception();
     $event = new JobFailed('::connection::', createQueueJob($workflowJob, true), $exception);
-    $handleFailedJobs = m::spy(HandlesFailedJobs::class);
+    $handleFailedJobs = m::spy(HandlesFailedJobsInterface::class);
 
     createEventSubscriber(handleFailedJobs: $handleFailedJobs)
         ->handleJobFailed($event);
@@ -109,7 +109,7 @@ it('handles failed jobs', function (): void {
 
 it('does not notify the workflow is the job is not marked as failed', function (): void {
     $workflowJob = new TestJob1();
-    $handleFailedJobs = m::spy(HandlesFailedJobs::class);
+    $handleFailedJobs = m::spy(HandlesFailedJobsInterface::class);
     $event = new JobFailed('::connection::', createQueueJob($workflowJob, false), new Exception());
 
     createEventSubscriber(handleFailedJobs: $handleFailedJobs)
@@ -119,7 +119,7 @@ it('does not notify the workflow is the job is not marked as failed', function (
 });
 
 it('does not handle failed non-workflow jobs', function (): void {
-    $handleFailedJobs = m::spy(HandlesFailedJobs::class);
+    $handleFailedJobs = m::spy(HandlesFailedJobsInterface::class);
     $event = new JobFailed('::connection::', createQueueJob(new NonWorkflowJob(), true), new Exception());
 
     createEventSubscriber(handleFailedJobs: $handleFailedJobs)
@@ -259,12 +259,12 @@ it('does not fire an event after a job has failed if the job is not a workflow j
 });
 
 function createEventSubscriber(
-    ?HandlesFinishedJobs $handleFinishedJobs = null,
-    ?HandlesFailedJobs $handleFailedJobs = null,
+    ?HandlesFinishedJobsInterface $handleFinishedJobs = null,
+    ?HandlesFailedJobsInterface $handleFailedJobs = null,
 ): WorkflowEventSubscriber {
     return new WorkflowEventSubscriber(
         new UnserializeJobExtractor(new DefaultSerializer()),
-        $handleFinishedJobs ?: m::spy(HandlesFinishedJobs::class),
-        $handleFailedJobs ?: m::spy(HandlesFailedJobs::class),
+        $handleFinishedJobs ?: m::spy(HandlesFinishedJobsInterface::class),
+        $handleFailedJobs ?: m::spy(HandlesFailedJobsInterface::class),
     );
 }

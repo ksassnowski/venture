@@ -26,7 +26,7 @@ use Sassnowski\Venture\Events\WorkflowCreating;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\InvalidJobException;
-use Sassnowski\Venture\Graph\Dependency;
+use Sassnowski\Venture\Graph\DependencyInterface;
 use Sassnowski\Venture\Graph\DependencyGraph;
 use Sassnowski\Venture\Graph\StaticDependency;
 use Sassnowski\Venture\Models\Workflow;
@@ -48,7 +48,7 @@ class WorkflowDefinition
     protected ?string $catchCallback = null;
 
     /**
-     * @var array<string, array<int, Dependency|string>>
+     * @var array<string, array<int, DependencyInterface|string>>
      */
     protected array $nestedWorkflows = [];
 
@@ -78,7 +78,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, Dependency|string> $dependencies
+     * @param array<int, DependencyInterface|string> $dependencies
      * @param Delay                         $delay
      *
      * @throws DuplicateJobException
@@ -109,7 +109,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, Dependency|string> $dependencies
+     * @param array<int, DependencyInterface|string> $dependencies
      *
      * @throws DuplicateJobException
      * @throws InvalidJobException
@@ -130,7 +130,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, Dependency|string> $dependencies
+     * @param array<int, DependencyInterface|string> $dependencies
      *
      * @throws DuplicateJobException
      * @throws DuplicateWorkflowException
@@ -387,9 +387,9 @@ class WorkflowDefinition
     }
 
     /**
-     * @param array<int, Dependency|string> $dependencies
+     * @param array<int, DependencyInterface|string> $dependencies
      *
-     * @return array<int, Dependency>
+     * @return array<int, DependencyInterface>
      */
     private function mapDependencies(array $dependencies): array
     {

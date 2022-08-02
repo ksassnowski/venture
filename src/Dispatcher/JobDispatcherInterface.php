@@ -11,16 +11,16 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-namespace Sassnowski\Venture\Serializer;
+namespace Sassnowski\Venture\Dispatcher;
 
 use Sassnowski\Venture\WorkflowStepInterface;
 
-interface WorkflowJobSerializer
+interface JobDispatcherInterface
 {
-    public function serialize(WorkflowStepInterface $job): string;
-
     /**
-     * @throws UnserializeException thrown if the string could not be unserialized for any reason
+     * @param array<int, WorkflowStepInterface> $jobs
      */
-    public function unserialize(string $serializedJob): ?WorkflowStepInterface;
+    public function dispatch(array $jobs): void;
+
+    public function dispatchDependentJobs(WorkflowStepInterface $step): void;
 }

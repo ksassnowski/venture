@@ -16,7 +16,7 @@ namespace Sassnowski\Venture\Actions;
 use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
 
-final class HandleFailedJobs implements HandlesFailedJobs
+final class HandleFailedJobs implements HandlesFailedJobsInterface
 {
     public function __invoke(WorkflowStepInterface $step, Throwable $exception): void
     {

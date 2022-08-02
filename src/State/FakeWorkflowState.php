@@ -19,7 +19,7 @@ use Throwable;
 /**
  * @internal
  */
-final class FakeWorkflowState implements WorkflowState
+final class FakeWorkflowState implements WorkflowStateInterface
 {
     /**
      * @param array<string, true>      $finishedJobs

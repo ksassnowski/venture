@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Graph;
 
-interface Dependency
+interface DependencyInterface
 {
     public function getID(DependencyGraph $graph): ?string;
 }

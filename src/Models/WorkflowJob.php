@@ -19,8 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use RuntimeException;
 use Sassnowski\Venture\Exceptions\CannotRetryJobException;
 use Sassnowski\Venture\Exceptions\JobAlreadyStartedException;
-use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
-use Sassnowski\Venture\State\WorkflowJobState;
+use Sassnowski\Venture\Serializer\WorkflowJobSerializerInterface;
+use Sassnowski\Venture\State\WorkflowJobStateInterface;
 use Sassnowski\Venture\Venture;
 use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
@@ -66,7 +66,7 @@ class WorkflowJob extends Model
         'manual' => 'bool',
     ];
 
-    private ?WorkflowJobState $state = null;
+    private ?WorkflowJobStateInterface $state = null;
 
     private ?WorkflowStepInterface $step = null;
 
@@ -91,8 +91,8 @@ class WorkflowJob extends Model
     public function step(): WorkflowStepInterface
     {
         if (null === $this->step) {
-            /** @var WorkflowJobSerializer $serializer */
-            $serializer = app(WorkflowJobSerializer::class);
+            /** @var WorkflowJobSerializerInterface $serializer */
+            $serializer = app(WorkflowJobSerializerInterface::class);
 
             $step = $serializer->unserialize($this->job);
 
@@ -181,7 +181,7 @@ class WorkflowJob extends Model
         \dispatch($this->step());
     }
 
-    private function getState(): WorkflowJobState
+    private function getState(): WorkflowJobStateInterface
     {
         if (null === $this->state) {
             $this->state = app(Venture::$workflowJobState, ['job' => $this]);

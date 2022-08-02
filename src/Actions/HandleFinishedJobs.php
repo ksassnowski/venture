@@ -13,13 +13,13 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Actions;
 
-use Sassnowski\Venture\Dispatcher\JobDispatcher;
+use Sassnowski\Venture\Dispatcher\JobDispatcherInterface;
 use Sassnowski\Venture\Events\WorkflowFinished;
 use Sassnowski\Venture\WorkflowStepInterface;
 
-final class HandleFinishedJobs implements HandlesFinishedJobs
+final class HandleFinishedJobs implements HandlesFinishedJobsInterface
 {
-    public function __construct(private JobDispatcher $dispatcher)
+    public function __construct(private JobDispatcherInterface $dispatcher)
     {
     }
 

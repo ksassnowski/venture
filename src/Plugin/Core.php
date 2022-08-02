@@ -17,7 +17,7 @@ use Sassnowski\Venture\Listeners\ConfigureNestedWorkflow;
 use Sassnowski\Venture\Listeners\ConfigureNewWorkflowJob;
 use Sassnowski\Venture\Listeners\SetWorkflowJobProperties;
 
-final class Core implements Plugin
+final class Core implements PluginInterface
 {
     public function install(PluginContext $context): void
     {

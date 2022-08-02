@@ -15,10 +15,10 @@ namespace Stubs;
 
 use Illuminate\Database\Eloquent\Model;
 use Sassnowski\Venture\AbstractWorkflow;
-use Sassnowski\Venture\Models\EntityAwareWorkflow;
+use Sassnowski\Venture\Models\EntityAwareWorkflowInterface;
 use Sassnowski\Venture\WorkflowDefinition;
 
-final class EntityAwareTestWorkflow extends AbstractWorkflow implements EntityAwareWorkflow
+final class EntityAwareTestWorkflow extends AbstractWorkflow implements EntityAwareWorkflowInterface
 {
     public function __construct(private Model $entity)
     {

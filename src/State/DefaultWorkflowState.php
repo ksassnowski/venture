@@ -18,7 +18,7 @@ use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
 
-class DefaultWorkflowState implements WorkflowState
+class DefaultWorkflowState implements WorkflowStateInterface
 {
     public function __construct(private Workflow $workflow)
     {

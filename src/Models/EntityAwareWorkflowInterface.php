@@ -11,11 +11,11 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-namespace Sassnowski\Venture\Actions;
+namespace Sassnowski\Venture\Models;
 
-use Sassnowski\Venture\WorkflowStepInterface;
+use Illuminate\Database\Eloquent\Model;
 
-interface HandlesFinishedJobs
+interface EntityAwareWorkflowInterface
 {
-    public function __invoke(WorkflowStepInterface $step): void;
+    public function getWorkflowable(): Model;
 }

@@ -14,11 +14,11 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Listeners;
 
 use Sassnowski\Venture\Events\WorkflowAdding;
-use Sassnowski\Venture\StepIdGenerator;
+use Sassnowski\Venture\StepIdGeneratorInterface;
 
 final class ConfigureNestedWorkflow
 {
-    public function __construct(private StepIdGenerator $stepIdGenerator)
+    public function __construct(private StepIdGeneratorInterface $stepIdGenerator)
     {
     }
 

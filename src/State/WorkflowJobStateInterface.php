@@ -15,7 +15,7 @@ namespace Sassnowski\Venture\State;
 
 use Throwable;
 
-interface WorkflowJobState
+interface WorkflowJobStateInterface
 {
     public function hasFinished(): bool;
 

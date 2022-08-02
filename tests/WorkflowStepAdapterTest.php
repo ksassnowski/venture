@@ -14,7 +14,7 @@ declare(strict_types=1);
 use Illuminate\Support\Str;
 use Ramsey\Uuid\Uuid;
 use Sassnowski\Venture\Dispatcher\FakeDispatcher;
-use Sassnowski\Venture\Dispatcher\JobDispatcher;
+use Sassnowski\Venture\Dispatcher\JobDispatcherInterface;
 use Sassnowski\Venture\WorkflowStep;
 use Sassnowski\Venture\WorkflowStepAdapter;
 use Stubs\LegacyJobWithInvokeMethod;
@@ -160,14 +160,14 @@ it('runs the underlying job\'s __invoke method if no handle method exists', func
 
 it('resolves the underlying job\'s dependencies', function (): void {
     $dispatcher = new FakeDispatcher();
-    app()->instance(JobDispatcher::class, $dispatcher);
+    app()->instance(JobDispatcherInterface::class, $dispatcher);
 
     $job = new class() {
         use WorkflowStep;
 
-        public ?JobDispatcher $dispatcher = null;
+        public ?JobDispatcherInterface $dispatcher = null;
 
-        public function handle(JobDispatcher $dispatcher): void
+        public function handle(JobDispatcherInterface $dispatcher): void
         {
             $this->dispatcher = $dispatcher;
         }

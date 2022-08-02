@@ -15,7 +15,7 @@ namespace Sassnowski\Venture\Graph;
 
 use Closure;
 
-final class ConditionalDependency implements Dependency
+final class ConditionalDependency implements DependencyInterface
 {
     /**
      * @param Closure(DependencyGraph): bool $predicate

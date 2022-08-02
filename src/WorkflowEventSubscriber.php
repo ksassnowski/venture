@@ -18,16 +18,16 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
-use Sassnowski\Venture\Actions\HandlesFailedJobs;
-use Sassnowski\Venture\Actions\HandlesFinishedJobs;
+use Sassnowski\Venture\Actions\HandlesFailedJobsInterface;
+use Sassnowski\Venture\Actions\HandlesFinishedJobsInterface;
 use function event;
 
 class WorkflowEventSubscriber
 {
     public function __construct(
-        private JobExtractor $jobExtractor,
-        private HandlesFinishedJobs $handleFinishedJobs,
-        private HandlesFailedJobs $handleFailedJobs,
+        private JobExtractorInterface $jobExtractor,
+        private HandlesFinishedJobsInterface $handleFinishedJobs,
+        private HandlesFailedJobsInterface $handleFailedJobs,
     ) {
     }
 

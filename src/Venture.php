@@ -16,12 +16,12 @@ namespace Sassnowski\Venture;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\Plugin\Core;
-use Sassnowski\Venture\Plugin\Plugin;
+use Sassnowski\Venture\Plugin\PluginInterface;
 use Sassnowski\Venture\Plugin\PluginContext;
 use Sassnowski\Venture\State\DefaultWorkflowJobState;
 use Sassnowski\Venture\State\DefaultWorkflowState;
-use Sassnowski\Venture\State\WorkflowJobState;
-use Sassnowski\Venture\State\WorkflowState;
+use Sassnowski\Venture\State\WorkflowJobStateInterface;
+use Sassnowski\Venture\State\WorkflowStateInterface;
 
 final class Venture
 {
@@ -36,17 +36,17 @@ final class Venture
     public static string $workflowJobModel = WorkflowJob::class;
 
     /**
-     * @var class-string<WorkflowState>
+     * @var class-string<WorkflowStateInterface>
      */
     public static string $workflowState = DefaultWorkflowState::class;
 
     /**
-     * @var class-string<WorkflowJobState>
+     * @var class-string<WorkflowJobStateInterface>
      */
     public static string $workflowJobState = DefaultWorkflowJobState::class;
 
     /**
-     * @var array<int, class-string<Plugin>>
+     * @var array<int, class-string<PluginInterface>>
      */
     private static array $plugins = [];
 
@@ -67,7 +67,7 @@ final class Venture
     }
 
     /**
-     * @param class-string<WorkflowState> $state
+     * @param class-string<WorkflowStateInterface> $state
      */
     public static function useWorkflowState(string $state): void
     {
@@ -75,7 +75,7 @@ final class Venture
     }
 
     /**
-     * @param class-string<WorkflowJobState> $state
+     * @param class-string<WorkflowJobStateInterface> $state
      */
     public static function useWorkflowJobState(string $state): void
     {
@@ -83,7 +83,7 @@ final class Venture
     }
 
     /**
-     * @param class-string<Plugin> ...$plugin
+     * @param class-string<PluginInterface> ...$plugin
      */
     public static function registerPlugin(string ...$plugin): void
     {
@@ -105,7 +105,7 @@ final class Venture
         $context = new PluginContext(app('events'));
 
         foreach ($plugins as $plugin) {
-            /** @var Plugin $plug */
+            /** @var PluginInterface $plug */
             $plug = app($plugin);
 
             $plug->install($context);

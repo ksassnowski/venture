@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Stubs;
 
-use Sassnowski\Venture\Plugin\Plugin;
+use Sassnowski\Venture\Plugin\PluginInterface;
 use Sassnowski\Venture\Plugin\PluginContext;
 
-final class TestPlugin implements Plugin
+final class TestPlugin implements PluginInterface
 {
     public static int $installCalled = 0;
 

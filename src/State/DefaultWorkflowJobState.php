@@ -17,7 +17,7 @@ use RuntimeException;
 use Sassnowski\Venture\Models\WorkflowJob;
 use Throwable;
 
-class DefaultWorkflowJobState implements WorkflowJobState
+class DefaultWorkflowJobState implements WorkflowJobStateInterface
 {
     public function __construct(private WorkflowJob $job)
     {

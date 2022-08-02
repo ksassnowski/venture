@@ -15,14 +15,14 @@ namespace Sassnowski\Venture\Manager;
 
 use Closure;
 use Sassnowski\Venture\AbstractWorkflow;
-use Sassnowski\Venture\Dispatcher\JobDispatcher;
+use Sassnowski\Venture\Dispatcher\JobDispatcherInterface;
 use Sassnowski\Venture\Events\WorkflowStarted;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowDefinition;
 
 class WorkflowManager implements WorkflowManagerInterface
 {
-    public function __construct(private JobDispatcher $dispatcher)
+    public function __construct(private JobDispatcherInterface $dispatcher)
     {
     }
 

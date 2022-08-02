@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 use Sassnowski\Venture\ClosureWorkflowStep;
 use Sassnowski\Venture\Dispatcher\FakeDispatcher;
-use Sassnowski\Venture\Dispatcher\JobDispatcher;
+use Sassnowski\Venture\Dispatcher\JobDispatcherInterface;
 
 uses(TestCase::class);
 
@@ -43,9 +43,9 @@ it('can be serialized', function (): void {
 });
 
 it('resolves the closure\'s dependencies from the container', function (): void {
-    app()->instance(JobDispatcher::class, new FakeDispatcher());
+    app()->instance(JobDispatcherInterface::class, new FakeDispatcher());
 
-    $step = new ClosureWorkflowStep(function (JobDispatcher $dispatcher): void {
+    $step = new ClosureWorkflowStep(function (JobDispatcherInterface $dispatcher): void {
         expect($dispatcher)->toBeInstanceOf(FakeDispatcher::class);
     });
 

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
-final class FakeIDGenerator implements StepIdGenerator
+final class FakeIDGenerator implements StepIdGeneratorInterface
 {
     public function __construct(private string $id)
     {

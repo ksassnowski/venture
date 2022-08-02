@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
-final class ClassNameStepIdGenerator implements StepIdGenerator
+final class ClassNameStepIdGenerator implements StepIdGeneratorInterface
 {
     public function generateId(object $job): string
     {
