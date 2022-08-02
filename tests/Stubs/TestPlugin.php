@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Stubs;
 
-use Sassnowski\Venture\Plugin\PluginInterface;
 use Sassnowski\Venture\Plugin\PluginContext;
+use Sassnowski\Venture\Plugin\PluginInterface;
 
 final class TestPlugin implements PluginInterface
 {
