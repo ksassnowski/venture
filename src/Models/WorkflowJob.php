@@ -181,7 +181,7 @@ class WorkflowJob extends Model
         \dispatch($this->step());
     }
 
-    private function getState(): WorkflowJobState
+    protected function getState(): WorkflowJobState
     {
         if (null === $this->state) {
             $this->state = app(Venture::$workflowJobState, ['job' => $this]);
