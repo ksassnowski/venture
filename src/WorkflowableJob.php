@@ -18,14 +18,14 @@ use Ramsey\Uuid\UuidInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
 
-interface WorkflowStepInterface extends ShouldQueue
+interface WorkflowableJob extends ShouldQueue
 {
     public function withWorkflowId(int $workflowID): self;
 
     public function workflow(): ?Workflow;
 
     /**
-     * @param array<int, WorkflowStepInterface> $jobs
+     * @param array<int, WorkflowableJob> $jobs
      */
     public function withDependantJobs(array $jobs): self;
 

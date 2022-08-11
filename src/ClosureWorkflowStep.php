@@ -16,7 +16,7 @@ namespace Sassnowski\Venture;
 use Closure;
 use Laravel\SerializableClosure\SerializableClosure;
 
-final class ClosureWorkflowStep implements WorkflowStepInterface
+final class ClosureWorkflowStep implements WorkflowableJob
 {
     use WorkflowStep;
 

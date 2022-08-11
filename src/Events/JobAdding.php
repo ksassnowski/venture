@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Events;
 
+use Sassnowski\Venture\WorkflowableJob;
 use Sassnowski\Venture\WorkflowDefinition;
-use Sassnowski\Venture\WorkflowStepInterface;
 
 final class JobAdding
 {
@@ -23,7 +23,7 @@ final class JobAdding
      */
     public function __construct(
         public WorkflowDefinition $definition,
-        public WorkflowStepInterface $job,
+        public WorkflowableJob $job,
         public ?string $name,
         public mixed $delay,
         public ?string $jobID,

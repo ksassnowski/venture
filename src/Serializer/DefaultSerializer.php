@@ -14,17 +14,17 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Serializer;
 
 use InvalidArgumentException;
+use Sassnowski\Venture\WorkflowableJob;
 use Sassnowski\Venture\WorkflowStepAdapter;
-use Sassnowski\Venture\WorkflowStepInterface;
 
 final class DefaultSerializer implements WorkflowJobSerializer
 {
-    public function serialize(WorkflowStepInterface $job): string
+    public function serialize(WorkflowableJob $job): string
     {
         return \serialize($job);
     }
 
-    public function unserialize(string $serializedJob): ?WorkflowStepInterface
+    public function unserialize(string $serializedJob): ?WorkflowableJob
     {
         $result = @\unserialize($serializedJob);
 

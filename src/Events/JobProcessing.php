@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Events;
 
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 
 final class JobProcessing
 {
-    public function __construct(public WorkflowStepInterface $job)
+    public function __construct(public WorkflowableJob $job)
     {
     }
 }

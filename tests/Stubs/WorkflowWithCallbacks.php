@@ -16,15 +16,15 @@ namespace Stubs;
 use Closure;
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\WorkflowableJob;
 use Sassnowski\Venture\WorkflowDefinition;
-use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
 
 final class WorkflowWithCallbacks extends AbstractWorkflow
 {
     /**
-     * @param null|Closure(Workflow): void                                   $then
-     * @param null|Closure(Workflow, WorkflowStepInterface, Throwable): void $catch
+     * @param null|Closure(Workflow): void                             $then
+     * @param null|Closure(Workflow, WorkflowableJob, Throwable): void $catch
      */
     public function __construct(
         private ?Closure $then = null,

@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Dispatcher;
 
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 
 interface JobDispatcher
 {
     /**
-     * @param array<int, WorkflowStepInterface> $jobs
+     * @param array<int, WorkflowableJob> $jobs
      */
     public function dispatch(array $jobs): void;
 
-    public function dispatchDependentJobs(WorkflowStepInterface $step): void;
+    public function dispatchDependentJobs(WorkflowableJob $step): void;
 }

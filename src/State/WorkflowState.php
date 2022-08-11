@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\State;
 
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 use Throwable;
 
 interface WorkflowState
 {
-    public function markJobAsFinished(WorkflowStepInterface $job): void;
+    public function markJobAsFinished(WorkflowableJob $job): void;
 
-    public function markJobAsFailed(WorkflowStepInterface $job, Throwable $exception): void;
+    public function markJobAsFailed(WorkflowableJob $job, Throwable $exception): void;
 
     public function allJobsHaveFinished(): bool;
 

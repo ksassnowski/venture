@@ -15,7 +15,7 @@ namespace Sassnowski\Venture\Actions;
 
 use Sassnowski\Venture\Dispatcher\JobDispatcher;
 use Sassnowski\Venture\Events\WorkflowFinished;
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 
 final class HandleFinishedJobs implements HandlesFinishedJobs
 {
@@ -23,7 +23,7 @@ final class HandleFinishedJobs implements HandlesFinishedJobs
     {
     }
 
-    public function __invoke(WorkflowStepInterface $step): void
+    public function __invoke(WorkflowableJob $step): void
     {
         $workflow = $step->workflow();
 

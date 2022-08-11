@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Stubs;
 
 use Illuminate\Bus\Queueable;
+use Sassnowski\Venture\WorkflowableJob;
 use Sassnowski\Venture\WorkflowStep;
-use Sassnowski\Venture\WorkflowStepInterface;
 
-class TestJob6 implements WorkflowStepInterface
+class TestJob6 implements WorkflowableJob
 {
     use Queueable;
     use WorkflowStep;

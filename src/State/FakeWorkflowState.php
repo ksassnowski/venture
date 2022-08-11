@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\State;
 
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 use Throwable;
 
 /**
@@ -36,12 +36,12 @@ final class FakeWorkflowState implements WorkflowState
     ) {
     }
 
-    public function markJobAsFinished(WorkflowStepInterface $job): void
+    public function markJobAsFinished(WorkflowableJob $job): void
     {
         $this->finishedJobs[$job->getJobId()] = true;
     }
 
-    public function markJobAsFailed(WorkflowStepInterface $job, Throwable $exception): void
+    public function markJobAsFailed(WorkflowableJob $job, Throwable $exception): void
     {
         $this->failedJobs[$job->getJobId()] = $exception;
     }

@@ -22,7 +22,7 @@ use Sassnowski\Venture\Exceptions\JobAlreadyStartedException;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\State\WorkflowJobState;
 use Sassnowski\Venture\Venture;
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 use Throwable;
 use function app;
 
@@ -68,7 +68,7 @@ class WorkflowJob extends Model
 
     private ?WorkflowJobState $state = null;
 
-    private ?WorkflowStepInterface $step = null;
+    private ?WorkflowableJob $step = null;
 
     /**
      * @param array<string, mixed> $attributes
@@ -88,7 +88,7 @@ class WorkflowJob extends Model
         return $this->belongsTo(Venture::$workflowModel, 'workflow_id');
     }
 
-    public function step(): WorkflowStepInterface
+    public function step(): WorkflowableJob
     {
         if (null === $this->step) {
             /** @var WorkflowJobSerializer $serializer */

@@ -13,14 +13,14 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Serializer;
 
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 
 interface WorkflowJobSerializer
 {
-    public function serialize(WorkflowStepInterface $job): string;
+    public function serialize(WorkflowableJob $job): string;
 
     /**
      * @throws UnserializeException thrown if the string could not be unserialized for any reason
      */
-    public function unserialize(string $serializedJob): ?WorkflowStepInterface;
+    public function unserialize(string $serializedJob): ?WorkflowableJob;
 }

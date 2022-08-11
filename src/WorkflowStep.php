@@ -59,12 +59,12 @@ trait WorkflowStep
     }
 
     /**
-     * @param array<int, WorkflowStepInterface> $jobs
+     * @param array<int, WorkflowableJob> $jobs
      */
     public function withDependantJobs(array $jobs): self
     {
         $this->dependantJobs = collect($jobs)
-            ->map(fn (WorkflowStepInterface $job) => $job->getStepId())
+            ->map(fn (WorkflowableJob $job) => $job->getStepId())
             ->filter()
             ->all();
 

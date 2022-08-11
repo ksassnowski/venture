@@ -18,9 +18,9 @@ use PHPUnit\Framework\Assert;
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Graph\Node;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\WorkflowableJob;
 use Sassnowski\Venture\WorkflowDefinition;
 use Sassnowski\Venture\WorkflowStepAdapter;
-use Sassnowski\Venture\WorkflowStepInterface;
 use Throwable;
 
 final class WorkflowTester
@@ -180,7 +180,7 @@ final class WorkflowTester
      * @param null|Closure(Workflow): void $configureWorkflowCallback
      */
     public function runCatchCallback(
-        WorkflowStepInterface $failedJob,
+        WorkflowableJob $failedJob,
         Throwable $exception,
         ?Closure $configureWorkflowCallback = null,
     ): self {

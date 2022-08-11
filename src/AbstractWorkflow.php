@@ -73,7 +73,7 @@ abstract class AbstractWorkflow
     }
 
     /**
-     * @param array<string, WorkflowStepInterface> $jobs
+     * @param array<string, WorkflowableJob> $jobs
      */
     public function beforeNesting(array $jobs): void
     {

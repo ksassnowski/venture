@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Stubs;
 
+use Sassnowski\Venture\WorkflowableJob;
 use Sassnowski\Venture\WorkflowStep;
-use Sassnowski\Venture\WorkflowStepInterface;
 
-class TestJobWithHandle implements WorkflowStepInterface
+class TestJobWithHandle implements WorkflowableJob
 {
     use WorkflowStep;
 

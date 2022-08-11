@@ -25,7 +25,7 @@ use Sassnowski\Venture\Events\JobCreating;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\State\WorkflowState;
 use Sassnowski\Venture\Venture;
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 use Throwable;
 
 /**
@@ -98,12 +98,12 @@ class Workflow extends Model
     }
 
     /**
-     * @param array<array-key, WorkflowStepInterface> $jobs
+     * @param array<array-key, WorkflowableJob> $jobs
      */
     public function addJobs(array $jobs): void
     {
         (new Collection($jobs))
-            ->map(function (WorkflowStepInterface $job): WorkflowJob {
+            ->map(function (WorkflowableJob $job): WorkflowJob {
                 return new Venture::$workflowJobModel([
                     'job' => $this->serializer()->serialize(clone $job),
                     'name' => $job->getName(),
@@ -130,12 +130,12 @@ class Workflow extends Model
         return $this->getState()->allJobsHaveFinished();
     }
 
-    public function markJobAsFinished(WorkflowStepInterface $job): void
+    public function markJobAsFinished(WorkflowableJob $job): void
     {
         $this->getState()->markJobAsFinished($job);
     }
 
-    public function markJobAsFailed(WorkflowStepInterface $job, Throwable $exception): void
+    public function markJobAsFailed(WorkflowableJob $job, Throwable $exception): void
     {
         $this->getState()->markJobAsFailed($job, $exception);
     }
@@ -206,7 +206,7 @@ class Workflow extends Model
         $this->runCallback($this->then_callback, $this);
     }
 
-    public function runCatchCallback(WorkflowStepInterface $failedStep, Throwable $exception): void
+    public function runCatchCallback(WorkflowableJob $failedStep, Throwable $exception): void
     {
         $this->runCallback($this->catch_callback, $this, $failedStep, $exception);
     }

@@ -15,7 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Sassnowski\Venture\State\DefaultWorkflowState;
 use Sassnowski\Venture\State\WorkflowStateStore;
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 use Stubs\NestedWorkflow;
 use Stubs\TestJob1;
 use Stubs\WorkflowWithWorkflow;
@@ -26,7 +26,7 @@ beforeEach(function (): void {
     WorkflowStateStore::fake();
 });
 
-it('stores a finished job\'s id', function (WorkflowStepInterface $job, string $expectedJobId): void {
+it('stores a finished job\'s id', function (WorkflowableJob $job, string $expectedJobId): void {
     $workflow = createWorkflow([
         'jobs_processed' => '[]',
     ]);

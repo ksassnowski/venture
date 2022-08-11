@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Dispatcher;
 
 use PHPUnit\Framework\Assert;
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 
 final class FakeDispatcher implements JobDispatcher
 {
@@ -29,7 +29,7 @@ final class FakeDispatcher implements JobDispatcher
     private array $dispatchedDependentJobsForStep = [];
 
     /**
-     * @param array<int, WorkflowStepInterface> $jobs
+     * @param array<int, WorkflowableJob> $jobs
      */
     public function dispatch(array $jobs): void
     {
@@ -38,7 +38,7 @@ final class FakeDispatcher implements JobDispatcher
         }
     }
 
-    public function dispatchDependentJobs(WorkflowStepInterface $step): void
+    public function dispatchDependentJobs(WorkflowableJob $step): void
     {
         $this->dispatchedDependentJobsForStep[$step->getJobId()] = true;
     }

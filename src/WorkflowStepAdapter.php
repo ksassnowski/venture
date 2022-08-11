@@ -28,7 +28,7 @@ use Sassnowski\Venture\Models\WorkflowJob;
  * @property ?string            $stepId
  * @property ?int               $workflowId
  */
-final class WorkflowStepAdapter implements WorkflowStepInterface
+final class WorkflowStepAdapter implements WorkflowableJob
 {
     private function __construct(private object $job)
     {
@@ -52,9 +52,9 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->{$name}(...$arguments);
     }
 
-    public static function fromJob(object $job): WorkflowStepInterface
+    public static function fromJob(object $job): WorkflowableJob
     {
-        if ($job instanceof WorkflowStepInterface) {
+        if ($job instanceof WorkflowableJob) {
             return $job;
         }
 
@@ -80,7 +80,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job::class;
     }
 
-    public function withWorkflowId(int $workflowID): WorkflowStepInterface
+    public function withWorkflowId(int $workflowID): WorkflowableJob
     {
         $this->job->withWorkflowId($workflowID);
 
@@ -92,7 +92,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->workflow();
     }
 
-    public function withDependantJobs(array $jobs): WorkflowStepInterface
+    public function withDependantJobs(array $jobs): WorkflowableJob
     {
         $this->job->withDependantJobs($jobs);
 
@@ -104,7 +104,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->getDependantJobs();
     }
 
-    public function withDependencies(array $jobNames): WorkflowStepInterface
+    public function withDependencies(array $jobNames): WorkflowableJob
     {
         $this->job->withDependencies($jobNames);
 
@@ -116,7 +116,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->getDependencies();
     }
 
-    public function withJobId(string $jobID): WorkflowStepInterface
+    public function withJobId(string $jobID): WorkflowableJob
     {
         $this->job->withJobId($jobID);
 
@@ -128,7 +128,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->getJobId();
     }
 
-    public function withStepId(UuidInterface $stepID): WorkflowStepInterface
+    public function withStepId(UuidInterface $stepID): WorkflowableJob
     {
         $this->job->withStepId($stepID);
 
@@ -145,7 +145,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->step();
     }
 
-    public function withName(string $name): WorkflowStepInterface
+    public function withName(string $name): WorkflowableJob
     {
         $this->job->withName($name);
 
@@ -157,7 +157,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->getName();
     }
 
-    public function withDelay(mixed $delay): WorkflowStepInterface
+    public function withDelay(mixed $delay): WorkflowableJob
     {
         $this->job->withDelay($delay);
 
@@ -172,7 +172,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
     /**
      * @param null|string $connection
      */
-    public function onConnection($connection): WorkflowStepInterface
+    public function onConnection($connection): WorkflowableJob
     {
         $this->job->onConnection($connection);
 
@@ -187,7 +187,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
     /**
      * @param null|string $queue
      */
-    public function onQueue($queue): WorkflowStepInterface
+    public function onQueue($queue): WorkflowableJob
     {
         $this->job->onQueue($queue);
 
@@ -199,7 +199,7 @@ final class WorkflowStepAdapter implements WorkflowStepInterface
         return $this->job->queue;
     }
 
-    public function withGate(bool $gated = true): WorkflowStepInterface
+    public function withGate(bool $gated = true): WorkflowableJob
     {
         $this->job->gated = $gated;
 

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Graph;
 
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 
 final class Node
 {
@@ -25,7 +25,7 @@ final class Node
      */
     public function __construct(
         private string $id,
-        private WorkflowStepInterface $instance,
+        private WorkflowableJob $instance,
         private array $dependencies,
         private array $dependents = [],
     ) {
@@ -67,7 +67,7 @@ final class Node
     }
 
     /**
-     * @return array<int, WorkflowStepInterface>
+     * @return array<int, WorkflowableJob>
      */
     public function getDependentJobs(): array
     {
@@ -77,7 +77,7 @@ final class Node
         );
     }
 
-    public function getJob(): WorkflowStepInterface
+    public function getJob(): WorkflowableJob
     {
         return $this->instance;
     }

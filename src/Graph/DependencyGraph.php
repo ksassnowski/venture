@@ -16,7 +16,7 @@ namespace Sassnowski\Venture\Graph;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 use function collect;
 
 class DependencyGraph
@@ -36,7 +36,7 @@ class DependencyGraph
      *
      * @throws DuplicateJobException
      */
-    public function addDependantJob(WorkflowStepInterface $job, array $dependencies, string $id): void
+    public function addDependantJob(WorkflowableJob $job, array $dependencies, string $id): void
     {
         if (isset($this->graph[$id])) {
             throw new DuplicateJobException(\sprintf('A job with id "%s" already exists in this workflow.', $id));
@@ -64,7 +64,7 @@ class DependencyGraph
     }
 
     /**
-     * @return array<int, WorkflowStepInterface>
+     * @return array<int, WorkflowableJob>
      */
     public function getDependantJobs(string $jobId): array
     {
@@ -80,13 +80,13 @@ class DependencyGraph
     }
 
     /**
-     * @return array<int, WorkflowStepInterface>
+     * @return array<int, WorkflowableJob>
      */
     public function getJobsWithoutDependencies(): array
     {
         return collect($this->graph)
             ->filter(fn (Node $node): bool => $node->isRoot())
-            ->map(fn (Node $node): WorkflowStepInterface => $node->getJob())
+            ->map(fn (Node $node): WorkflowableJob => $node->getJob())
             ->values()
             ->all();
     }

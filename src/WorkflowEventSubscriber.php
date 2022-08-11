@@ -55,7 +55,7 @@ class WorkflowEventSubscriber
             return;
         }
 
-        $this->withWorkflowJob($event, function (WorkflowStepInterface $jobInstance): void {
+        $this->withWorkflowJob($event, function (WorkflowableJob $jobInstance): void {
             ($this->handleFinishedJobs)($jobInstance);
 
             event(new Events\JobFinished($jobInstance));
@@ -68,7 +68,7 @@ class WorkflowEventSubscriber
             return;
         }
 
-        $this->withWorkflowJob($event, function (WorkflowStepInterface $jobInstance) use ($event): void {
+        $this->withWorkflowJob($event, function (WorkflowableJob $jobInstance) use ($event): void {
             ($this->handleFailedJobs)($jobInstance, $event->exception);
 
             event(new Events\JobFailed($jobInstance, $event->exception));
@@ -77,7 +77,7 @@ class WorkflowEventSubscriber
 
     public function onJobProcessing(JobProcessing $event): void
     {
-        $this->withWorkflowJob($event, function (WorkflowStepInterface $jobInstance) use ($event): void {
+        $this->withWorkflowJob($event, function (WorkflowableJob $jobInstance) use ($event): void {
             if ($jobInstance->workflow()?->isCancelled()) {
                 $event->job->delete();
             } else {
@@ -87,7 +87,7 @@ class WorkflowEventSubscriber
     }
 
     /**
-     * @param Closure(WorkflowStepInterface): void $callback
+     * @param Closure(WorkflowableJob): void $callback
      */
     private function withWorkflowJob(
         JobProcessing|JobProcessed|JobFailed $event,

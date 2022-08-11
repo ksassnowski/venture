@@ -15,8 +15,8 @@ use PHPUnit\Framework\AssertionFailedError;
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Testing\WorkflowTester;
+use Sassnowski\Venture\WorkflowableJob;
 use Sassnowski\Venture\WorkflowDefinition;
-use Sassnowski\Venture\WorkflowStepInterface;
 use Stubs\LegacyWorkflowJob;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
@@ -106,7 +106,7 @@ test('assertJobExists passes if the workflow contains a job with the provided id
         $definition
             ->addJob(new TestJob1())
             ->addJob(new TestJob2(), [TestJob1::class]);
-    })->assertJobExists(TestJob2::class, function (WorkflowStepInterface $step) {
+    })->assertJobExists(TestJob2::class, function (WorkflowableJob $step) {
         return $step->getDependencies() == [TestJob1::class];
     });
 });

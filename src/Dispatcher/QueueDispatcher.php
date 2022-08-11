@@ -16,24 +16,24 @@ namespace Sassnowski\Venture\Dispatcher;
 use Illuminate\Support\Collection;
 use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\Venture;
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 
 final class QueueDispatcher implements JobDispatcher
 {
     /**
-     * @param array<int, WorkflowStepInterface> $jobs
+     * @param array<int, WorkflowableJob> $jobs
      */
     public function dispatch(array $jobs): void
     {
         $uuids = collect($jobs)
-            ->map(fn (WorkflowStepInterface $step) => $step->getStepId())
+            ->map(fn (WorkflowableJob $step) => $step->getStepId())
             ->filter()
             ->all();
 
         $this->dispatchJobs($uuids);
     }
 
-    public function dispatchDependentJobs(WorkflowStepInterface $step): void
+    public function dispatchDependentJobs(WorkflowableJob $step): void
     {
         $this->dispatchJobs($step->getDependantJobs());
     }

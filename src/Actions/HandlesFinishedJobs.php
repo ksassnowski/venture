@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Actions;
 
-use Sassnowski\Venture\WorkflowStepInterface;
+use Sassnowski\Venture\WorkflowableJob;
 
 interface HandlesFinishedJobs
 {
-    public function __invoke(WorkflowStepInterface $step): void;
+    public function __invoke(WorkflowableJob $step): void;
 }

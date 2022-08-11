@@ -37,7 +37,7 @@ class WorkflowDefinition
     use Conditionable;
 
     /**
-     * @var array<string, WorkflowStepInterface>
+     * @var array<string, WorkflowableJob>
      */
     protected array $jobs = [];
 
@@ -171,7 +171,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param callable(Workflow, WorkflowStepInterface, Throwable): void $callback
+     * @param callable(Workflow, WorkflowableJob, Throwable): void $callback
      */
     public function catch(callable $callback): self
     {
@@ -181,9 +181,9 @@ class WorkflowDefinition
     }
 
     /**
-     * @param null|Closure(Workflow, array<string, WorkflowStepInterface>): void $beforeCreate
+     * @param null|Closure(Workflow, array<string, WorkflowableJob>): void $beforeCreate
      *
-     * @return array{0: Workflow, 1: array<int, WorkflowStepInterface>}
+     * @return array{0: Workflow, 1: array<int, WorkflowableJob>}
      */
     public function build(?Closure $beforeCreate = null): array
     {
@@ -220,7 +220,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @return array<string, WorkflowStepInterface>
+     * @return array<string, WorkflowableJob>
      */
     public function jobs(): array
     {
@@ -316,7 +316,7 @@ class WorkflowDefinition
         return app(Venture::$workflowModel, \compact('attributes'));
     }
 
-    protected function getJobById(string $className): ?WorkflowStepInterface
+    protected function getJobById(string $className): ?WorkflowableJob
     {
         return $this->jobs[$className] ?? null;
     }
@@ -325,7 +325,7 @@ class WorkflowDefinition
      * @param Delay $delay
      */
     private function onJobAdding(
-        WorkflowStepInterface $job,
+        WorkflowableJob $job,
         ?string $name,
         mixed $delay,
         ?string $id,
@@ -358,9 +358,9 @@ class WorkflowDefinition
     /**
      * @throw InvalidJobException
      */
-    private function wrapJob(object $step, ?string $id): WorkflowStepInterface
+    private function wrapJob(object $step, ?string $id): WorkflowableJob
     {
-        if ($step instanceof WorkflowStepInterface) {
+        if ($step instanceof WorkflowableJob) {
             return $step;
         }
 
@@ -406,7 +406,7 @@ class WorkflowDefinition
         return $result;
     }
 
-    private function pushJob(WorkflowStepInterface $job): void
+    private function pushJob(WorkflowableJob $job): void
     {
         $this->jobs[$job->getJobId()] = $job;
     }
