@@ -233,6 +233,15 @@ class Workflow extends Model
         ])->all();
     }
 
+    protected function getState(): WorkflowState
+    {
+        if (null === $this->state) {
+            $this->state = app(Venture::$workflowState, ['workflow' => $this]);
+        }
+
+        return $this->state;
+    }
+
     private function runCallback(?string $serializedCallback, mixed ...$args): void
     {
         if (null === $serializedCallback) {
@@ -243,15 +252,6 @@ class Workflow extends Model
         $callback = \unserialize($serializedCallback);
 
         $callback(...$args);
-    }
-
-    protected function getState(): WorkflowState
-    {
-        if (null === $this->state) {
-            $this->state = app(Venture::$workflowState, ['workflow' => $this]);
-        }
-
-        return $this->state;
     }
 
     private function serializer(): WorkflowJobSerializer
