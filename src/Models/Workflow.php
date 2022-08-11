@@ -245,7 +245,7 @@ class Workflow extends Model
         $callback(...$args);
     }
 
-    private function getState(): WorkflowState
+    protected function getState(): WorkflowState
     {
         if (null === $this->state) {
             $this->state = app(Venture::$workflowState, ['workflow' => $this]);
