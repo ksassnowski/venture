@@ -20,7 +20,7 @@ use Throwable;
 
 class DefaultWorkflowState implements WorkflowState
 {
-    public function __construct(private Workflow $workflow)
+    public function __construct(protected Workflow $workflow)
     {
     }
 

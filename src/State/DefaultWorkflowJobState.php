@@ -19,7 +19,7 @@ use Throwable;
 
 class DefaultWorkflowJobState implements WorkflowJobState
 {
-    public function __construct(private WorkflowJob $job)
+    public function __construct(protected WorkflowJob $job)
     {
     }
 
