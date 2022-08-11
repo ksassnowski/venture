@@ -43,7 +43,7 @@ class VentureServiceProvider extends ServiceProvider
 
         if (!\class_exists('CreateWorkflowTables')) {
             $this->publishes([
-                __DIR__ . '/../database/migrations/create_media_table.php.stub' => database_path('migrations/' . \date('Y_m_d_His', \time()) . '_create_workflow_tables.php'),
+                __DIR__ . '/../database/migrations/create_workflow_tables.php.stub' => database_path('migrations/' . \date('Y_m_d_His', \time()) . '_create_workflow_tables.php'),
             ], ['migrations']);
         }
 
