@@ -167,6 +167,7 @@ class DependencyGraph
         if (\array_key_exists($dependency, $this->nestedGraphs)) {
             return collect($this->nestedGraphs[$dependency])
                 ->filter(fn (Node $node) => $node->isLeaf())
+                ->map(fn (Node $node) => $this->graph[$node->getID()])
                 ->values()
                 ->all();
         }

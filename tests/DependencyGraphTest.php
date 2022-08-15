@@ -155,8 +155,12 @@ it('can add a job with a dependency on a nested workflow', function (): void {
 
     $graph1->connectGraph($graph2, '::workflow-id::', [new StaticDependency(TestJob1::class)]);
 
-    $graph1->addDependantJob(new TestJob5(), [new StaticDependency('::workflow-id::')], TestJob5::class);
+    $graph1->addDependantJob($job5 = new TestJob5(), [new StaticDependency('::workflow-id::')], TestJob5::class);
 
+    $dependentJobs = $graph1->getDependantJobs('::workflow-id::.' . TestJob3::class);
+    expect($dependentJobs[0])->toBe($job5);
+    $dependentJobs = $graph1->getDependantJobs('::workflow-id::.' . TestJob4::class);
+    expect($dependentJobs[0])->toBe($job5);
     expect($graph1->getDependencies(TestJob5::class))
         ->toEqual([
             '::workflow-id::.' . TestJob3::class,
