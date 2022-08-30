@@ -29,7 +29,8 @@
         "pestphp/pest": "^1.20",
         "pestphp/pest-plugin-laravel": "^1.0",
         "phpunit/phpunit": "^9.5.8",
-        "roave/security-advisories": "dev-latest"
+        "roave/security-advisories": "dev-latest",
+        "spatie/laravel-ignition": "^1.4"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

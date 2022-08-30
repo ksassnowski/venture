@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Exceptions;
 
 use Exception;
-use Facade\IgnitionContracts\BaseSolution;
-use Facade\IgnitionContracts\ProvidesSolution;
-use Facade\IgnitionContracts\Solution;
+use Spatie\Ignition\Contracts\BaseSolution;
+use Spatie\Ignition\Contracts\ProvidesSolution;
+use Spatie\Ignition\Contracts\Solution;
 
 class DuplicateWorkflowException extends Exception implements ProvidesSolution
 {
