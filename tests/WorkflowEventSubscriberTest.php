@@ -82,6 +82,18 @@ it('does not handle processed jobs if the job has been released back to the queu
     $handleFinishedJobs->shouldNotHaveBeenCalled();
 });
 
+it('does not handle processed jobs if the job has been manually failed', function (): void {
+    $workflowJob = new TestJob1();
+    $event = new JobProcessed('::connection::', createQueueJob($workflowJob, true, false));
+    $handleFinishedJobs = m::spy(HandlesFinishedJobs::class);
+
+    createEventSubscriber($handleFinishedJobs)->handleJobProcessed($event);
+
+    $handleFinishedJobs->shouldNotHaveBeenCalled();
+
+    Event::assertNotDispatched(JobFinished::class);
+});
+
 it('does not handle processed non-workflow jobs', function (): void {
     $event = new JobProcessed('::connection::', createQueueJob(new NonWorkflowJob()));
     $handleFinishedJobs = m::spy(HandlesFinishedJobs::class);
