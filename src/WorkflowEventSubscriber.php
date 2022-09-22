@@ -55,6 +55,10 @@ class WorkflowEventSubscriber
             return;
         }
 
+        if ($event->job->hasFailed()) {
+            return;
+        }
+
         $this->withWorkflowJob($event, function (WorkflowableJob $jobInstance): void {
             ($this->handleFinishedJobs)($jobInstance);
 
