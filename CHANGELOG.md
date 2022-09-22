@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.1] — 2022-09-22
+
+### Fixed
+
+- Fix manually failed jobs reporting as processed (#59)
+
+## [4.0.0] — 2022-08-30
+
+🎉 Check the upgrade guide here: https://laravel-venture.com/upgrade-guide.html#migrating-to-4-0-from-3-x
+
 ## [3.7.0] — 2022-07-09
 
 ### Added
@@ -260,6 +270,8 @@ Please see the documentation's [upgrade guide](https://laravel-venture.netlify.a
 - Make it possible to cancel a workflow. A cancelled workflow will not execute any further jobs, but will finish any job
   that was already running before the workflow got cancelled.
 
+[4.0.1]: https://github.com/ksassnowski/venture/compare/3.7.0...4.0.0
+[4.0.0]: https://github.com/ksassnowski/venture/compare/3.7.0...4.0.0
 [3.7.0]: https://github.com/ksassnowski/venture/compare/3.6.5...3.7.0
 [3.6.5]: https://github.com/ksassnowski/venture/compare/3.6.4...3.6.5
 [3.6.4]: https://github.com/ksassnowski/venture/compare/3.6.3...3.6.4
