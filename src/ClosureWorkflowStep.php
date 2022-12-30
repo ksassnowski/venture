@@ -29,6 +29,6 @@ final class ClosureWorkflowStep implements WorkflowableJob
 
     public function handle(): void
     {
-        app()->call($this->callback->getClosure());
+        app()->call($this->callback->getClosure(), ['job' => $this]);
     }
 }
