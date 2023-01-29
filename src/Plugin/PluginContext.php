@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2022 Kai Sassnowski
+ * Copyright (c) 2023 Kai Sassnowski
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -36,7 +36,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobAdding): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobAdding): void $listener
      */
     public function onJobAdding(string|array|Closure $listener): self
     {
@@ -44,7 +44,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobAdded): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobAdded): void $listener
      */
     public function onJobAdded(string|array|Closure $listener): self
     {
@@ -52,7 +52,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowAdding): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowAdding): void $listener
      */
     public function onWorkflowAdding(string|array|Closure $listener): self
     {
@@ -60,7 +60,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowAdded): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowAdded): void $listener
      */
     public function onWorkflowAdded(string|array|Closure $listener): self
     {
@@ -68,7 +68,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowCreating): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowCreating): void $listener
      */
     public function onWorkflowCreating(string|array|Closure $listener): self
     {
@@ -76,7 +76,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowCreated): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowCreated): void $listener
      */
     public function onWorkflowCreated(string|array|Closure $listener): self
     {
@@ -84,7 +84,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobCreating): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobCreating): void $listener
      */
     public function onJobCreating(string|array|Closure $listener): self
     {
@@ -92,7 +92,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobCreated): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobCreated): void $listener
      */
     public function onJobCreated(string|array|Closure $listener): self
     {
@@ -100,7 +100,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobProcessing): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobProcessing): void $listener
      */
     public function onJobProcessing(string|array|Closure $listener): self
     {
@@ -108,7 +108,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobFinished): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobFinished): void $listener
      */
     public function onJobFinished(string|array|Closure $listener): self
     {
@@ -116,7 +116,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobFailed): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(JobFailed): void $listener
      */
     public function onJobFailed(string|array|Closure $listener): self
     {
@@ -124,7 +124,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowStarted): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowStarted): void $listener
      */
     public function onWorkflowStarted(string|array|Closure $listener): self
     {
@@ -132,7 +132,7 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowFinished): void|string $listener
+     * @param array{0: class-string|object, 1: string}|Closure(WorkflowFinished): void $listener
      */
     public function onWorkflowFinished(string|array|Closure $listener): self
     {
@@ -142,8 +142,8 @@ final class PluginContext
     /**
      * @template T
      *
-     * @param class-string<T>                                                  $event
-     * @param array{0: class-string|object, 1: string}|Closure(T): void|string $listener
+     * @param class-string<T>                                           $event
+     * @param array{0: class-string|object, 1: string}|Closure(T): void $listener
      */
     private function registerListener(string $event, string|array|Closure $listener): self
     {

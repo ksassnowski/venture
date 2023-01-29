@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2022 Kai Sassnowski
+ * Copyright (c) 2023 Kai Sassnowski
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -45,8 +45,8 @@ function createWorkflowJob(Workflow $workflow, array $attributes = []): Workflow
 function wrapJobsForWorkflow($jobs)
 {
     return collect($jobs)->map(fn ($job) => [
-        'job' => $job->withJobId($job->jobId ?? \get_class($job)),
-        'name' => \get_class($job),
+        'job' => $job->withJobId($job->jobId ?? $job::class),
+        'name' => $job::class,
     ])->all();
 }
 

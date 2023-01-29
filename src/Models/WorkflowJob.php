@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2022 Kai Sassnowski
+ * Copyright (c) 2023 Kai Sassnowski
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -49,19 +49,13 @@ class WorkflowJob extends Model
     protected $guarded = [];
 
     /**
-     * @var array<int, string>
-     */
-    protected $dates = [
-        'failed_at',
-        'finished_at',
-        'started_at',
-        'gated_at',
-    ];
-
-    /**
      * @var array<string, string>
      */
     protected $casts = [
+        'failed_at' => 'datetime',
+        'finished_at' => 'datetime',
+        'started_at' => 'datetime',
+        'gated_at' => 'datetime',
         'edges' => 'array',
         'manual' => 'bool',
     ];

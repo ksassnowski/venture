@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2022 Kai Sassnowski
+ * Copyright (c) 2023 Kai Sassnowski
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -59,14 +59,8 @@ class Workflow extends Model
         'job_count' => 'int',
         'jobs_failed' => 'int',
         'jobs_processed' => 'int',
-    ];
-
-    /**
-     * @var array<int, string>
-     */
-    protected $dates = [
-        'finished_at',
-        'cancelled_at',
+        'finished_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     private ?WorkflowState $state = null;

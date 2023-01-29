@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2022 Kai Sassnowski
+ * Copyright (c) 2023 Kai Sassnowski
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -22,7 +22,7 @@ use Sassnowski\Venture\WorkflowDefinition;
 class WorkflowManagerFake implements WorkflowManagerInterface
 {
     /**
-     * @var array<class-string<AbstractWorkflow>, array{workflow: AbstractWorkflow, connection: string|null}>
+     * @var array<class-string<AbstractWorkflow>, array{workflow: AbstractWorkflow, connection: null|string}>
      */
     private array $started = [];
 
@@ -48,7 +48,7 @@ class WorkflowManagerFake implements WorkflowManagerInterface
             Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
         );
 
-        $this->started[\get_class($abstractWorkflow)] = [
+        $this->started[$abstractWorkflow::class] = [
             'workflow' => $abstractWorkflow,
             'connection' => $connection,
         ];

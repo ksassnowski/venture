@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Method Sassnowski\\\\Venture\\\\Models\\\\Workflow\\:\\:serializer\\(\\) should return Sassnowski\\\\Venture\\\\Serializer\\\\WorkflowJobSerializer but returns mixed\\.$#"
-			count: 1
-			path: src/Models/Workflow.php
-
-		-
 			message: "#^Property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$table \\(string\\) does not accept mixed\\.$#"
 			count: 1
 			path: src/Models/Workflow.php
