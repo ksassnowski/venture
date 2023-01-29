@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /**
- * Copyright (c) 2022 Kai Sassnowski
+ * Copyright (c) 2023 Kai Sassnowski
  *
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
@@ -20,11 +20,11 @@ use Sassnowski\Venture\Manager\WorkflowManagerInterface;
 use Sassnowski\Venture\WorkflowDefinition;
 
 /**
- * @method static void assertNotStarted(string $workflowDefinition, ?callable $callback = null)
- * @method static void assertStarted(string $workflowDefinition, ?callable $callback = null)
- * @method static void assertStartedOnConnection(string $workflowDefinition, string $connection, ?callable $callback = null)
+ * @method static void               assertNotStarted(string $workflowDefinition, ?callable $callback = null)
+ * @method static void               assertStarted(string $workflowDefinition, ?callable $callback = null)
+ * @method static void               assertStartedOnConnection(string $workflowDefinition, string $connection, ?callable $callback = null)
  * @method static WorkflowDefinition define(string $workflowName)
- * @method static bool hasStarted(string $workflowClass, ?callable $callback = null)
+ * @method static bool               hasStarted(string $workflowClass, ?callable $callback = null)
  * @method static WorkflowDefinition startWorkflow(AbstractWorkflow $abstractWorkflow)
  *
  * @see \Sassnowski\Venture\Manager\WorkflowManager
