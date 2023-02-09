@@ -38,6 +38,7 @@ use function app;
  * @property ?Carbon            $started_at
  * @property string             $uuid
  * @property Workflow           $workflow
+ * @property int                $workflow_id
  */
 class WorkflowJob extends Model
 {
