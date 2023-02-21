@@ -163,6 +163,15 @@ class WorkflowDefinition
     }
 
     /**
+     * Runs the provided callback on each element inside `$collection` and adds the
+     * resulting job or workflow to the workflow. This method will enumerate the
+     * id of each job or workflow by adding `_$i` to the end of it.
+     *
+     * If an explicit `$id` is provided, the new jobs or workflows will be registered
+     * as a group in the dependency graph. This group can then be depended on by
+     * another job or workflow by using `GroupDependency::forGroup($groupName)`, where
+     * `$groupName` is the `$id` that passed to this method.
+     *
      * @param array<array-key, mixed>|Collection<array-key, mixed> $collection
      * @param Closure(mixed): WorkflowableJob                      $factory
      * @param Delay                                                $delay
