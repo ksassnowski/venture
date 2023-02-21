@@ -314,3 +314,16 @@ it('throws an exception when trying the group contains job IDs that don\'t exist
     UnresolvableDependenciesException::class,
     'The group [::group-name::] references an unknown node [::unknown-job::]',
 );
+
+test('hasGroup returns true if a group with the given name exists', function (): void {
+    $graph = new DependencyGraph();
+    $graph->defineGroup('::group-name::', []);
+
+    expect($graph->hasGroup('::group-name::'))->toBeTrue();
+});
+
+test('hasGroup returns true if no group with the given name exists', function (): void {
+    $graph = new DependencyGraph();
+
+    expect($graph->hasGroup('::group-name::'))->toBeFalse();
+});
