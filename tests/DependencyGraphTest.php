@@ -291,29 +291,47 @@ it('can register and resolve group dependencies', function (): void {
     // TestJob4 is not part of the group
     $graph->addDependantJob(new TestJob4(), [], TestJob4::class);
 
-    $graph->defineGroup('::group-name::', [TestJob1::class, TestJob2::class]);
+    $graph->defineGroup('::group-name::', [new StaticDependency(TestJob1::class), new StaticDependency(TestJob2::class)]);
     $graph->addDependantJob(new TestJob3(), [new GroupDependency('::group-name::')], TestJob3::class);
 
     expect($graph->getDependencies(TestJob3::class))->toEqual([TestJob1::class, TestJob2::class]);
+});
+
+it('correctly resolves nested workflows in a group', function (): void {
+    $graph1 = new DependencyGraph();
+    $graph1->addDependantJob(new TestJob1(), [], TestJob1::class);
+    $graph1->addDependantJob(new TestJob2(), [], TestJob2::class);
+
+    $graph2 = new DependencyGraph();
+    $graph2->addDependantJob(new TestJob2(), [], TestJob2::class);
+    $graph2->addDependantJob(new TestJob3(), [new StaticDependency(TestJob2::class)], TestJob3::class);
+    $graph2->addDependantJob(new TestJob4(), [new StaticDependency(TestJob2::class)], TestJob4::class);
+
+    $graph1->connectGraph($graph2, '::nested-workflow::', [new StaticDependency(TestJob1::class)]);
+    $graph1->defineGroup(
+        '::group::',
+        [
+            new StaticDependency(TestJob2::class),
+            new StaticDependency('::nested-workflow::'),
+        ]
+    );
+    $graph1->addDependantJob(new TestJob5(), [GroupDependency::forGroup('::group::')], TestJob5::class);
+
+    $dependencies = $graph1->getDependencies(TestJob5::class);
+    expect($dependencies)->toEqual([
+        TestJob2::class,
+        '::nested-workflow::.'.TestJob3::class,
+        '::nested-workflow::.'.TestJob4::class,
+    ]);
 });
 
 it('throws an exception when trying to register the same group twice', function (): void {
     $graph = new DependencyGraph();
     $graph->addDependantJob(new TestJob1(), [], TestJob1::class);
 
-    $graph->defineGroup('::group-name::', [TestJob1::class]);
-    $graph->defineGroup('::group-name::', [TestJob1::class]);
+    $graph->defineGroup('::group-name::', [new StaticDependency(TestJob1::class)]);
+    $graph->defineGroup('::group-name::', [new StaticDependency(TestJob1::class)]);
 })->throws(DuplicateGroupException::class);
-
-it('throws an exception when trying the group contains job IDs that don\'t exist in the graph', function (): void {
-    $graph = new DependencyGraph();
-    $graph->addDependantJob(new TestJob1(), [], TestJob1::class);
-
-    $graph->defineGroup('::group-name::', [TestJob1::class, '::unknown-job::']);
-})->throws(
-    UnresolvableDependenciesException::class,
-    'The group [::group-name::] references an unknown node [::unknown-job::]',
-);
 
 test('hasGroup returns true if a group with the given name exists', function (): void {
     $graph = new DependencyGraph();

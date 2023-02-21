@@ -59,28 +59,37 @@ class DependencyGraph
         }
     }
 
+    /**
+     * @param array<int, Dependency> $nodeIDs
+     */
     public function defineGroup(string $groupName, array $nodeIDs): void
     {
         if (isset($this->groups[$groupName])) {
             throw DuplicateGroupException::forGroup($groupName);
         }
 
-        $nodes = [];
-
-        foreach ($nodeIDs as $nodeID) {
-            if (!$this->has($nodeID)) {
-                throw UnresolvableDependenciesException::groupDependency($groupName, $nodeID);
-            }
-
-            $nodes[] = $this->get($nodeID);
-        }
-
-        $this->groups[$groupName] = $nodes;
+        $this->groups[$groupName] = $this->resolveDependencies($nodeIDs);
     }
 
     public function hasGroup(string $groupName): bool
     {
         return isset($this->groups[$groupName]);
+    }
+
+    /**
+     * @return array<int, Node>|null
+     */
+    public function getGroup(string $groupName): ?array
+    {
+        return $this->groups[$groupName] ?? null;
+    }
+
+    /**
+     * @return array<int, array<int, Node>>
+     */
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 
     public function has(string $id): bool
