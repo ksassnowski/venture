@@ -194,7 +194,7 @@ class WorkflowDefinition
             // We want to make sure we're resolving the id via the registered `StepIdGenerator`
             // if no explicit id was provided. Otherwise, this would potentially behave
             // differently than adding each job manually would.
-            $jobId = ($id ?: $this->resolveJobId($job)).'_'.$i+1;
+            $jobId = ($id ?: $this->resolveJobId($job)) . '_' . $i + 1;
 
             if ($job instanceof AbstractWorkflow) {
                 $this->addWorkflow($job, $dependencies, $jobId);
@@ -213,7 +213,7 @@ class WorkflowDefinition
         // because when no id is provided, we really have no way of knowing what to call the
         // group since there is no guarantee that the provided factory function only returns
         // instances of the same class.
-        if ($id !== null && \count($jobIds) > 0) {
+        if (null !== $id && \count($jobIds) > 0) {
             $this->graph->defineGroup($id, $jobIds);
         }
 
