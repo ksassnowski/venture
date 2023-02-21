@@ -174,8 +174,8 @@ class WorkflowDefinition
      *
      * @param array<array-key, mixed>|Collection<array-key, mixed> $collection
      * @param Closure(mixed): (AbstractWorkflow|WorkflowableJob)     $factory
-     * @param Delay                                                $delay
-     * @param array<int, string>                                   $dependencies
+     * @param Delay              $delay
+     * @param array<int, string> $dependencies
      */
     public function each(
         array|Collection $collection,
