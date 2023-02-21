@@ -176,19 +176,37 @@ class WorkflowDefinition
         mixed $delay = null,
         ?string $id = null,
     ): self {
-        Collection::make($collection)
-            ->map($factory(...))
-            ->each(function (WorkflowableJob $job, int $i) use ($dependencies, $name, $delay, $id): void {
-                $jobId = $id ?: $this->resolveJobId($job);
+        /** @var array<int, Dependency> $jobIds */
+        $jobIds = [];
 
-                $this->addJob(
-                    $job,
-                    dependencies: $dependencies,
-                    name: $name,
-                    delay: $delay,
-                    id: $jobId . '_' . $i + 1,
-                );
-            });
+        foreach ($collection as $i => $item) {
+            $job = $factory($item);
+
+            // We want to make sure we're resolving the id via the registered `StepIdGenerator`
+            // if no explicit id was provided. Otherwise, this would potentially behave
+            // differently than adding each job manually would.
+            $jobId = ($id ?: $this->resolveJobId($job)).'_'.$i+1;
+
+            if ($job instanceof AbstractWorkflow) {
+                $this->addWorkflow($job, $dependencies, $jobId);
+                $jobIds[] = new StaticDependency($jobId);
+            } else {
+                $this->addJob($job, $dependencies, $name, $delay, $jobId);
+
+                // We have to make sure to grab the id from the job itself here instead of using
+                // the id we came up with ourselves. This is because an event listener could
+                // potentially have modified it, and we would be discarding this change, otherwise.
+                $jobIds[] = new StaticDependency($job->getJobId());
+            }
+        }
+
+        // We only want to define a group if an explicit id was provided by the user. This is
+        // because when no id is provided, we really have no way of knowing what to call the
+        // group since there is no guarantee that the provided factory function only returns
+        // instances of the same class.
+        if ($id !== null && \count($jobIds) > 0) {
+            $this->graph->defineGroup($id, $jobIds);
+        }
 
         return $this;
     }

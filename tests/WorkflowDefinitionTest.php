@@ -648,7 +648,7 @@ it('fires an event before a workflow gets saved', function (): void {
     );
 });
 
-it('applies the same dependencies to all jobs added with each', function (): void {
+it('applies the same dependencies to all jobs added with `each`', function (): void {
     $jobs = [TestJob1::class, TestJob1::class, TestJob1::class];
 
     $definition = createDefinition()
@@ -670,7 +670,7 @@ it('applies the same dependencies to all jobs added with each', function (): voi
     )->toBeTrue();
 });
 
-it('enumerates the id when adding jobs with each', function (): void {
+it('enumerates the id when adding jobs with `each`', function (): void {
     $jobs = [TestJob1::class, TestJob1::class, TestJob1::class];
 
     $definition = createDefinition()
@@ -698,7 +698,7 @@ it('resolves each job\'s id via the step generator when no explicit id is provid
     expect($definition->hasJob('::job-id::_3'))->toBeTrue();
 });
 
-it('applies the same name to all jobs added with each', function (): void {
+it('applies the same name to all jobs added with `each`', function (): void {
     $jobs = [TestJob1::class, TestJob1::class, TestJob1::class];
 
     $workflowJobs = createDefinition()
@@ -709,7 +709,7 @@ it('applies the same name to all jobs added with each', function (): void {
         ->each(fn ($name) => $name->toBe('::job-name::'));
 });
 
-it('applies the same delay to all jobs added with each', function (): void {
+it('applies the same delay to all jobs added with `each`', function (): void {
     $jobs = [TestJob1::class, TestJob1::class, TestJob1::class];
 
     $definition = createDefinition()
@@ -718,4 +718,44 @@ it('applies the same delay to all jobs added with each', function (): void {
     expect($definition->hasJobWithDelay(TestJob1::class . '_1', 5))->toBeTrue();
     expect($definition->hasJobWithDelay(TestJob1::class . '_2', 5))->toBeTrue();
     expect($definition->hasJobWithDelay(TestJob1::class . '_3', 5))->toBeTrue();
+});
+
+it('creates a group for all jobs added with `each` when an explicit id was provided', function (): void {
+    $jobs = [new TestJob1(), new TestJob1(), new TestJob1()];
+
+    $definition = createDefinition()
+        ->each($jobs, fn (TestJob1 $job) => $job, id: '::job-id::');
+
+    $group = $definition->graph()->getGroup('::job-id::');
+    expect($group)->not()->toBeNull();
+    expect($group[0]->getJob())->toBe($jobs[0]);
+    expect($group[1]->getJob())->toBe($jobs[1]);
+    expect($group[2]->getJob())->toBe($jobs[2]);
+});
+
+it('does not create a group when adding jobs with `each` if no explicit id was provided', function (): void {
+    $jobs = [new TestJob1(), new TestJob1(), new TestJob1()];
+
+    $definition = createDefinition()->each($jobs, fn (TestJob1 $job) => $job);
+
+    expect($definition->graph()->getGroups())->toBeEmpty();
+});
+
+it('can add workflows using `each`', function (): void {
+    $jobs = [new TestJob1(), new TestJob1(), new TestJob1()];
+
+    $definition = createDefinition()->each(
+        $jobs,
+        fn (TestJob1 $job) => new NestedWorkflow($job),
+        id: '::workflow-id::',
+    );
+
+    expect($definition->hasWorkflow('::workflow-id::_1'))->toBeTrue();
+    expect($definition->hasWorkflow('::workflow-id::_2'))->toBeTrue();
+    expect($definition->hasWorkflow('::workflow-id::_3'))->toBeTrue();
+
+    $group = $definition->graph()->getGroup('::workflow-id::');
+    expect($group[0]->getJob())->toBe($jobs[0]);
+    expect($group[1]->getJob())->toBe($jobs[1]);
+    expect($group[2]->getJob())->toBe($jobs[2]);
 });
