@@ -23,6 +23,7 @@
     "require-dev": {
         "ergebnis/composer-normalize": "^2.29",
         "ergebnis/php-cs-fixer-config": "^5.2",
+        "lorisleiva/laravel-actions": "^2.5.1",
         "mockery/mockery": "^1.5.1",
         "nunomaduro/larastan": "^2.4",
         "orchestra/testbench": "^7.0 || ^8.0",
@@ -31,6 +32,9 @@
         "phpunit/phpunit": "^9.5.8",
         "roave/security-advisories": "dev-latest",
         "spatie/laravel-ignition": "^1.6 || ^2.0"
+    },
+    "suggest": {
+        "lorisleiva/laravel-actions": "To use Laravel Actions as workflow jobs"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

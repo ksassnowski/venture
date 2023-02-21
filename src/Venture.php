@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
+use Illuminate\Container\Container;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\Plugin\Core;
@@ -87,7 +88,16 @@ final class Venture
      */
     public static function registerPlugin(string ...$plugin): void
     {
+        $app = Container::getInstance();
+
         foreach ($plugin as $plug) {
+            // This is an undocumented hack to also allow plugins to perform some setup during
+            // the application's `register` bootstrapping stage. We should rewrite this in the
+            // next major version to add this capability to plugins properly.
+            if (\method_exists($plug, 'register')) {
+                $plug::register($app);
+            }
+
             if (\in_array($plug, self::$plugins, true)) {
                 continue;
             }
