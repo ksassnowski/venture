@@ -313,15 +313,15 @@ it('correctly resolves nested workflows in a group', function (): void {
         [
             new StaticDependency(TestJob2::class),
             new StaticDependency('::nested-workflow::'),
-        ]
+        ],
     );
     $graph1->addDependantJob(new TestJob5(), [GroupDependency::forGroup('::group::')], TestJob5::class);
 
     $dependencies = $graph1->getDependencies(TestJob5::class);
     expect($dependencies)->toEqual([
         TestJob2::class,
-        '::nested-workflow::.'.TestJob3::class,
-        '::nested-workflow::.'.TestJob4::class,
+        '::nested-workflow::.' . TestJob3::class,
+        '::nested-workflow::.' . TestJob4::class,
     ]);
 });
 

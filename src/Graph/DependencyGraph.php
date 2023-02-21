@@ -77,7 +77,7 @@ class DependencyGraph
     }
 
     /**
-     * @return array<int, Node>|null
+     * @return null|array<int, Node>
      */
     public function getGroup(string $groupName): ?array
     {
