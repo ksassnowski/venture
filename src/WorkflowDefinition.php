@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Sassnowski\Venture;
 
 use Closure;
+use Illuminate\Container\Container;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\Conditionable;
 use InvalidArgumentException;
 use Laravel\SerializableClosure\SerializableClosure;
@@ -156,6 +158,37 @@ class WorkflowDefinition
         $this->nestedWorkflows[$event->workflowID] = $dependencies;
 
         event(new WorkflowAdded($this, $definition, $event->workflowID));
+
+        return $this;
+    }
+
+    /**
+     * @param array<array-key, mixed>|Collection<array-key, mixed> $collection
+     * @param Closure(mixed): WorkflowableJob                      $factory
+     * @param Delay                                                $delay
+     * @param array<int, string>                                   $dependencies
+     */
+    public function each(
+        array|Collection $collection,
+        Closure $factory,
+        array $dependencies = [],
+        ?string $name = null,
+        mixed $delay = null,
+        ?string $id = null,
+    ): self {
+        Collection::make($collection)
+            ->map($factory(...))
+            ->each(function (WorkflowableJob $job, int $i) use ($dependencies, $name, $delay, $id): void {
+                $jobId = $id ?: $this->resolveJobId($job);
+
+                $this->addJob(
+                    $job,
+                    dependencies: $dependencies,
+                    name: $name,
+                    delay: $delay,
+                    id: $jobId . '_' . $i + 1,
+                );
+            });
 
         return $this;
     }
@@ -421,5 +454,13 @@ class WorkflowDefinition
             $job->onQueue($this->queue ?: $job->getQueue());
             $job->onConnection($this->connection ?: $job->getConnection());
         }
+    }
+
+    private function resolveJobId(WorkflowableJob $job): string
+    {
+        /** @var StepIdGenerator $stepIdGenerator */
+        $stepIdGenerator = Container::getInstance()->make(StepIdGenerator::class);
+
+        return $stepIdGenerator->generateId($job);
     }
 }

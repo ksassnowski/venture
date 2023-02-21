@@ -12,6 +12,7 @@ declare(strict_types=1);
  */
 
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Event;
 use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\AbstractWorkflow;
@@ -19,7 +20,9 @@ use Sassnowski\Venture\Events\JobAdded;
 use Sassnowski\Venture\Events\WorkflowAdded;
 use Sassnowski\Venture\Events\WorkflowCreating;
 use Sassnowski\Venture\Exceptions\InvalidJobException;
+use Sassnowski\Venture\FakeIDGenerator;
 use Sassnowski\Venture\Models\Workflow;
+use Sassnowski\Venture\StepIdGenerator;
 use Sassnowski\Venture\WorkflowDefinition;
 use Stubs\DummyCallback;
 use Stubs\NestedWorkflow;
@@ -643,4 +646,76 @@ it('fires an event before a workflow gets saved', function (): void {
                 && $event->model === $model;
         },
     );
+});
+
+it('applies the same dependencies to all jobs added with each', function (): void {
+    $jobs = [TestJob1::class, TestJob1::class, TestJob1::class];
+
+    $definition = createDefinition()
+        ->addJob(new TestJob2())
+        ->each(
+            $jobs,
+            fn (string $job) => new $job(),
+            dependencies: [TestJob2::class],
+        );
+
+    expect(
+        $definition->hasJobWithDependencies(TestJob1::class . '_1', [TestJob2::class]),
+    )->toBeTrue();
+    expect(
+        $definition->hasJobWithDependencies(TestJob1::class . '_2', [TestJob2::class]),
+    )->toBeTrue();
+    expect(
+        $definition->hasJobWithDependencies(TestJob1::class . '_3', [TestJob2::class]),
+    )->toBeTrue();
+});
+
+it('enumerates the id when adding jobs with each', function (): void {
+    $jobs = [TestJob1::class, TestJob1::class, TestJob1::class];
+
+    $definition = createDefinition()
+        ->each(
+            $jobs,
+            fn (string $job) => new $job(),
+            id: 'test_job',
+        );
+
+    expect($definition->hasJob('test_job_1'))->toBeTrue();
+    expect($definition->hasJob('test_job_2'))->toBeTrue();
+    expect($definition->hasJob('test_job_3'))->toBeTrue();
+});
+
+it('resolves each job\'s id via the step generator when no explicit id is provided and enumerates it', function (): void {
+    app()->instance(StepIdGenerator::class, new FakeIDGenerator('::job-id::'));
+
+    $jobs = [TestJob1::class, TestJob1::class, TestJob1::class];
+
+    $definition = createDefinition()
+        ->each($jobs, fn (string $job) => new $job());
+
+    expect($definition->hasJob('::job-id::_1'))->toBeTrue();
+    expect($definition->hasJob('::job-id::_2'))->toBeTrue();
+    expect($definition->hasJob('::job-id::_3'))->toBeTrue();
+});
+
+it('applies the same name to all jobs added with each', function (): void {
+    $jobs = [TestJob1::class, TestJob1::class, TestJob1::class];
+
+    $workflowJobs = createDefinition()
+        ->each($jobs, fn (string $job) => new $job(), name: '::job-name::')
+        ->jobs();
+
+    expect(Arr::pluck($workflowJobs, 'name'))
+        ->each(fn ($name) => $name->toBe('::job-name::'));
+});
+
+it('applies the same delay to all jobs added with each', function (): void {
+    $jobs = [TestJob1::class, TestJob1::class, TestJob1::class];
+
+    $definition = createDefinition()
+        ->each($jobs, fn (string $job) => new $job(), delay: 5);
+
+    expect($definition->hasJobWithDelay(TestJob1::class . '_1', 5))->toBeTrue();
+    expect($definition->hasJobWithDelay(TestJob1::class . '_2', 5))->toBeTrue();
+    expect($definition->hasJobWithDelay(TestJob1::class . '_3', 5))->toBeTrue();
 });
