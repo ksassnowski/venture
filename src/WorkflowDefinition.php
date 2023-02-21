@@ -173,7 +173,7 @@ class WorkflowDefinition
      * `$groupName` is the `$id` that passed to this method.
      *
      * @param array<array-key, mixed>|Collection<array-key, mixed> $collection
-     * @param Closure(mixed): WorkflowableJob                      $factory
+     * @param Closure(mixed): (AbstractWorkflow|WorkflowableJob)     $factory
      * @param Delay                                                $delay
      * @param array<int, string>                                   $dependencies
      */
@@ -483,7 +483,7 @@ class WorkflowDefinition
         }
     }
 
-    private function resolveJobId(WorkflowableJob $job): string
+    private function resolveJobId(WorkflowableJob|AbstractWorkflow $job): string
     {
         /** @var StepIdGenerator $stepIdGenerator */
         $stepIdGenerator = Container::getInstance()->make(StepIdGenerator::class);
