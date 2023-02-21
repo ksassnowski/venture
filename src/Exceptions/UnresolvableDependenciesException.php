@@ -17,8 +17,4 @@ use Exception;
 
 class UnresolvableDependenciesException extends Exception
 {
-    public static function groupDependency(string $groupName, string $nodeID): self
-    {
-        return new self("The group [{$groupName}] references an unknown node [{$nodeID}]");
-    }
 }
