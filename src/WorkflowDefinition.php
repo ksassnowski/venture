@@ -194,7 +194,7 @@ class WorkflowDefinition
             // We want to make sure we're resolving the id via the registered `StepIdGenerator`
             // if no explicit id was provided. Otherwise, this would potentially behave
             // differently than adding each job manually would.
-            $jobId = ($id ?: $this->resolveJobId($job)) . '_' . $i + 1;
+            $jobId = ($id ?: $this->resolveJobId($job)) . '_' . ($i + 1);
 
             if ($job instanceof AbstractWorkflow) {
                 $this->addWorkflow($job, $dependencies, $jobId);

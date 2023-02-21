@@ -85,7 +85,7 @@ class DependencyGraph
     }
 
     /**
-     * @return array<int, array<int, Node>>
+     * @return array<string, array<int, Node>>
      */
     public function getGroups(): array
     {
