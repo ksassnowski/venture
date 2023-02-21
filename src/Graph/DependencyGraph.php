@@ -78,6 +78,11 @@ class DependencyGraph
         $this->groups[$groupName] = $nodes;
     }
 
+    public function hasGroup(string $groupName): bool
+    {
+        return isset($this->groups[$groupName]);
+    }
+
     public function has(string $id): bool
     {
         return isset($this->graph[$id]) || isset($this->nestedGraphs[$id]);
