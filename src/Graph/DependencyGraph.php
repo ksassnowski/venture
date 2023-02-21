@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Graph;
 
+use Sassnowski\Venture\Exceptions\DuplicateGroupException;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
@@ -30,6 +31,11 @@ class DependencyGraph
      * @var array<string, array<string, Node>>
      */
     private array $nestedGraphs = [];
+
+    /**
+     * @var array<string, array<int, Node>>
+     */
+    private array $groups = [];
 
     /**
      * @param array<int, Dependency> $dependencies
@@ -51,6 +57,25 @@ class DependencyGraph
         foreach ($resolvedDependencies as $dependency) {
             $dependency->addDependent($node);
         }
+    }
+
+    public function defineGroup(string $groupName, array $nodeIDs): void
+    {
+        if (isset($this->groups[$groupName])) {
+            throw DuplicateGroupException::forGroup($groupName);
+        }
+
+        $nodes = [];
+
+        foreach ($nodeIDs as $nodeID) {
+            if (!$this->has($nodeID)) {
+                throw UnresolvableDependenciesException::groupDependency($groupName, $nodeID);
+            }
+
+            $nodes[] = $this->get($nodeID);
+        }
+
+        $this->groups[$groupName] = $nodes;
     }
 
     public function has(string $id): bool
@@ -147,7 +172,11 @@ class DependencyGraph
                 continue;
             }
 
-            $resolvedDependencies[] = $this->resolveDependency($id);
+            if ($dependency instanceof GroupDependency) {
+                $resolvedDependencies[] = $this->groups[$id];
+            } else {
+                $resolvedDependencies[] = $this->resolveDependency($id);
+            }
         }
 
         return \array_merge(...$resolvedDependencies);

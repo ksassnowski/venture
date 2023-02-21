@@ -15,10 +15,10 @@ namespace Sassnowski\Venture\Exceptions;
 
 use Exception;
 
-class UnresolvableDependenciesException extends Exception
+final class DuplicateGroupException extends Exception
 {
-    public static function groupDependency(string $groupName, string $nodeID): self
+    public static function forGroup(string $groupID): self
     {
-        return new self("The group [{$groupName}] references an unknown node [{$nodeID}]");
+        return new self("A group with the name {$groupID} already exists in this graph");
     }
 }

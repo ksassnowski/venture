@@ -11,11 +11,13 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
+use Sassnowski\Venture\Exceptions\DuplicateGroupException;
 use Sassnowski\Venture\Exceptions\DuplicateJobException;
 use Sassnowski\Venture\Exceptions\DuplicateWorkflowException;
 use Sassnowski\Venture\Exceptions\UnresolvableDependenciesException;
 use Sassnowski\Venture\Graph\Dependency;
 use Sassnowski\Venture\Graph\DependencyGraph;
+use Sassnowski\Venture\Graph\GroupDependency;
 use Sassnowski\Venture\Graph\StaticDependency;
 use Stubs\TestJob1;
 use Stubs\TestJob2;
@@ -281,3 +283,34 @@ it('returns null if no node exists for the provided id', function (): void {
 
     expect($graph->get(TestJob2::class))->toBeNull();
 });
+
+it('can register and resolve group dependencies', function (): void {
+    $graph = new DependencyGraph();
+    $graph->addDependantJob(new TestJob1(), [], TestJob1::class);
+    $graph->addDependantJob(new TestJob2(), [], TestJob2::class);
+    // TestJob4 is not part of the group
+    $graph->addDependantJob(new TestJob4(), [], TestJob4::class);
+
+    $graph->defineGroup('::group-name::', [TestJob1::class, TestJob2::class]);
+    $graph->addDependantJob(new TestJob3(), [new GroupDependency('::group-name::')], TestJob3::class);
+
+    expect($graph->getDependencies(TestJob3::class))->toEqual([TestJob1::class, TestJob2::class]);
+});
+
+it('throws an exception when trying to register the same group twice', function (): void {
+    $graph = new DependencyGraph();
+    $graph->addDependantJob(new TestJob1(), [], TestJob1::class);
+
+    $graph->defineGroup('::group-name::', [TestJob1::class]);
+    $graph->defineGroup('::group-name::', [TestJob1::class]);
+})->throws(DuplicateGroupException::class);
+
+it('throws an exception when trying the group contains job IDs that don\'t exist in the graph', function (): void {
+    $graph = new DependencyGraph();
+    $graph->addDependantJob(new TestJob1(), [], TestJob1::class);
+
+    $graph->defineGroup('::group-name::', [TestJob1::class, '::unknown-job::']);
+})->throws(
+    UnresolvableDependenciesException::class,
+    'The group [::group-name::] references an unknown node [::unknown-job::]',
+);
