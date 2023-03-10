@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.2.0](https://github.com/ksassnowski/venture/compare/5.1.0...v5.2.0) (2023-03-10)
+
+
+### Features
+
+* add release-please workflow ([6acd9c3](https://github.com/ksassnowski/venture/commit/6acd9c3bd8aa83681edc7e95dec1d5907b426d31))
+* pass job to ClosureWorkflowStep callback ([74a804b](https://github.com/ksassnowski/venture/commit/74a804bed46021c3c82374501578c8e1c002c6b5))
+* plugin to provide compatibility with lorisleiva/laravel-actions ([628043c](https://github.com/ksassnowski/venture/commit/628043c532aff6785a538c7c1a04ca5beb926e1d))
+
+
+### Miscellaneous Chores
+
+* update README ([baccba8](https://github.com/ksassnowski/venture/commit/baccba8b28d103bdd5d8eb18bb066c973cffa59c))
+
 ## [5.1.0] — 2023-02-21
 
 ### Added
