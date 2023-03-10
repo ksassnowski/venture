@@ -6,7 +6,7 @@ Venture is a package to help you build and manage complex workflows of interdepe
 
 ## Installation
 
-**Note:** Venture needs PHP 8 and Laravel 9
+**Note:** Venture needs PHP 8 and Laravel 9 or 10.
 
 ```
 composer require sassnowski/venture
