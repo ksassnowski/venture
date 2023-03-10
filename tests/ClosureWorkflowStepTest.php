@@ -14,6 +14,7 @@ declare(strict_types=1);
 use Sassnowski\Venture\ClosureWorkflowStep;
 use Sassnowski\Venture\Dispatcher\FakeDispatcher;
 use Sassnowski\Venture\Dispatcher\JobDispatcher;
+use Sassnowski\Venture\WorkflowableJob;
 
 uses(TestCase::class);
 
@@ -51,4 +52,15 @@ it('resolves the closure\'s dependencies from the container', function (): void 
 
     $step = \unserialize(\serialize($step));
     $step->handle();
+});
+
+it('passes the workflow step to the closure', function (): void {
+    $passedStep = null;
+    $step = new ClosureWorkflowStep(function (WorkflowableJob $job) use (&$passedStep): void {
+        $passedStep = $job;
+    });
+
+    $step->handle();
+
+    expect($passedStep)->toBe($step);
 });

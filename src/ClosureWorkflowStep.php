@@ -22,6 +22,9 @@ final class ClosureWorkflowStep implements WorkflowableJob
 
     private SerializableClosure $callback;
 
+    /**
+     * @param Closure(WorkflowableJob): void $callback
+     */
     public function __construct(Closure $callback)
     {
         $this->callback = new SerializableClosure($callback);
