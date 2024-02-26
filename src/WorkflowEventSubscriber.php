@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sassnowski\Venture;
 
 use Closure;
-use function event;
 use Illuminate\Queue\Events\JobFailed;
 use Sassnowski\Venture\WorkflowableJob;
 use Illuminate\Queue\Events\JobProcessed;
