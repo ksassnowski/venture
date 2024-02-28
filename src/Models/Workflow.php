@@ -258,6 +258,6 @@ class Workflow extends Model
 
     public function prunable()
     {
-        return static::where('created_at', '<=', now()->subDays(config('venture.prune_days')));
+        return static::where('created_at', '<=', now()->subDays(config('venture.prune_days', 7)));
     }
 }
