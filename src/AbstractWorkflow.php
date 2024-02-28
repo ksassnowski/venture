@@ -90,6 +90,6 @@ abstract class AbstractWorkflow
 
     protected function define(?string $workflowName = null): WorkflowDefinition
     {
-         return new WorkflowDefinition($this, $workflowName ?? Str::headline(class_basename(static::class)));
+        return new WorkflowDefinition($this, $workflowName ?? Str::headline(class_basename(static::class)));
     }
 }
