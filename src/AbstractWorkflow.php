@@ -15,6 +15,7 @@ namespace Sassnowski\Venture;
 
 use Closure;
 use Illuminate\Container\Container;
+use Illuminate\Support\Str;
 use Sassnowski\Venture\Manager\WorkflowManagerInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Testing\WorkflowTester;
@@ -87,8 +88,8 @@ abstract class AbstractWorkflow
         return $manager->startWorkflow($this, $connection);
     }
 
-    protected function define(string $workflowName = ''): WorkflowDefinition
+    protected function define(?string $workflowName = null): WorkflowDefinition
     {
-        return new WorkflowDefinition($this, $workflowName);
+         return new WorkflowDefinition($this, $workflowName ?? Str::headline(class_basename(static::class)));
     }
 }
