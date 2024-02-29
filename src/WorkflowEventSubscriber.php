@@ -100,7 +100,7 @@ class WorkflowEventSubscriber
     ): void {
         $jobName = $event->job->payload()['data']['commandName'] ?? null;
 
-        if (is_object($jobName) && !isset(class_implements($jobName)[WorkflowableJob::class])) {
+        if ($jobName && class_exists($jobName) && !isset(class_implements($jobName)[WorkflowableJob::class])) {
             return;
         }
 
