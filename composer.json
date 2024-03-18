@@ -22,7 +22,7 @@
     },
     "require-dev": {
         "ergebnis/composer-normalize": "^2.29",
-        "ergebnis/php-cs-fixer-config": "^5.2",
+        "ergebnis/php-cs-fixer-config": "^5.2 || ^6.0",
         "lorisleiva/laravel-actions": "^2.5.1",
         "mockery/mockery": "^1.5.1",
         "nunomaduro/larastan": "^2.4",
