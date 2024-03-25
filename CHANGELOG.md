@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.3.0](https://github.com/ksassnowski/venture/compare/v5.2.0...v5.3.0) (2024-03-25)
+
+
+### Features
+
+* drop Laravel 9 support ([3ac30a9](https://github.com/ksassnowski/venture/commit/3ac30a9bc0b418f08ab4820e79fb2b5338f1d69e))
+* support Laravel 11 ([410c0e1](https://github.com/ksassnowski/venture/commit/410c0e1b5a3489750989e5fbf75b9188cce31384))
+
 ## [5.2.0](https://github.com/ksassnowski/venture/compare/5.1.0...v5.2.0) (2023-03-10)
 
 
