@@ -24,6 +24,7 @@ it('registers the event subscriber', function (): void {
     $eventSubscriberMock = m::spy(WorkflowEventSubscriber::class);
     app()->instance(WorkflowEventSubscriber::class, $eventSubscriberMock);
     $jobMock = m::mock(Job::class);
+    $jobMock->allows('payload')->andReturnNull();
 
     event(new JobProcessed('::connection::', $jobMock));
     $eventSubscriberMock->shouldHaveReceived('handleJobProcessed');
