@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\State;
 
-use Throwable;
-
 interface WorkflowJobState
 {
     public function hasFinished(): bool;
@@ -23,7 +21,7 @@ interface WorkflowJobState
 
     public function hasFailed(): bool;
 
-    public function markAsFailed(Throwable $exception): void;
+    public function markAsFailed(\Throwable $exception): void;
 
     public function isProcessing(): bool;
 

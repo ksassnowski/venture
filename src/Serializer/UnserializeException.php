@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Serializer;
 
-use Exception;
-
-final class UnserializeException extends Exception
+final class UnserializeException extends \Exception
 {
 }

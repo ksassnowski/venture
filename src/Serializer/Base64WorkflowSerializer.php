@@ -16,7 +16,6 @@ namespace Sassnowski\Venture\Serializer;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\PostgresConnection;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 use Sassnowski\Venture\WorkflowableJob;
 use Sassnowski\Venture\WorkflowStepAdapter;
 
@@ -53,7 +52,7 @@ final class Base64WorkflowSerializer implements WorkflowJobSerializer
 
         try {
             return WorkflowStepAdapter::fromJob($result);
-        } catch (InvalidArgumentException) {
+        } catch (\InvalidArgumentException) {
             return null;
         }
     }

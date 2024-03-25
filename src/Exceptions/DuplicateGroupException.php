@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Exceptions;
 
-use Exception;
-
-final class DuplicateGroupException extends Exception
+final class DuplicateGroupException extends \Exception
 {
     public static function forGroup(string $groupID): self
     {

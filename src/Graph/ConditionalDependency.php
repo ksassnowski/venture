@@ -13,15 +13,13 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Graph;
 
-use Closure;
-
 final class ConditionalDependency implements Dependency
 {
     /**
-     * @param Closure(DependencyGraph): bool $predicate
+     * @param \Closure(DependencyGraph): bool $predicate
      */
     public function __construct(
-        private Closure $predicate,
+        private \Closure $predicate,
         private string $dependencyID,
         private ?string $fallback = null,
     ) {

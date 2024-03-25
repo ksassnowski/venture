@@ -510,20 +510,20 @@ it('can check if a workflow contains a nested workflow', function (callable $con
     assertEquals($expected, $definition->hasWorkflow(NestedWorkflow::class, $dependencies));
 })->with([
     'has workflow, ignore dependencies' => [
-        'configureWorkflow' => fn () => function (WorkflowDefinition $definition): void {
+        'configureWorkflow' => function (WorkflowDefinition $definition): void {
             $definition->addWorkflow(new NestedWorkflow());
         },
         'dependencies' => null,
         'expected' => true,
     ],
     'does not have workflow, ignore dependencies' => [
-        'configureWorkflow' => fn () => function (WorkflowDefinition $definition): void {
+        'configureWorkflow' => function (WorkflowDefinition $definition): void {
         },
         'dependencies' => null,
         'expected' => false,
     ],
     'has workflow, incorrect dependencies' => [
-        'configureWorkflow' => fn () => function (WorkflowDefinition $definition): void {
+        'configureWorkflow' => function (WorkflowDefinition $definition): void {
             $definition
                 ->addWorkflow(new NestedWorkflow());
         },
@@ -531,7 +531,7 @@ it('can check if a workflow contains a nested workflow', function (callable $con
         'expected' => false,
     ],
     'has workflow, correct dependencies' => [
-        'configureWorkflow' => fn () => function (WorkflowDefinition $definition): void {
+        'configureWorkflow' => function (WorkflowDefinition $definition): void {
             $definition
                 ->addJob(new TestJob1())
                 ->addWorkflow(new NestedWorkflow(), [TestJob1::class]);

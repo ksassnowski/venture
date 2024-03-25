@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Exceptions;
 
-use Exception;
-
-final class JobAlreadyStartedException extends Exception
+final class JobAlreadyStartedException extends \Exception
 {
 }

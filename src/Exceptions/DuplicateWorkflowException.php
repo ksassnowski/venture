@@ -13,12 +13,11 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Exceptions;
 
-use Exception;
 use Spatie\Ignition\Contracts\BaseSolution;
 use Spatie\Ignition\Contracts\ProvidesSolution;
 use Spatie\Ignition\Contracts\Solution;
 
-class DuplicateWorkflowException extends Exception implements ProvidesSolution
+class DuplicateWorkflowException extends \Exception implements ProvidesSolution
 {
     public function getSolution(): Solution
     {

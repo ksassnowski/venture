@@ -31,7 +31,6 @@ use Sassnowski\Venture\State\FakeWorkflowState;
 use Sassnowski\Venture\State\WorkflowJobState;
 use Sassnowski\Venture\State\WorkflowState;
 use Sassnowski\Venture\State\WorkflowStateStore;
-use function config;
 
 class VentureServiceProvider extends ServiceProvider
 {
@@ -81,7 +80,7 @@ class VentureServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             JobExtractor::class,
-            config(
+            \config(
                 'venture.workflow_job_extractor_class',
                 UnserializeJobExtractor::class,
             ),
@@ -92,7 +91,7 @@ class VentureServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             StepIdGenerator::class,
-            config(
+            \config(
                 'venture.workflow_step_id_generator_class',
                 ClassNameStepIdGenerator::class,
             ),
@@ -103,7 +102,7 @@ class VentureServiceProvider extends ServiceProvider
     {
         $this->app->bind(
             WorkflowJobSerializer::class,
-            config(
+            \config(
                 'venture.workflow_job_serializer_class',
                 Base64WorkflowSerializer::class,
             ),

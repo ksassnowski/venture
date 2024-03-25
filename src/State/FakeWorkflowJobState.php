@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\State;
 
-use Throwable;
-
 /**
  * @internal
  */
@@ -23,7 +21,7 @@ final class FakeWorkflowJobState implements WorkflowJobState
     public function __construct(
         public bool $finished = false,
         public bool $failed = false,
-        public ?Throwable $exception = null,
+        public ?\Throwable $exception = null,
         public bool $processing = false,
         public bool $pending = true,
         public bool $gated = false,
@@ -53,7 +51,7 @@ final class FakeWorkflowJobState implements WorkflowJobState
         return $this->failed;
     }
 
-    public function markAsFailed(Throwable $exception): void
+    public function markAsFailed(\Throwable $exception): void
     {
         $this->failed = true;
         $this->exception = $exception;

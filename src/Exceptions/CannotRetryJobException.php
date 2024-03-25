@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Exceptions;
 
-use Exception;
-
-final class CannotRetryJobException extends Exception
+final class CannotRetryJobException extends \Exception
 {
     /**
      * @var string

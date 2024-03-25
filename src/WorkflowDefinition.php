@@ -13,11 +13,9 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
-use Closure;
 use Illuminate\Container\Container;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Traits\Conditionable;
-use InvalidArgumentException;
 use Laravel\SerializableClosure\SerializableClosure;
 use Sassnowski\Venture\Events\JobAdded;
 use Sassnowski\Venture\Events\JobAdding;
@@ -32,7 +30,6 @@ use Sassnowski\Venture\Graph\Dependency;
 use Sassnowski\Venture\Graph\DependencyGraph;
 use Sassnowski\Venture\Graph\StaticDependency;
 use Sassnowski\Venture\Models\Workflow;
-use Throwable;
 
 class WorkflowDefinition
 {
@@ -173,13 +170,13 @@ class WorkflowDefinition
      * `$groupName` is the `$id` that passed to this method.
      *
      * @param array<array-key, mixed>|Collection<array-key, mixed> $collection
-     * @param Closure(mixed): (AbstractWorkflow|WorkflowableJob)     $factory
-     * @param Delay              $delay
-     * @param array<int, string> $dependencies
+     * @param \Closure(mixed): (AbstractWorkflow|WorkflowableJob)  $factory
+     * @param array<int, string>                                   $dependencies
+     * @param Delay                                                $delay
      */
     public function each(
         array|Collection $collection,
-        Closure $factory,
+        \Closure $factory,
         array $dependencies = [],
         ?string $name = null,
         mixed $delay = null,
@@ -231,7 +228,7 @@ class WorkflowDefinition
     }
 
     /**
-     * @param callable(Workflow, WorkflowableJob, Throwable): void $callback
+     * @param callable(Workflow, WorkflowableJob, \Throwable): void $callback
      */
     public function catch(callable $callback): self
     {
@@ -241,11 +238,11 @@ class WorkflowDefinition
     }
 
     /**
-     * @param null|Closure(Workflow, array<string, WorkflowableJob>): void $beforeCreate
+     * @param null|\Closure(Workflow, array<string, WorkflowableJob>): void $beforeCreate
      *
      * @return array{0: Workflow, 1: array<int, WorkflowableJob>}
      */
-    public function build(?Closure $beforeCreate = null): array
+    public function build(?\Closure $beforeCreate = null): array
     {
         $this->setQueueParametersOnJobs();
 
@@ -298,8 +295,8 @@ class WorkflowDefinition
     }
 
     /**
-     * @param Delay                   $delay
      * @param null|array<int, string> $dependencies
+     * @param Delay                   $delay
      */
     public function hasJob(
         string $id,
@@ -408,7 +405,7 @@ class WorkflowDefinition
 
     private function serializeCallback(mixed $callback): string
     {
-        if ($callback instanceof Closure) {
+        if ($callback instanceof \Closure) {
             $callback = new SerializableClosure($callback);
         }
 
@@ -424,7 +421,7 @@ class WorkflowDefinition
             return $step;
         }
 
-        if ($step instanceof Closure) {
+        if ($step instanceof \Closure) {
             if (null === $id) {
                 throw InvalidJobException::closureWithoutID();
             }
@@ -441,7 +438,7 @@ class WorkflowDefinition
             );
 
             return $job;
-        } catch (InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException $e) {
             throw InvalidJobException::jobNotUsingTrait($step, $e);
         }
     }
@@ -483,7 +480,7 @@ class WorkflowDefinition
         }
     }
 
-    private function resolveJobId(WorkflowableJob|AbstractWorkflow $job): string
+    private function resolveJobId(AbstractWorkflow|WorkflowableJob $job): string
     {
         /** @var StepIdGenerator $stepIdGenerator */
         $stepIdGenerator = Container::getInstance()->make(StepIdGenerator::class);

@@ -13,9 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\State;
 
-use RuntimeException;
 use Sassnowski\Venture\Models\WorkflowJob;
-use Throwable;
 
 class DefaultWorkflowJobState implements WorkflowJobState
 {
@@ -42,7 +40,7 @@ class DefaultWorkflowJobState implements WorkflowJobState
         return !$this->hasFinished() && null !== $this->job->failed_at;
     }
 
-    public function markAsFailed(Throwable $exception): void
+    public function markAsFailed(\Throwable $exception): void
     {
         $this->job->update([
             'failed_at' => now(),
@@ -88,7 +86,7 @@ class DefaultWorkflowJobState implements WorkflowJobState
     public function markAsGated(): void
     {
         if (!$this->job->gated) {
-            throw new RuntimeException('Only gated jobs can be marked as gated');
+            throw new \RuntimeException('Only gated jobs can be marked as gated');
         }
 
         $this->job->update([

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Manager;
 
-use Closure;
 use PHPUnit\Framework\Assert as PHPUnit;
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Models\Workflow;
@@ -45,7 +44,7 @@ class WorkflowManagerFake implements WorkflowManagerInterface
         $pendingWorkflow = $abstractWorkflow->getDefinition();
 
         [$workflow, $initialBatch] = $pendingWorkflow->build(
-            Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
+            \Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
         );
 
         $this->started[$abstractWorkflow::class] = [
