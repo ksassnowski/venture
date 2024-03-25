@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Testing;
 
-use Closure;
 use PHPUnit\Framework\Assert;
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Graph\Node;
@@ -21,7 +20,6 @@ use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowableJob;
 use Sassnowski\Venture\WorkflowDefinition;
 use Sassnowski\Venture\WorkflowStepAdapter;
-use Throwable;
 
 final class WorkflowTester
 {
@@ -33,9 +31,9 @@ final class WorkflowTester
     }
 
     /**
-     * @param null|Closure(object): bool $callback
+     * @param null|\Closure(object): bool $callback
      */
-    public function assertJobExists(string $jobID, ?Closure $callback = null): self
+    public function assertJobExists(string $jobID, ?\Closure $callback = null): self
     {
         $node = $this->mustFindNode($jobID);
 
@@ -100,9 +98,9 @@ final class WorkflowTester
     }
 
     /**
-     * @param null|Closure(object): bool $callback
+     * @param null|\Closure(object): bool $callback
      */
-    public function assertJobMissing(string $jobID, ?Closure $callback = null): self
+    public function assertJobMissing(string $jobID, ?\Closure $callback = null): self
     {
         $node = $this->getNode($jobID);
         $message = "Workflow contains unexpected job {$jobID}";
@@ -166,9 +164,9 @@ final class WorkflowTester
     }
 
     /**
-     * @param null|Closure(Workflow): void $configureWorkflowCallback
+     * @param null|\Closure(Workflow): void $configureWorkflowCallback
      */
-    public function runThenCallback(?Closure $configureWorkflowCallback = null): self
+    public function runThenCallback(?\Closure $configureWorkflowCallback = null): self
     {
         $this->getWorkflow($configureWorkflowCallback)
             ->runThenCallback();
@@ -177,12 +175,12 @@ final class WorkflowTester
     }
 
     /**
-     * @param null|Closure(Workflow): void $configureWorkflowCallback
+     * @param null|\Closure(Workflow): void $configureWorkflowCallback
      */
     public function runCatchCallback(
         WorkflowableJob $failedJob,
-        Throwable $exception,
-        ?Closure $configureWorkflowCallback = null,
+        \Throwable $exception,
+        ?\Closure $configureWorkflowCallback = null,
     ): self {
         $this->getWorkflow($configureWorkflowCallback)
             ->runCatchCallback($failedJob, $exception);
@@ -190,7 +188,7 @@ final class WorkflowTester
         return $this;
     }
 
-    private function getWorkflow(?Closure $callback = null): Workflow
+    private function getWorkflow(?\Closure $callback = null): Workflow
     {
         $definition = $this->definition;
 
@@ -282,9 +280,9 @@ TEXT;
     }
 
     /**
-     * @param Closure(object): bool $callback
+     * @param \Closure(object): bool $callback
      */
-    private function runCallbackForNode(Closure $callback, Node $node): bool
+    private function runCallbackForNode(\Closure $callback, Node $node): bool
     {
         $job = $node->getJob();
 

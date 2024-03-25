@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
-use Closure;
 use Laravel\SerializableClosure\SerializableClosure;
 
 final class ClosureWorkflowStep implements WorkflowableJob
@@ -23,9 +22,9 @@ final class ClosureWorkflowStep implements WorkflowableJob
     private SerializableClosure $callback;
 
     /**
-     * @param Closure(WorkflowableJob): void $callback
+     * @param \Closure(WorkflowableJob): void $callback
      */
-    public function __construct(Closure $callback)
+    public function __construct(\Closure $callback)
     {
         $this->callback = new SerializableClosure($callback);
     }

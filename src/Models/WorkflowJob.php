@@ -16,15 +16,12 @@ namespace Sassnowski\Venture\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use RuntimeException;
 use Sassnowski\Venture\Exceptions\CannotRetryJobException;
 use Sassnowski\Venture\Exceptions\JobAlreadyStartedException;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\State\WorkflowJobState;
 use Sassnowski\Venture\Venture;
 use Sassnowski\Venture\WorkflowableJob;
-use Throwable;
-use function app;
 
 /**
  * @property array<int, string> $edges
@@ -87,12 +84,12 @@ class WorkflowJob extends Model
     {
         if (null === $this->step) {
             /** @var WorkflowJobSerializer $serializer */
-            $serializer = app(WorkflowJobSerializer::class);
+            $serializer = \app(WorkflowJobSerializer::class);
 
             $step = $serializer->unserialize($this->job);
 
             if (null === $step) {
-                throw new RuntimeException('Unable to unserialize job');
+                throw new \RuntimeException('Unable to unserialize job');
             }
 
             $this->step = $step;
@@ -121,7 +118,7 @@ class WorkflowJob extends Model
         return $this->getState()->hasFailed();
     }
 
-    public function markAsFailed(Throwable $exception): void
+    public function markAsFailed(\Throwable $exception): void
     {
         $this->getState()->markAsFailed($exception);
     }
@@ -179,7 +176,7 @@ class WorkflowJob extends Model
     protected function getState(): WorkflowJobState
     {
         if (null === $this->state) {
-            $this->state = app(Venture::$workflowJobState, ['job' => $this]);
+            $this->state = \app(Venture::$workflowJobState, ['job' => $this]);
         }
 
         return $this->state;

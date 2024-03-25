@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Manager;
 
-use Closure;
 use Sassnowski\Venture\AbstractWorkflow;
 use Sassnowski\Venture\Dispatcher\JobDispatcher;
 use Sassnowski\Venture\Events\WorkflowStarted;
@@ -42,7 +41,7 @@ class WorkflowManager implements WorkflowManagerInterface
         }
 
         [$workflow, $initialJobs] = $definition->build(
-            Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
+            \Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
         );
 
         $this->dispatcher->dispatch($initialJobs);

@@ -16,7 +16,6 @@ namespace Sassnowski\Venture\State;
 use Illuminate\Support\Facades\DB;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\WorkflowableJob;
-use Throwable;
 
 class DefaultWorkflowState implements WorkflowState
 {
@@ -45,7 +44,7 @@ class DefaultWorkflowState implements WorkflowState
         });
     }
 
-    public function markJobAsFailed(WorkflowableJob $job, Throwable $exception): void
+    public function markJobAsFailed(WorkflowableJob $job, \Throwable $exception): void
     {
         DB::transaction(function () use ($job, $exception): void {
             /** @var Workflow $workflow */

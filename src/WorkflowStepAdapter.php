@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
-use InvalidArgumentException;
 use Ramsey\Uuid\UuidInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Models\WorkflowJob;
@@ -61,7 +60,7 @@ final class WorkflowStepAdapter implements WorkflowableJob
         $uses = \class_uses_recursive($job);
 
         if (!\in_array(WorkflowStep::class, $uses, true)) {
-            throw new InvalidArgumentException('Wrapped job instance does not use WorkflowStep trait');
+            throw new \InvalidArgumentException('Wrapped job instance does not use WorkflowStep trait');
         }
 
         return new self($job);

@@ -14,12 +14,11 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Actions;
 
 use Sassnowski\Venture\WorkflowableJob;
-use Throwable;
 
 interface HandlesFailedJobs
 {
     public function __invoke(
         WorkflowableJob $step,
-        Throwable $exception,
+        \Throwable $exception,
     ): void;
 }

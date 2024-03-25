@@ -13,17 +13,14 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Exceptions;
 
-use Exception;
-use Throwable;
-
-final class InvalidJobException extends Exception
+final class InvalidJobException extends \Exception
 {
     public static function closureWithoutID(): self
     {
         return new self('Closure-based jobs must have an explicit id');
     }
 
-    public static function jobNotUsingTrait(object $job, ?Throwable $previous = null): self
+    public static function jobNotUsingTrait(object $job, ?\Throwable $previous = null): self
     {
         return new self(
             \sprintf(

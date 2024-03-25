@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Plugin;
 
-use Closure;
 use Illuminate\Contracts\Events\Dispatcher;
 use Sassnowski\Venture\Events\JobAdded;
 use Sassnowski\Venture\Events\JobAdding;
@@ -36,105 +35,105 @@ final class PluginContext
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobAdding): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(JobAdding): void $listener
      */
-    public function onJobAdding(string|array|Closure $listener): self
+    public function onJobAdding(array|\Closure|string $listener): self
     {
         return $this->registerListener(JobAdding::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobAdded): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(JobAdded): void $listener
      */
-    public function onJobAdded(string|array|Closure $listener): self
+    public function onJobAdded(array|\Closure|string $listener): self
     {
         return $this->registerListener(JobAdded::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowAdding): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(WorkflowAdding): void $listener
      */
-    public function onWorkflowAdding(string|array|Closure $listener): self
+    public function onWorkflowAdding(array|\Closure|string $listener): self
     {
         return $this->registerListener(WorkflowAdding::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowAdded): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(WorkflowAdded): void $listener
      */
-    public function onWorkflowAdded(string|array|Closure $listener): self
+    public function onWorkflowAdded(array|\Closure|string $listener): self
     {
         return $this->registerListener(WorkflowAdded::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowCreating): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(WorkflowCreating): void $listener
      */
-    public function onWorkflowCreating(string|array|Closure $listener): self
+    public function onWorkflowCreating(array|\Closure|string $listener): self
     {
         return $this->registerListener(WorkflowCreating::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowCreated): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(WorkflowCreated): void $listener
      */
-    public function onWorkflowCreated(string|array|Closure $listener): self
+    public function onWorkflowCreated(array|\Closure|string $listener): self
     {
         return $this->registerListener(WorkflowCreated::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobCreating): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(JobCreating): void $listener
      */
-    public function onJobCreating(string|array|Closure $listener): self
+    public function onJobCreating(array|\Closure|string $listener): self
     {
         return $this->registerListener(JobCreating::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobCreated): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(JobCreated): void $listener
      */
-    public function onJobCreated(string|array|Closure $listener): self
+    public function onJobCreated(array|\Closure|string $listener): self
     {
         return $this->registerListener(JobCreated::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobProcessing): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(JobProcessing): void $listener
      */
-    public function onJobProcessing(string|array|Closure $listener): self
+    public function onJobProcessing(array|\Closure|string $listener): self
     {
         return $this->registerListener(JobProcessing::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobFinished): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(JobFinished): void $listener
      */
-    public function onJobFinished(string|array|Closure $listener): self
+    public function onJobFinished(array|\Closure|string $listener): self
     {
         return $this->registerListener(JobFinished::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(JobFailed): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(JobFailed): void $listener
      */
-    public function onJobFailed(string|array|Closure $listener): self
+    public function onJobFailed(array|\Closure|string $listener): self
     {
         return $this->registerListener(JobFailed::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowStarted): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(WorkflowStarted): void $listener
      */
-    public function onWorkflowStarted(string|array|Closure $listener): self
+    public function onWorkflowStarted(array|\Closure|string $listener): self
     {
         return $this->registerListener(WorkflowStarted::class, $listener);
     }
 
     /**
-     * @param array{0: class-string|object, 1: string}|Closure(WorkflowFinished): void $listener
+     * @param array{0: class-string|object, 1: string}|\Closure(WorkflowFinished): void $listener
      */
-    public function onWorkflowFinished(string|array|Closure $listener): self
+    public function onWorkflowFinished(array|\Closure|string $listener): self
     {
         return $this->registerListener(WorkflowFinished::class, $listener);
     }
@@ -142,10 +141,10 @@ final class PluginContext
     /**
      * @template T
      *
-     * @param class-string<T>                                           $event
-     * @param array{0: class-string|object, 1: string}|Closure(T): void $listener
+     * @param class-string<T>                                            $event
+     * @param array{0: class-string|object, 1: string}|\Closure(T): void $listener
      */
-    private function registerListener(string $event, string|array|Closure $listener): self
+    private function registerListener(string $event, array|\Closure|string $listener): self
     {
         $this->dispatcher->listen($event, $listener);
 

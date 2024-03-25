@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Serializer;
 
-use InvalidArgumentException;
 use Sassnowski\Venture\WorkflowableJob;
 use Sassnowski\Venture\WorkflowStepAdapter;
 
@@ -34,7 +33,7 @@ final class DefaultSerializer implements WorkflowJobSerializer
 
         try {
             return WorkflowStepAdapter::fromJob($result);
-        } catch (InvalidArgumentException) {
+        } catch (\InvalidArgumentException) {
             return null;
         }
     }

@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\State;
 
 use Sassnowski\Venture\WorkflowableJob;
-use Throwable;
 
 /**
  * @internal
@@ -22,8 +21,8 @@ use Throwable;
 final class FakeWorkflowState implements WorkflowState
 {
     /**
-     * @param array<string, true>      $finishedJobs
-     * @param array<string, Throwable> $failedJobs
+     * @param array<string, true>       $finishedJobs
+     * @param array<string, \Throwable> $failedJobs
      */
     public function __construct(
         public array $finishedJobs = [],
@@ -41,7 +40,7 @@ final class FakeWorkflowState implements WorkflowState
         $this->finishedJobs[$job->getJobId()] = true;
     }
 
-    public function markJobAsFailed(WorkflowableJob $job, Throwable $exception): void
+    public function markJobAsFailed(WorkflowableJob $job, \Throwable $exception): void
     {
         $this->failedJobs[$job->getJobId()] = $exception;
     }
