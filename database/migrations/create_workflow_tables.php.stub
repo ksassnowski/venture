@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 return new class() extends Migration {
-    public function up()
+    public function up(): void
     {
         Schema::create(config('venture.workflow_table'), function (Blueprint $table) {
             $table->id();
@@ -42,5 +42,11 @@ return new class() extends Migration {
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
         });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists(config('venture.jobs_table'));
+        Schema::dropIfExists(config('venture.workflow_table'));
     }
 };
