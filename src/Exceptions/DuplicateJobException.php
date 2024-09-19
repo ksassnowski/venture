@@ -21,6 +21,7 @@ class DuplicateJobException extends \Exception implements ProvidesSolution
 {
     public function getSolution(): Solution
     {
+        /** @var Solution */
         return BaseSolution::create('Duplicate jobs')
             ->setSolutionDescription(
                 'If you tried to add multiple instances of the same job to a workflow, ' .
