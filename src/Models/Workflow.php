@@ -75,7 +75,7 @@ class Workflow extends Model
     }
 
     /**
-     * @return HasMany<WorkflowJob, $this>
+     * @return HasMany<WorkflowJob>
      */
     public function jobs(): HasMany
     {
@@ -83,7 +83,7 @@ class Workflow extends Model
     }
 
     /**
-     * @return MorphTo<Model, $this>
+     * @return MorphTo<Model, Workflow>
      */
     public function workflowable(): MorphTo
     {
