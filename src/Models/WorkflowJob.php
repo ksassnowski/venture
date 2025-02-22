@@ -73,7 +73,7 @@ class WorkflowJob extends Model
     }
 
     /**
-     * @return BelongsTo<Workflow, WorkflowJob>
+     * @return BelongsTo<Workflow, $this>
      */
     public function workflow(): BelongsTo
     {
