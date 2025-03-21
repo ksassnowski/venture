@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": "~8.2.0 || ~8.3.0",
+        "php": "~8.2.0 || ~8.3.0 || ~8.4.0",
         "ext-json": "*",
         "illuminate/bus": "^10.0 || ^11.0",
         "illuminate/container": "^10.0 || ^11.0",
@@ -23,9 +23,9 @@
     "require-dev": {
         "ergebnis/composer-normalize": "^2.29",
         "ergebnis/php-cs-fixer-config": "^5.2 || ^6.0",
+        "larastan/larastan": "^2.4",
         "lorisleiva/laravel-actions": "^2.5.1",
         "mockery/mockery": "^1.5.1",
-        "nunomaduro/larastan": "^2.4",
         "orchestra/testbench": "^8.0 || ^9.0",
         "pestphp/pest": "^2.34",
         "pestphp/pest-plugin-laravel": "^2.3",
