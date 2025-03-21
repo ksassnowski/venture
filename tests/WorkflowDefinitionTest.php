@@ -502,40 +502,43 @@ it('can add multiple instances of the same workflow if they have different ids',
     assertTrue($definition->hasJobWithDependencies('::workflow-2-id::.::job-2-id::', ['::job-1-id::']));
 });
 
-it('can check if a workflow contains a nested workflow', function (callable $configureWorkflow, ?array $dependencies, bool $expected): void {
+it('can check if a workflow contains a nested workflow', function (array $configureWorkflow, ?array $dependencies, bool $expected): void {
     $definition = createDefinition();
 
-    $configureWorkflow($definition);
+    // Look, I have neither the time nor the energy to figure out how Pest deals with closures
+    // inside a data provider. So I'm just going to wrap the callback in an array to circumvent
+    // Pest's default behavior ¯\_(ツ)_/¯
+    $configureWorkflow[0]($definition);
 
     assertEquals($expected, $definition->hasWorkflow(NestedWorkflow::class, $dependencies));
 })->with([
     'has workflow, ignore dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition): void {
+        'configureWorkflow' => [function (WorkflowDefinition $definition): void {
             $definition->addWorkflow(new NestedWorkflow());
-        },
+        }],
         'dependencies' => null,
         'expected' => true,
     ],
     'does not have workflow, ignore dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition): void {
-        },
+        'configureWorkflow' => [function (WorkflowDefinition $definition): void {
+        }],
         'dependencies' => null,
         'expected' => false,
     ],
     'has workflow, incorrect dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition): void {
+        'configureWorkflow' => [function (WorkflowDefinition $definition): void {
             $definition
                 ->addWorkflow(new NestedWorkflow());
-        },
+        }],
         'dependencies' => [TestJob1::class],
         'expected' => false,
     ],
     'has workflow, correct dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition): void {
+        'configureWorkflow' => [function (WorkflowDefinition $definition): void {
             $definition
                 ->addJob(new TestJob1())
                 ->addWorkflow(new NestedWorkflow(), [TestJob1::class]);
-        },
+        }],
         'dependencies' => [TestJob1::class],
         'expected' => true,
     ],

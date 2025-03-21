@@ -1,116 +1,193 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$table \\(string\\) does not accept mixed\\.$#"
+			message: '#^PHPDoc tag @var with type Spatie\\Ignition\\Contracts\\Solution is not subtype of native type Spatie\\ErrorSolutions\\Contracts\\BaseSolution\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: src/Exceptions/DuplicateJobException.php
+
+		-
+			message: '#^PHPDoc tag @var with type Spatie\\Ignition\\Contracts\\Solution is not subtype of native type Spatie\\ErrorSolutions\\Contracts\\BaseSolution\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: src/Exceptions/DuplicateWorkflowException.php
+
+		-
+			message: '#^Method Sassnowski\\Venture\\Graph\\GroupDependency\:\:getID\(\) never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: src/Graph/GroupDependency.php
+
+		-
+			message: '#^Class Sassnowski\\Venture\\Models\\Workflow has PHPDoc tag @method for method create\(\) parameter \#1 \$attributes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
 			count: 1
 			path: src/Models/Workflow.php
 
 		-
-			message: "#^Property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$table \\(string\\) does not accept mixed\\.$#"
+			message: '#^Generic type Illuminate\\Database\\Eloquent\\Relations\\HasMany\<Sassnowski\\Venture\\Models\\WorkflowJob\> in PHPDoc tag @return does not specify all template types of class Illuminate\\Database\\Eloquent\\Relations\\HasMany\: TRelatedModel, TDeclaringModel$#'
+			identifier: generics.lessTypes
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: '#^Method Sassnowski\\Venture\\Models\\Workflow\:\:getState\(\) should return Sassnowski\\Venture\\State\\WorkflowState but returns Sassnowski\\Venture\\State\\WorkflowState\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: '#^Method Sassnowski\\Venture\\Models\\Workflow\:\:jobs\(\) should return Illuminate\\Database\\Eloquent\\Relations\\HasMany\<Sassnowski\\Venture\\Models\\WorkflowJob\> but returns Illuminate\\Database\\Eloquent\\Relations\\HasMany\<Sassnowski\\Venture\\Models\\WorkflowJob, \$this\(Sassnowski\\Venture\\Models\\Workflow\)\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: '#^Method Sassnowski\\Venture\\Models\\Workflow\:\:workflowable\(\) should return Illuminate\\Database\\Eloquent\\Relations\\MorphTo\<Illuminate\\Database\\Eloquent\\Model, Sassnowski\\Venture\\Models\\Workflow\> but returns Illuminate\\Database\\Eloquent\\Relations\\MorphTo\<Illuminate\\Database\\Eloquent\\Model, \$this\(Sassnowski\\Venture\\Models\\Workflow\)\>\.$#'
+			identifier: return.type
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: '#^Property Illuminate\\Database\\Eloquent\\Model\:\:\$table \(string\|null\) does not accept mixed\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: '#^Method Sassnowski\\Venture\\Models\\WorkflowJob\:\:getState\(\) should return Sassnowski\\Venture\\State\\WorkflowJobState but returns Sassnowski\\Venture\\State\\WorkflowJobState\|null\.$#'
+			identifier: return.type
 			count: 1
 			path: src/Models/WorkflowJob.php
 
 		-
-			message: "#^Parameter \\#2 \\$concrete of method Illuminate\\\\Contracts\\\\Container\\\\Container\\:\\:bind\\(\\) expects Closure\\|string\\|null, mixed given\\.$#"
+			message: '#^Property Illuminate\\Database\\Eloquent\\Model\:\:\$table \(string\|null\) does not accept mixed\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: src/Models/WorkflowJob.php
+
+		-
+			message: '#^Parameter \#2 \$concrete of method Illuminate\\Contracts\\Container\\Container\:\:bind\(\) expects Closure\|string\|null, mixed given\.$#'
+			identifier: argument.type
 			count: 3
 			path: src/VentureServiceProvider.php
 
 		-
-			message: "#^Access to an undefined property object\\:\\:\\$connection\\.$#"
+			message: '#^Access to an undefined property object\:\:\$connection\.$#'
+			identifier: property.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Access to an undefined property object\\:\\:\\$gated\\.$#"
+			message: '#^Access to an undefined property object\:\:\$gated\.$#'
+			identifier: property.notFound
 			count: 2
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Access to an undefined property object\\:\\:\\$queue\\.$#"
+			message: '#^Access to an undefined property object\:\:\$queue\.$#'
+			identifier: property.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:getDelay\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:getDelay\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:getDependantJobs\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:getDependantJobs\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:getDependencies\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:getDependencies\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:getJobId\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:getJobId\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:getName\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:getName\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:getStepId\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:getStepId\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:onConnection\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:onConnection\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:onQueue\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:onQueue\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:step\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:step\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:withDelay\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:withDelay\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:withDependantJobs\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:withDependantJobs\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:withDependencies\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:withDependencies\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:withJobId\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:withJobId\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:withName\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:withName\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:withStepId\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:withStepId\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:withWorkflowId\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:withWorkflowId\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
 
 		-
-			message: "#^Call to an undefined method object\\:\\:workflow\\(\\)\\.$#"
+			message: '#^Call to an undefined method object\:\:workflow\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: src/WorkflowStepAdapter.php
