@@ -69,7 +69,9 @@ class Workflow extends Model
      */
     public function __construct(array $attributes = [])
     {
-        $this->table = config('venture.workflow_table');
+        /** @var string $table */
+        $table = config('venture.workflow_table');
+        $this->table = $table;
 
         parent::__construct($attributes);
     }

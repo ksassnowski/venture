@@ -1,12 +1,27 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$table \\(string\\) does not accept mixed\\.$#"
+			message: "#^Generic type Illuminate\\\\Database\\\\Eloquent\\\\Relations\\\\HasMany\\<Sassnowski\\\\Venture\\\\Models\\\\WorkflowJob\\> in PHPDoc tag @return does not specify all template types of class Illuminate\\\\Database\\\\Eloquent\\\\Relations\\\\HasMany\\: TRelatedModel, TDeclaringModel$#"
 			count: 1
 			path: src/Models/Workflow.php
 
 		-
-			message: "#^Property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$table \\(string\\) does not accept mixed\\.$#"
+			message: "#^Method Sassnowski\\\\Venture\\\\Models\\\\Workflow\\:\\:jobs\\(\\) should return Illuminate\\\\Database\\\\Eloquent\\\\Relations\\\\HasMany\\<Sassnowski\\\\Venture\\\\Models\\\\WorkflowJob\\> but returns Illuminate\\\\Database\\\\Eloquent\\\\Relations\\\\HasMany\\<Sassnowski\\\\Venture\\\\Models\\\\WorkflowJob, \\$this\\(Sassnowski\\\\Venture\\\\Models\\\\Workflow\\)\\>\\.$#"
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: "#^Method Sassnowski\\\\Venture\\\\Models\\\\Workflow\\:\\:workflowable\\(\\) should return Illuminate\\\\Database\\\\Eloquent\\\\Relations\\\\MorphTo\\<Illuminate\\\\Database\\\\Eloquent\\\\Model, Sassnowski\\\\Venture\\\\Models\\\\Workflow\\> but returns Illuminate\\\\Database\\\\Eloquent\\\\Relations\\\\MorphTo\\<Illuminate\\\\Database\\\\Eloquent\\\\Model, \\$this\\(Sassnowski\\\\Venture\\\\Models\\\\Workflow\\)\\>\\.$#"
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: "#^Property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$table \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: src/Models/Workflow.php
+
+		-
+			message: "#^Property Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:\\$table \\(string\\|null\\) does not accept mixed\\.$#"
 			count: 1
 			path: src/Models/WorkflowJob.php
 

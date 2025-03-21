@@ -67,7 +67,9 @@ class WorkflowJob extends Model
      */
     public function __construct(array $attributes = [])
     {
-        $this->table = config('venture.jobs_table');
+        /** @var string $table */
+        $table = config('venture.jobs_table');
+        $this->table = $table;
 
         parent::__construct($attributes);
     }
