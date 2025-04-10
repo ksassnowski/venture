@@ -41,7 +41,7 @@ class DefaultWorkflowState implements WorkflowState
             ]);
 
             $job->step()?->markAsFinished();
-        });
+        }, 3);
     }
 
     public function markJobAsFailed(WorkflowableJob $job, \Throwable $exception): void
