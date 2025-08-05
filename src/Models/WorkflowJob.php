@@ -181,6 +181,7 @@ class WorkflowJob extends Model
             $this->state = \app(Venture::$workflowJobState, ['job' => $this]);
         }
 
+        /** @phpstan-ignore-next-line */
         return $this->state;
     }
 }

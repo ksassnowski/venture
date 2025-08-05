@@ -502,37 +502,36 @@ it('can add multiple instances of the same workflow if they have different ids',
     assertTrue($definition->hasJobWithDependencies('::workflow-2-id::.::job-2-id::', ['::job-1-id::']));
 });
 
-it('can check if a workflow contains a nested workflow', function (callable $configureWorkflow, ?array $dependencies, bool $expected): void {
-    $definition = createDefinition();
-
-    $configureWorkflow($definition);
-
-    assertEquals($expected, $definition->hasWorkflow(NestedWorkflow::class, $dependencies));
+it('can check if a workflow contains a nested workflow', function (WorkflowDefinition $definition, ?array $dependencies, bool $expected): void {
+    expect($definition->hasWorkflow(NestedWorkflow::class, $dependencies))
+        ->toBe($expected);
 })->with([
     'has workflow, ignore dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition): void {
-            $definition->addWorkflow(new NestedWorkflow());
+        function (): WorkflowDefinition {
+            return createDefinition()
+                ->addWorkflow(new NestedWorkflow());
         },
         'dependencies' => null,
         'expected' => true,
     ],
     'does not have workflow, ignore dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition): void {
+        function (): WorkflowDefinition {
+            return createDefinition();
         },
         'dependencies' => null,
         'expected' => false,
     ],
     'has workflow, incorrect dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition): void {
-            $definition
+        function (): WorkflowDefinition {
+            return createDefinition()
                 ->addWorkflow(new NestedWorkflow());
         },
         'dependencies' => [TestJob1::class],
         'expected' => false,
     ],
     'has workflow, correct dependencies' => [
-        'configureWorkflow' => function (WorkflowDefinition $definition): void {
-            $definition
+        function (): WorkflowDefinition {
+            return createDefinition()
                 ->addJob(new TestJob1())
                 ->addWorkflow(new NestedWorkflow(), [TestJob1::class]);
         },

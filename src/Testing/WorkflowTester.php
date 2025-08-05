@@ -39,7 +39,7 @@ final class WorkflowTester
 
         if (null !== $callback) {
             Assert::assertTrue(
-                $this->runCallbackForNode($callback, $node),
+                self::runCallbackForNode($callback, $node),
                 "Workflow contains expected job {$jobID} but callback returned false",
             );
         }
@@ -54,7 +54,7 @@ final class WorkflowTester
     {
         $node = $this->mustFindNode($jobID);
 
-        $this->assertDependenciesMatch(
+        self::assertDependenciesMatch(
             $node,
             $dependencies,
             "Workflow contains job {$jobID} but with incorrect dependencies.",
@@ -70,7 +70,7 @@ final class WorkflowTester
         Assert::assertSame(
             $connection,
             $node->getJob()->getConnection(),
-            $this->formatAssertErrorMessage(
+            self::formatAssertErrorMessage(
                 "Workflow contains job {$jobID} but on different connection",
                 $connection,
                 $node->getJob()->getConnection(),
@@ -87,7 +87,7 @@ final class WorkflowTester
         Assert::assertSame(
             $queue,
             $node->getJob()->getQueue(),
-            $this->formatAssertErrorMessage(
+            self::formatAssertErrorMessage(
                 "Workflow contains job {$jobID} but on different queue",
                 $queue,
                 $node->getJob()->getQueue(),
@@ -109,7 +109,7 @@ final class WorkflowTester
             Assert::assertNull($node, $message);
         } else {
             Assert::assertTrue(
-                null === $node || !$this->runCallbackForNode($callback, $node),
+                null === $node || !self::runCallbackForNode($callback, $node),
                 $message,
             );
         }
@@ -130,7 +130,7 @@ final class WorkflowTester
         );
 
         if (null !== $dependencies) {
-            $this->assertDependenciesMatch(
+            self::assertDependenciesMatch(
                 $node,
                 $dependencies,
                 "Workflow contains expected gated job {$jobID} but with incorrect dependencies",
@@ -237,7 +237,7 @@ final class WorkflowTester
     /**
      * @param array<int, string> $expectedDependencies
      */
-    private function assertDependenciesMatch(
+    private static function assertDependenciesMatch(
         Node $node,
         array $expectedDependencies,
         string $message,
@@ -250,7 +250,7 @@ final class WorkflowTester
         Assert::assertEquals(
             $expectedDependencies,
             $nodeDependencies,
-            $this->formatAssertErrorMessage(
+            self::formatAssertErrorMessage(
                 $message,
                 $expectedDependencies,
                 $nodeDependencies,
@@ -258,7 +258,7 @@ final class WorkflowTester
         );
     }
 
-    private function formatAssertErrorMessage(string $message, mixed $expected, mixed $actual): string
+    private static function formatAssertErrorMessage(string $message, mixed $expected, mixed $actual): string
     {
         $template = <<<'TEXT'
 %s
@@ -282,7 +282,7 @@ TEXT;
     /**
      * @param \Closure(object): bool $callback
      */
-    private function runCallbackForNode(\Closure $callback, Node $node): bool
+    private static function runCallbackForNode(\Closure $callback, Node $node): bool
     {
         $job = $node->getJob();
 

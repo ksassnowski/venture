@@ -13,15 +13,14 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture\Exceptions;
 
-use Spatie\Ignition\Contracts\BaseSolution;
-use Spatie\Ignition\Contracts\ProvidesSolution;
-use Spatie\Ignition\Contracts\Solution;
+use Spatie\ErrorSolutions\Contracts\BaseSolution;
+use Spatie\ErrorSolutions\Contracts\ProvidesSolution;
+use Spatie\ErrorSolutions\Contracts\Solution;
 
 class DuplicateWorkflowException extends \Exception implements ProvidesSolution
 {
     public function getSolution(): Solution
     {
-        /** @var Solution */
         return BaseSolution::create('Duplicate jobs')
             ->setSolutionDescription(
                 'If you tried to add multiple instances of the same workflow, make sure to provide unique ids for each of them.',

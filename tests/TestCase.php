@@ -25,7 +25,7 @@ class TestCase extends OrchestraTestCase
     {
         parent::setUp();
 
-        $this->setUpDatabase();
+        self::setUpDatabase();
     }
 
     protected function tearDown(): void
@@ -60,7 +60,7 @@ class TestCase extends OrchestraTestCase
         config()->set('venture.jobs_table', 'workflow_jobs');
     }
 
-    private function setUpDatabase(): void
+    private static function setUpDatabase(): void
     {
         $ventureMigration = require __DIR__ . '/../database/migrations/create_workflow_tables.php.stub';
 
