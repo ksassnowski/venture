@@ -30,20 +30,20 @@ final class QueueDispatcher implements JobDispatcher
             ->filter()
             ->all();
 
-        $this->dispatchJobs($uuids);
+        self::dispatchJobs($uuids);
     }
 
     public function dispatchDependentJobs(WorkflowableJob $step): void
     {
-        $this->dispatchJobs($step->getDependantJobs());
+        self::dispatchJobs($step->getDependantJobs());
     }
 
     /**
      * @param array<int, string> $stepIDs
      */
-    private function dispatchJobs(array $stepIDs): void
+    private static function dispatchJobs(array $stepIDs): void
     {
-        $this->getJobModels($stepIDs)
+        self::getJobModels($stepIDs)
             ->each(fn (WorkflowJob $job) => $job->transition())
             ->filter(fn (WorkflowJob $job): bool => $job->canRun())
             ->each(fn (WorkflowJob $job) => $job->start());
@@ -54,7 +54,7 @@ final class QueueDispatcher implements JobDispatcher
      *
      * @return Collection<int, WorkflowJob>
      */
-    private function getJobModels(array $stepIDs): Collection
+    private static function getJobModels(array $stepIDs): Collection
     {
         return \app(Venture::$workflowJobModel)
             ->newQuery()

@@ -28,7 +28,7 @@ use Sassnowski\Venture\Venture;
 use Sassnowski\Venture\WorkflowableJob;
 
 /**
- * @method Workflow create(array $attributes)
+ * @method Workflow create(array<string, mixed> $attributes)
  *
  * @property ?Carbon                              $cancelled_at
  * @property ?string                              $catch_callback
@@ -100,7 +100,7 @@ class Workflow extends Model
         (new Collection($jobs))
             ->map(function (WorkflowableJob $job): WorkflowJob {
                 return new Venture::$workflowJobModel([
-                    'job' => $this->serializer()->serialize(clone $job),
+                    'job' => self::serializer()->serialize(clone $job),
                     'name' => $job->getName(),
                     'uuid' => $job->getStepId(),
                     'edges' => $job->getDependantJobs(),
@@ -198,12 +198,12 @@ class Workflow extends Model
 
     public function runThenCallback(): void
     {
-        $this->runCallback($this->then_callback, $this);
+        self::runCallback($this->then_callback, $this);
     }
 
     public function runCatchCallback(WorkflowableJob $failedStep, \Throwable $exception): void
     {
-        $this->runCallback($this->catch_callback, $this, $failedStep, $exception);
+        self::runCallback($this->catch_callback, $this, $failedStep, $exception);
     }
 
     /**
@@ -234,10 +234,11 @@ class Workflow extends Model
             $this->state = app(Venture::$workflowState, ['workflow' => $this]);
         }
 
+        /** @phpstan-ignore-next-line */
         return $this->state;
     }
 
-    private function runCallback(?string $serializedCallback, mixed ...$args): void
+    private static function runCallback(?string $serializedCallback, mixed ...$args): void
     {
         if (null === $serializedCallback) {
             return;
@@ -249,7 +250,7 @@ class Workflow extends Model
         $callback(...$args);
     }
 
-    private function serializer(): WorkflowJobSerializer
+    private static function serializer(): WorkflowJobSerializer
     {
         return Container::getInstance()->make(WorkflowJobSerializer::class);
     }

@@ -24,7 +24,7 @@ final class GroupDependency implements Dependency
         return new self($groupID);
     }
 
-    public function getID(DependencyGraph $graph): ?string
+    public function getID(DependencyGraph $graph): string
     {
         // @todo In the next major version, getID should allow returning an array as well
         return $this->groupID;

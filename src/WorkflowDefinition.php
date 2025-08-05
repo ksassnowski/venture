@@ -90,13 +90,13 @@ class WorkflowDefinition
         mixed $delay = null,
         ?string $id = null,
     ): self {
-        $job = $this->wrapJob($job, $id);
+        $job = self::wrapJob($job, $id);
 
         $event = $this->onJobAdding($job, $name, $delay, $id);
 
         $this->graph->addDependantJob(
             $event->job,
-            $this->mapDependencies($dependencies),
+            self::mapDependencies($dependencies),
             $event->job->getJobId(),
         );
 
@@ -120,8 +120,8 @@ class WorkflowDefinition
         ?string $id = null,
     ): self {
         return $this->addJob(
-            $this->wrapJob($job, $id)->withGate(),
-            $this->mapDependencies($dependencies),
+            self::wrapJob($job, $id)->withGate(),
+            self::mapDependencies($dependencies),
             $name,
             null,
             $id,
@@ -145,7 +145,7 @@ class WorkflowDefinition
         $this->graph->connectGraph(
             $definition->graph,
             $event->workflowID,
-            $this->mapDependencies($dependencies),
+            self::mapDependencies($dependencies),
         );
 
         foreach ($definition->jobs as $job) {
@@ -191,7 +191,7 @@ class WorkflowDefinition
             // We want to make sure we're resolving the id via the registered `StepIdGenerator`
             // if no explicit id was provided. Otherwise, this would potentially behave
             // differently than adding each job manually would.
-            $jobId = ($id ?: $this->resolveJobId($job)) . '_' . ($i + 1);
+            $jobId = ($id ?: self::resolveJobId($job)) . '_' . ($i + 1);
 
             if ($job instanceof AbstractWorkflow) {
                 $this->addWorkflow($job, $dependencies, $jobId);
@@ -222,7 +222,7 @@ class WorkflowDefinition
      */
     public function then(callable $callback): self
     {
-        $this->thenCallback = $this->serializeCallback($callback);
+        $this->thenCallback = self::serializeCallback($callback);
 
         return $this;
     }
@@ -232,7 +232,7 @@ class WorkflowDefinition
      */
     public function catch(callable $callback): self
     {
-        $this->catchCallback = $this->serializeCallback($callback);
+        $this->catchCallback = self::serializeCallback($callback);
 
         return $this;
     }
@@ -403,7 +403,7 @@ class WorkflowDefinition
         );
     }
 
-    private function serializeCallback(mixed $callback): string
+    private static function serializeCallback(mixed $callback): string
     {
         if ($callback instanceof \Closure) {
             $callback = new SerializableClosure($callback);
@@ -415,7 +415,7 @@ class WorkflowDefinition
     /**
      * @throw InvalidJobException
      */
-    private function wrapJob(object $step, ?string $id): WorkflowableJob
+    private static function wrapJob(object $step, ?string $id): WorkflowableJob
     {
         if ($step instanceof WorkflowableJob) {
             return $step;
@@ -448,7 +448,7 @@ class WorkflowDefinition
      *
      * @return array<int, Dependency>
      */
-    private function mapDependencies(array $dependencies): array
+    private static function mapDependencies(array $dependencies): array
     {
         $result = [];
 
@@ -480,7 +480,7 @@ class WorkflowDefinition
         }
     }
 
-    private function resolveJobId(AbstractWorkflow|WorkflowableJob $job): string
+    private static function resolveJobId(AbstractWorkflow|WorkflowableJob $job): string
     {
         /** @var StepIdGenerator $stepIdGenerator */
         $stepIdGenerator = Container::getInstance()->make(StepIdGenerator::class);
