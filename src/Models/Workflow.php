@@ -209,9 +209,9 @@ class Workflow extends Model
     /**
      * @return array<string, array{
      *     name: string,
-     *     failed_at: Carbon|null,
-     *     finished_at: Carbon|null,
-     *     exception: string|null,
+     *     failed_at: null|Carbon,
+     *     finished_at: null|Carbon,
+     *     exception: null|string,
      *     edges: array<int, string>,
      * }>
      */
