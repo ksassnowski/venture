@@ -23,7 +23,7 @@
     "require-dev": {
         "ergebnis/composer-normalize": "^2.29",
         "ergebnis/php-cs-fixer-config": "^6.0",
-        "larastan/larastan": "^3.6 || dev-l13",
+        "larastan/larastan": "^3.6",
         "lorisleiva/laravel-actions": "^2.5.1",
         "mockery/mockery": "^1.5.1",
         "orchestra/testbench": "^8.0 || ^9.0 || ^10.0 || ^11.0",
