@@ -22,6 +22,8 @@ class DuplicateWorkflowException extends \Exception implements ProvidesSolution
     public function getSolution(): Solution
     {
         return BaseSolution::create('Duplicate jobs')
-            ->setSolutionDescription('If you tried to add multiple instances of the same workflow, make sure to provide unique ids for each of them.');
+            ->setSolutionDescription(
+                'If you tried to add multiple instances of the same workflow, make sure to provide unique ids for each of them.',
+            );
     }
 }

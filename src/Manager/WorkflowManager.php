@@ -40,7 +40,9 @@ class WorkflowManager implements WorkflowManagerInterface
             $definition->allOnConnection($connection);
         }
 
-        [$workflow, $initialJobs] = $definition->build(\Closure::fromCallable([$abstractWorkflow, 'beforeCreate']));
+        [$workflow, $initialJobs] = $definition->build(
+            \Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
+        );
 
         $this->dispatcher->dispatch($initialJobs);
 

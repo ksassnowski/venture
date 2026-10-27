@@ -658,9 +658,15 @@ it('applies the same dependencies to all jobs added with `each`', function (): v
             dependencies: [TestJob2::class],
         );
 
-    expect($definition->hasJobWithDependencies(TestJob1::class . '_1', [TestJob2::class]))->toBeTrue();
-    expect($definition->hasJobWithDependencies(TestJob1::class . '_2', [TestJob2::class]))->toBeTrue();
-    expect($definition->hasJobWithDependencies(TestJob1::class . '_3', [TestJob2::class]))->toBeTrue();
+    expect(
+        $definition->hasJobWithDependencies(TestJob1::class . '_1', [TestJob2::class]),
+    )->toBeTrue();
+    expect(
+        $definition->hasJobWithDependencies(TestJob1::class . '_2', [TestJob2::class]),
+    )->toBeTrue();
+    expect(
+        $definition->hasJobWithDependencies(TestJob1::class . '_3', [TestJob2::class]),
+    )->toBeTrue();
 });
 
 it('enumerates the id when adding jobs with `each`', function (): void {

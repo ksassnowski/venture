@@ -24,6 +24,8 @@ final class UnserializeJobExtractor implements JobExtractor
 
     public function extractWorkflowJob(Job $queueJob): ?WorkflowableJob
     {
-        return $this->serializer->unserialize($queueJob->payload()['data']['command']);
+        return $this->serializer->unserialize(
+            $queueJob->payload()['data']['command'],
+        );
     }
 }

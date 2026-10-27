@@ -25,7 +25,9 @@ final class ConfigureNestedWorkflow
     public function __invoke(WorkflowAdding $event): void
     {
         if (!$event->workflowID) {
-            $event->workflowID = $this->stepIdGenerator->generateId($event->nestedDefinition->workflow());
+            $event->workflowID = $this->stepIdGenerator->generateId(
+                $event->nestedDefinition->workflow(),
+            );
         }
 
         foreach ($event->nestedDefinition->jobs() as $jobID => $job) {
