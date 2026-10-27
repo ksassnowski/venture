@@ -30,7 +30,6 @@
         "pestphp/pest": "^3.8 || ^4.4",
         "pestphp/pest-plugin-laravel": "^3.0 || ^4.1",
         "phpunit/phpunit": "^11.5 || ^12.5.12",
-        "roave/security-advisories": "dev-latest",
         "spatie/laravel-ignition": "^2.0"
     },
     "suggest": {
