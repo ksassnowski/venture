@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sassnowski\Venture;
 
+use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Queue\Job;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 
@@ -36,6 +37,13 @@ final class UnserializeJobExtractor implements JobExtractor
             return null;
         }
 
-        return $this->serializer->unserialize($payload['data']['command']);
+        $command = $payload['data']['command'];
+
+        if (!\str_starts_with($command, 'O:') && app()->bound(Encrypter::class)) {
+            /** @var string $command */
+            $command = app(Encrypter::class)->decrypt($command);
+        }
+
+        return $this->serializer->unserialize($command);
     }
 }
