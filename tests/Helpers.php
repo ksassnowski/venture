@@ -56,6 +56,7 @@ function createQueueJob(object $command, bool $failed = false, bool $released = 
         $jobMock->allows('payload')
             ->andReturns([
                 'data' => [
+                    'commandName' => $command::class,
                     'command' => \serialize($command),
                 ],
             ]);

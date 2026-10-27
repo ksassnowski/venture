@@ -24,6 +24,18 @@ final class UnserializeJobExtractor implements JobExtractor
 
     public function extractWorkflowJob(Job $queueJob): ?WorkflowableJob
     {
-        return $this->serializer->unserialize($queueJob->payload()['data']['command']);
+        $payload = $queueJob->payload();
+        $commandName = $payload['data']['commandName'] ?? null;
+
+        if (null === $commandName || !\class_exists($commandName)) {
+            return null;
+        }
+
+        if (!\is_a($commandName, WorkflowableJob::class, true)
+            && !\in_array(WorkflowStep::class, \class_uses_recursive($commandName), true)) {
+            return null;
+        }
+
+        return $this->serializer->unserialize($payload['data']['command']);
     }
 }
