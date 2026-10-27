@@ -11,7 +11,10 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Contracts\Encryption\Encrypter as EncrypterContract;
 use Illuminate\Contracts\Queue\Job;
+use Illuminate\Encryption\Encrypter;
 use Sassnowski\Venture\Serializer\DefaultSerializer;
 use Sassnowski\Venture\Serializer\WorkflowJobSerializer;
 use Sassnowski\Venture\UnserializeJobExtractor;
@@ -19,6 +22,8 @@ use Sassnowski\Venture\WorkflowStepAdapter;
 use Stubs\LegacyWorkflowJob;
 use Stubs\NonWorkflowJob;
 use Stubs\TestJob1;
+
+uses(TestCase::class);
 
 it('extracts a serialized workflow job from a Laravel queue job', function (): void {
     $workflowJob = new TestJob1();
@@ -58,6 +63,70 @@ it('extracts wrapped workflow steps', function (): void {
     $extractor = new UnserializeJobExtractor(new DefaultSerializer());
 
     expect($extractor->extractWorkflowJob($queueJob))->toEqual($workflowJob);
+});
+
+it('decrypts encrypted commands before unserializing them', function (): void {
+    $encrypter = new Encrypter(\str_repeat('a', 32), 'AES-256-CBC');
+    app()->instance(EncrypterContract::class, $encrypter);
+    $workflowJob = new TestJob1();
+    $queueJob = Mockery::mock(Job::class);
+    $queueJob->shouldReceive('payload')->andReturn([
+        'data' => [
+            'commandName' => TestJob1::class,
+            'command' => $encrypter->encrypt(\serialize($workflowJob)),
+        ],
+    ]);
+
+    $extractor = new UnserializeJobExtractor(new DefaultSerializer());
+
+    expect($extractor->extractWorkflowJob($queueJob))->toEqual($workflowJob);
+});
+
+it('does not decrypt unencrypted commands when an encrypter is available', function (): void {
+    $encrypter = new Encrypter(\str_repeat('a', 32), 'AES-256-CBC');
+    app()->instance(EncrypterContract::class, $encrypter);
+    $workflowJob = new TestJob1();
+    $queueJob = createQueueJob($workflowJob);
+    $extractor = new UnserializeJobExtractor(new DefaultSerializer());
+
+    expect($extractor->extractWorkflowJob($queueJob))->toEqual($workflowJob);
+});
+
+it('does not unserialize commands that cannot be decrypted', function (): void {
+    $encrypter = new Encrypter(\str_repeat('a', 32), 'AES-256-CBC');
+    app()->instance(EncrypterContract::class, $encrypter);
+    $queueJob = Mockery::mock(Job::class);
+    $queueJob->shouldReceive('payload')->andReturn([
+        'data' => [
+            'commandName' => TestJob1::class,
+            'command' => 'invalid encrypted payload',
+        ],
+    ]);
+    $serializer = Mockery::mock(WorkflowJobSerializer::class);
+    $serializer->shouldNotReceive('unserialize');
+    $extractor = new UnserializeJobExtractor($serializer);
+
+    expect(fn () => $extractor->extractWorkflowJob($queueJob))->toThrow(DecryptException::class);
+});
+
+it('does not decrypt or unserialize encrypted non-workflow jobs', function (): void {
+    $encrypter = Mockery::mock(EncrypterContract::class);
+    $encrypter->shouldNotReceive('decrypt');
+    app()->instance(EncrypterContract::class, $encrypter);
+
+    $queueJob = Mockery::mock(Job::class);
+    $queueJob->shouldReceive('payload')->andReturn([
+        'data' => [
+            'commandName' => NonWorkflowJob::class,
+            'command' => 'encrypted job',
+        ],
+    ]);
+    $serializer = Mockery::mock(WorkflowJobSerializer::class);
+    $serializer->shouldNotReceive('unserialize');
+
+    $extractor = new UnserializeJobExtractor($serializer);
+
+    expect($extractor->extractWorkflowJob($queueJob))->toBeNull();
 });
 
 it('ignores queue payloads without a resolvable command class', function (array $payload): void {
