@@ -32,6 +32,11 @@ class DefaultWorkflowState implements WorkflowState
                 ->lockForUpdate()
                 ->findOrFail($this->workflow->getKey(), ['finished_jobs', 'jobs_processed', 'jobs_failed']);
 
+            $attributes = $workflow->only(['finished_jobs', 'jobs_processed', 'jobs_failed']);
+
+            // Compare changes against the locked row instead of stale model attributes.
+            $this->workflow->forceFill($attributes)->syncOriginalAttributes(\array_keys($attributes));
+
             $step = $job->step();
 
             $this->workflow->update([
@@ -55,6 +60,11 @@ class DefaultWorkflowState implements WorkflowState
                 ->newQuery()
                 ->lockForUpdate()
                 ->findOrFail($this->workflow->getKey(), ['jobs_failed']);
+
+            $attributes = $workflow->only(['jobs_failed']);
+
+            // Compare changes against the locked row instead of stale model attributes.
+            $this->workflow->forceFill($attributes)->syncOriginalAttributes(\array_keys($attributes));
 
             $step = $job->step();
 
