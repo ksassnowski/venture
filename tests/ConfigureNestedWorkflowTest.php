@@ -21,9 +21,7 @@ use Stubs\WorkflowWithJob;
 uses(TestCase::class)->group('plugin');
 
 beforeEach(function (): void {
-    $this->listener = new ConfigureNestedWorkflow(
-        new FakeIDGenerator('::fake-id::'),
-    );
+    $this->listener = new ConfigureNestedWorkflow(new FakeIDGenerator('::fake-id::'));
     $this->definition = new WorkflowDefinition(new TestWorkflow());
 });
 

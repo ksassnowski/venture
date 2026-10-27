@@ -34,11 +34,7 @@ beforeEach(function (): void {
 });
 
 it('can run the then-callback of the workflow', function (): void {
-    $tester = new WorkflowTester(
-        new WorkflowWithCallbacks(
-            then: fn () => ++$_SERVER['__then.called'],
-        ),
-    );
+    $tester = new WorkflowTester(new WorkflowWithCallbacks(then: fn () => ++$_SERVER['__then.called']));
 
     $tester->runThenCallback();
 
@@ -46,11 +42,7 @@ it('can run the then-callback of the workflow', function (): void {
 });
 
 it('accepts callback to configure the workflow before calling the then-callback', function (): void {
-    $tester = new WorkflowTester(
-        new WorkflowWithCallbacks(
-            then: fn (Workflow $model) => $_SERVER['__workflow'] = $model,
-        ),
-    );
+    $tester = new WorkflowTester(new WorkflowWithCallbacks(then: fn (Workflow $model) => $_SERVER['__workflow'] = $model));
 
     $tester->runThenCallback(function (Workflow $workflow): void {
         $workflow->jobs_processed = 100;
@@ -60,11 +52,7 @@ it('accepts callback to configure the workflow before calling the then-callback'
 });
 
 it('can run the catch-callback of a workflow', function (): void {
-    $tester = new WorkflowTester(
-        new WorkflowWithCallbacks(
-            catch: fn () => ++$_SERVER['__catch.called'],
-        ),
-    );
+    $tester = new WorkflowTester(new WorkflowWithCallbacks(catch: fn () => ++$_SERVER['__catch.called']));
 
     $tester->runCatchCallback(new TestJob1(), new Exception());
 
@@ -72,11 +60,7 @@ it('can run the catch-callback of a workflow', function (): void {
 });
 
 it('can configure the workflow before calling the catch-callback', function (): void {
-    $tester = new WorkflowTester(
-        new WorkflowWithCallbacks(
-            catch: fn (Workflow $model) => $_SERVER['__workflow'] = $model,
-        ),
-    );
+    $tester = new WorkflowTester(new WorkflowWithCallbacks(catch: fn (Workflow $model) => $_SERVER['__workflow'] = $model));
 
     $tester->runCatchCallback(
         new TestJob1(),

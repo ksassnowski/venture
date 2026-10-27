@@ -22,9 +22,7 @@ use Stubs\TestWorkflow;
 
 beforeEach(function (): void {
     $this->definition = new WorkflowDefinition(new TestWorkflow());
-    $this->listener = new ConfigureNewWorkflowJob(
-        new FakeIDGenerator('::fake-id::'),
-    );
+    $this->listener = new ConfigureNewWorkflowJob(new FakeIDGenerator('::fake-id::'));
 });
 
 afterEach(function (): void {

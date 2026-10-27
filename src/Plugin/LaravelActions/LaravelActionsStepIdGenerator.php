@@ -18,9 +18,8 @@ use Sassnowski\Venture\StepIdGenerator;
 
 final class LaravelActionsStepIdGenerator implements StepIdGenerator
 {
-    public function __construct(
-        private readonly ClassNameStepIdGenerator $idGenerator,
-    ) {
+    public function __construct(private readonly ClassNameStepIdGenerator $idGenerator)
+    {
     }
 
     public function generateId(object $job): string
