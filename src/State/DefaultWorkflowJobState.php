@@ -116,11 +116,9 @@ class DefaultWorkflowJobState implements WorkflowJobState
 
     private function allDependenciesHaveFinished(): bool
     {
-        return \count(
-            \array_diff(
-                $this->job->step()->getDependencies(),
-                $this->job->workflow->finished_jobs,
-            ),
-        ) === 0;
+        return \count(\array_diff(
+            $this->job->step()->getDependencies(),
+            $this->job->workflow->finished_jobs,
+        ),) === 0;
     }
 }
