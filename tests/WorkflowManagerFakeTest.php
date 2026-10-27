@@ -215,13 +215,17 @@ test('assertStarted fails against multiple workflows of the same class', functio
 test('assertStarted passes if the callback returns true', function (): void {
     $this->managerFake->startWorkflow(new WorkflowWithParameter('::input::'));
 
-    $this->managerFake->assertStarted(fn (WorkflowWithParameter $workflow) => '::input::' === $workflow->something);
+    $this->managerFake->assertStarted(
+        fn (WorkflowWithParameter $workflow) => '::input::' === $workflow->something,
+    );
 });
 
 test('assertStarted fails if the callback returns false', function (): void {
     $this->managerFake->startWorkflow(new WorkflowWithParameter('::input::'));
 
-    $this->managerFake->assertStarted(fn (WorkflowWithParameter $workflow) => '::different::' === $workflow->something);
+    $this->managerFake->assertStarted(
+        fn (WorkflowWithParameter $workflow) => '::different::' === $workflow->something,
+    );
 })->throws(
     AssertionFailedError::class,
     'The expected workflow [Stubs\WorkflowWithParameter] was not started',
@@ -230,13 +234,17 @@ test('assertStarted fails if the callback returns false', function (): void {
 test('assertNotStarted passes if the callback returns false', function (): void {
     $this->managerFake->startWorkflow(new WorkflowWithParameter('::input::'));
 
-    $this->managerFake->assertNotStarted(fn (WorkflowWithParameter $workflow) => '::different::' === $workflow->something);
+    $this->managerFake->assertNotStarted(
+        fn (WorkflowWithParameter $workflow) => '::different::' === $workflow->something,
+    );
 });
 
 test('assertNotStartedFails fails if the callback returns true', function (): void {
     $this->managerFake->startWorkflow(new WorkflowWithParameter('::input::'));
 
-    $this->managerFake->assertNotStarted(fn (WorkflowWithParameter $workflow) => '::input::' === $workflow->something);
+    $this->managerFake->assertNotStarted(
+        fn (WorkflowWithParameter $workflow) => '::input::' === $workflow->something,
+    );
 })->throws(
     AssertionFailedError::class,
     'The unexpected [Stubs\WorkflowWithParameter] workflow was started',

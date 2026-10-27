@@ -46,7 +46,9 @@ class WorkflowManagerFake implements WorkflowManagerInterface
     ): Workflow {
         $pendingWorkflow = $abstractWorkflow->getDefinition();
 
-        [$workflow, $initialBatch] = $pendingWorkflow->build(\Closure::fromCallable([$abstractWorkflow, 'beforeCreate']));
+        [$workflow, $initialBatch] = $pendingWorkflow->build(
+            \Closure::fromCallable([$abstractWorkflow, 'beforeCreate']),
+        );
 
         $this->started[$abstractWorkflow::class][] = [
             'workflow' => $abstractWorkflow,

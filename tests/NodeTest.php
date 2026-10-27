@@ -65,7 +65,9 @@ it('can add dependent nodes', function (): void {
 
     expect($node)->getDependentJobs()->toBeEmpty();
 
-    $node->addDependent(new Node('::dependency-1::', $job = new TestJob2(), []));
+    $node->addDependent(
+        new Node('::dependency-1::', $job = new TestJob2(), []),
+    );
     expect($node)->getDependentJobs()->toEqual([$job]);
 });
 
@@ -118,7 +120,9 @@ it('is a leaf if it has not been namespaced and it has no dependents', function 
 it('is not a leaf if it has not been namespaced and it has dependents', function (): void {
     $node = new Node('::id::', new TestJob1(), []);
 
-    $node->addDependent(new Node('::dependency::', new TestJob2(), []));
+    $node->addDependent(
+        new Node('::dependency::', new TestJob2(), []),
+    );
 
     expect($node)->isLeaf()->toBeFalse();
 });

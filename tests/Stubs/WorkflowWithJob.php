@@ -20,6 +20,8 @@ class WorkflowWithJob extends AbstractWorkflow
 {
     public function definition(): WorkflowDefinition
     {
-        return $this->define()->addJob(new TestJobWithHandle());
+        return $this->define()->addJob(
+            new TestJobWithHandle(),
+        );
     }
 }
