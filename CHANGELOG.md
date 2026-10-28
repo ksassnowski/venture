@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.5.0](https://github.com/ksassnowski/venture/compare/v5.4.5...v5.5.0) (2026-10-28)
+
+
+### Features
+
+* type workflow callbacks with the configured workflow model ([2765f52](https://github.com/ksassnowski/venture/commit/2765f52f40fcae7c912dd769bb59af89d7ea9f60))
+
 ## [5.4.0](https://github.com/ksassnowski/venture/compare/v5.3.0...v5.4.0) (2025-08-05)
 
 
