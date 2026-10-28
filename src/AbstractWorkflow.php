@@ -18,8 +18,14 @@ use Sassnowski\Venture\Manager\WorkflowManagerInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Testing\WorkflowTester;
 
+/**
+ * @template TWorkflow of Workflow = Workflow
+ */
 abstract class AbstractWorkflow
 {
+    /**
+     * @var null|WorkflowDefinition<TWorkflow>
+     */
     private ?WorkflowDefinition $definition = null;
 
     public static function start(): Workflow
@@ -46,6 +52,9 @@ abstract class AbstractWorkflow
         return new WorkflowTester(new static(...$arguments));
     }
 
+    /**
+     * @return WorkflowDefinition<TWorkflow>
+     */
     final public function getDefinition(): WorkflowDefinition
     {
         if (null === $this->definition) {
@@ -55,10 +64,15 @@ abstract class AbstractWorkflow
         return $this->definition;
     }
 
+    /**
+     * @return WorkflowDefinition<TWorkflow>
+     */
     abstract public function definition(): WorkflowDefinition;
 
     /**
-     * @param \Closure(WorkflowDefinition): void $callback
+     * @param \Closure(WorkflowDefinition<TWorkflow>): void $callback
+     *
+     * @return $this
      */
     final public function tapDefinition(\Closure $callback): self
     {
@@ -86,6 +100,9 @@ abstract class AbstractWorkflow
         return $manager->startWorkflow($this, $connection);
     }
 
+    /**
+     * @return WorkflowDefinition<TWorkflow>
+     */
     protected function define(string $workflowName = ''): WorkflowDefinition
     {
         return new WorkflowDefinition($this, $workflowName);
