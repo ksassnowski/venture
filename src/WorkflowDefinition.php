@@ -31,6 +31,9 @@ use Sassnowski\Venture\Graph\DependencyGraph;
 use Sassnowski\Venture\Graph\StaticDependency;
 use Sassnowski\Venture\Models\Workflow;
 
+/**
+ * @template TWorkflow of Workflow = Workflow
+ */
 class WorkflowDefinition
 {
     use Conditionable;
@@ -55,6 +58,9 @@ class WorkflowDefinition
 
     protected ?string $queue = null;
 
+    /**
+     * @param AbstractWorkflow<TWorkflow> $workflow
+     */
     public function __construct(
         protected AbstractWorkflow $workflow,
         protected string $workflowName = '',
@@ -62,6 +68,9 @@ class WorkflowDefinition
         $this->graph = new DependencyGraph();
     }
 
+    /**
+     * @return $this
+     */
     public function allOnConnection(string $connection): self
     {
         $this->connection = $connection;
@@ -69,6 +78,9 @@ class WorkflowDefinition
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function allOnQueue(string $queue): self
     {
         $this->queue = $queue;
@@ -82,6 +94,8 @@ class WorkflowDefinition
      *
      * @throws DuplicateJobException
      * @throws InvalidJobException
+     *
+     * @return $this
      */
     public function addJob(
         object $job,
@@ -112,6 +126,8 @@ class WorkflowDefinition
      *
      * @throws DuplicateJobException
      * @throws InvalidJobException
+     *
+     * @return $this
      */
     public function addGatedJob(
         object $job,
@@ -133,6 +149,8 @@ class WorkflowDefinition
      *
      * @throws DuplicateJobException
      * @throws DuplicateWorkflowException
+     *
+     * @return $this
      */
     public function addWorkflow(AbstractWorkflow $workflow, array $dependencies = [], ?string $id = null): self
     {
@@ -173,6 +191,8 @@ class WorkflowDefinition
      * @param \Closure(mixed): (AbstractWorkflow|WorkflowableJob)  $factory
      * @param array<int, string>                                   $dependencies
      * @param Delay                                                $delay
+     *
+     * @return $this
      */
     public function each(
         array|Collection $collection,
@@ -218,7 +238,9 @@ class WorkflowDefinition
     }
 
     /**
-     * @param callable(Workflow): void $callback
+     * @param callable(TWorkflow): void $callback
+     *
+     * @return $this
      */
     public function then(callable $callback): self
     {
@@ -228,7 +250,9 @@ class WorkflowDefinition
     }
 
     /**
-     * @param callable(Workflow, WorkflowableJob, \Throwable): void $callback
+     * @param callable(TWorkflow, WorkflowableJob, \Throwable): void $callback
+     *
+     * @return $this
      */
     public function catch(callable $callback): self
     {

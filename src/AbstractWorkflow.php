@@ -18,6 +18,9 @@ use Sassnowski\Venture\Manager\WorkflowManagerInterface;
 use Sassnowski\Venture\Models\Workflow;
 use Sassnowski\Venture\Testing\WorkflowTester;
 
+/**
+ * @template TWorkflow of Workflow = Workflow
+ */
 abstract class AbstractWorkflow
 {
     private ?WorkflowDefinition $definition = null;
@@ -86,6 +89,9 @@ abstract class AbstractWorkflow
         return $manager->startWorkflow($this, $connection);
     }
 
+    /**
+     * @return WorkflowDefinition<TWorkflow>
+     */
     protected function define(string $workflowName = ''): WorkflowDefinition
     {
         return new WorkflowDefinition($this, $workflowName);
