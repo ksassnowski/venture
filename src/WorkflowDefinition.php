@@ -313,6 +313,9 @@ class WorkflowDefinition
         return $this->graph;
     }
 
+    /**
+     * @return AbstractWorkflow<TWorkflow>
+     */
     public function workflow(): AbstractWorkflow
     {
         return $this->workflow;
