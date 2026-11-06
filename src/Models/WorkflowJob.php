@@ -157,13 +157,45 @@ class WorkflowJob extends Model
 
     public function start(): void
     {
-        if ($this->isProcessing()) {
-            throw new JobAlreadyStartedException();
+        $attributes = $this->getConnection()->transaction(function (): ?array {
+            $job = $this->newQuery()->whereKey($this->getKey())->lockForUpdate()->firstOrFail();
+            $this->setRawAttributes($job->getAttributes(), true);
+
+            if ($this->isProcessing() || $this->isFinished()) {
+                throw new JobAlreadyStartedException();
+            }
+
+            if ($this->hasFailed()) {
+                return null;
+            }
+
+            $attributes = $this->only(['started_at', 'finished_at', 'failed_at', 'exception']);
+            $this->markAsProcessing();
+
+            return $attributes;
+        });
+
+        if (null === $attributes) {
+            $this->retry();
+
+            return;
         }
 
-        \dispatch($this->step());
+        try {
+            \dispatch($this->step());
+        } catch (\Throwable $exception) {
+            // Release the reservation only if execution has not already finished or failed.
+            $this->newQuery()
+                ->whereKey($this->getKey())
+                ->where('started_at', $this->getRawOriginal('started_at'))
+                ->whereNull('finished_at')
+                ->whereNull('failed_at')
+                ->update($attributes);
 
-        $this->markAsProcessing();
+            $this->refresh();
+
+            throw $exception;
+        }
     }
 
     public function retry(): void
