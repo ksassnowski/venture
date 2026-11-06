@@ -168,7 +168,10 @@ class WorkflowJob extends Model
     protected function dispatch(bool $retry = false): void
     {
         $attributes = $this->getConnection()->transaction(function () use ($retry): array {
-            $workflow = $this->workflow()->lockForUpdate()->firstOrFail();
+            $workflow = $this->workflow()
+                ->lockForUpdate()
+                ->firstOrFail();
+
             $job = $this->newQuery()
                 ->whereKey($this->getKey())
                 ->lockForUpdate()
@@ -204,7 +207,9 @@ class WorkflowJob extends Model
             \dispatch($this->step());
         } catch (\Throwable $exception) {
             $this->getConnection()->transaction(function () use ($attributes): void {
-                $workflow = $this->workflow()->lockForUpdate()->firstOrFail();
+                $workflow = $this->workflow()
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
                 // Restore the reservation only if execution has not already finished or failed.
                 $restored = $this->newQuery()
