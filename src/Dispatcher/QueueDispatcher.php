@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sassnowski\Venture\Dispatcher;
 
 use Illuminate\Support\Collection;
+use Sassnowski\Venture\Exceptions\JobAlreadyStartedException;
 use Sassnowski\Venture\Models\WorkflowJob;
 use Sassnowski\Venture\Venture;
 use Sassnowski\Venture\WorkflowableJob;
@@ -46,7 +47,15 @@ final class QueueDispatcher implements JobDispatcher
         self::getJobModels($stepIDs)
             ->each(fn (WorkflowJob $job) => $job->transition())
             ->filter(fn (WorkflowJob $job): bool => $job->canRun())
-            ->each(fn (WorkflowJob $job) => $job->start());
+            ->each(function (WorkflowJob $job): void {
+                try {
+                    $job->start();
+                } catch (JobAlreadyStartedException $exception) {
+                    if (!$job->isProcessing() && !$job->isFinished() && !$job->hasFailed()) {
+                        throw $exception;
+                    }
+                }
+            });
     }
 
     /**
