@@ -158,7 +158,11 @@ class WorkflowJob extends Model
     public function start(): void
     {
         $attributes = $this->getConnection()->transaction(function (): ?array {
-            $job = $this->newQuery()->whereKey($this->getKey())->lockForUpdate()->firstOrFail();
+            $job = $this->newQuery()
+                ->whereKey($this->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+
             $this->setRawAttributes($job->getAttributes(), true);
 
             if ($this->isProcessing() || $this->isFinished()) {
@@ -169,7 +173,13 @@ class WorkflowJob extends Model
                 return null;
             }
 
-            $attributes = $this->only(['started_at', 'finished_at', 'failed_at', 'exception']);
+            $attributes = $this->only([
+                'started_at',
+                'finished_at',
+                'failed_at',
+                'exception',
+            ]);
+
             $this->markAsProcessing();
 
             return $attributes;
