@@ -171,3 +171,28 @@ it('does not run jobs that are not dependent on the finished job, even if they c
 
     Bus::assertNotDispatched(TestJob3::class);
 });
+
+it('does not redispatch a dependent job selected by another completion handler', function (bool $failed): void {
+    $state = new FakeWorkflowJobState(canRun: true);
+    WorkflowStateStore::setupJobs([TestJob3::class => $state]);
+
+    createDefinition()
+        ->addJob($first = new TestJob1())
+        ->addJob($second = new TestJob2())
+        ->addJob(new TestJob3(), [TestJob1::class, TestJob2::class])
+        ->build();
+
+    $dispatcher = new QueueDispatcher();
+    $dispatcher->dispatchDependentJobs($first);
+
+    if ($failed) {
+        $state->markAsFailed(new RuntimeException('Execution failed.'));
+    }
+
+    $dispatcher->dispatchDependentJobs($second);
+
+    Bus::assertDispatchedTimes(TestJob3::class, 1);
+})->with([
+    'already queued' => [false],
+    'failed before the competing dispatch' => [true],
+]);

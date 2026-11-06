@@ -51,7 +51,7 @@ final class QueueDispatcher implements JobDispatcher
                 try {
                     $job->start();
                 } catch (JobAlreadyStartedException $exception) {
-                    if (!$job->isProcessing() && !$job->isFinished()) {
+                    if (!$job->isProcessing() && !$job->isFinished() && !$job->hasFailed()) {
                         throw $exception;
                     }
                 }

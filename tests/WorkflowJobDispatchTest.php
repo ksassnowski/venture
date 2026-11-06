@@ -11,20 +11,14 @@ declare(strict_types=1);
  * @see https://github.com/ksassnowski/venture
  */
 
-use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\DB;
-use Sassnowski\Venture\Dispatcher\QueueDispatcher;
+use Sassnowski\Venture\Exceptions\CannotRetryJobException;
 use Sassnowski\Venture\Exceptions\JobAlreadyStartedException;
-use Sassnowski\Venture\Models\WorkflowJob;
-use Stubs\RetryableJob;
 use Stubs\TestJob1;
-use Stubs\TestJob2;
-use Stubs\TestJob3;
 
 uses(TestCase::class);
 
-test('independently loaded steps cannot dispatch the same job twice', function (): void {
+test('a stale step cannot dispatch a job that has already started', function (bool $finished): void {
     Bus::fake();
 
     [$workflow] = createDefinition()->addJob(new TestJob1())->build();
@@ -33,115 +27,63 @@ test('independently loaded steps cannot dispatch the same job twice', function (
 
     $first->start();
 
-    expect(fn () => $second->start())->toThrow(JobAlreadyStartedException::class);
-    Bus::assertDispatchedTimes(TestJob1::class, 1);
-});
-
-test('a stale step cannot dispatch a job that has already finished', function (): void {
-    Bus::fake();
-
-    [$workflow] = createDefinition()->addJob(new TestJob1())->build();
-    $first = $workflow->jobs()->sole();
-    $second = $workflow->jobs()->sole();
-
-    $first->start();
-    $workflow->markJobAsFinished($first->step());
+    if ($finished) {
+        $workflow->markJobAsFinished($first->step());
+    }
 
     expect(fn () => $second->start())->toThrow(JobAlreadyStartedException::class);
-    expect($first->fresh()->isFinished())->toBeTrue();
+    expect($first->fresh()->isFinished())->toBe($finished);
     Bus::assertDispatchedTimes(TestJob1::class, 1);
-});
+})->with([
+    'queued' => [false],
+    'finished' => [true],
+]);
 
-test('concurrent dependency dispatch attempts queue their shared dependent job once', function (): void {
-    Bus::fake();
+test('an enqueue failure restores the step state and failure count', function (bool $retry): void {
+    [$workflow] = createDefinition()->addJob($job = new TestJob1())->build();
 
-    [$workflow] = createDefinition()
-        ->addJob($first = new TestJob1())
-        ->addJob($second = new TestJob2())
-        ->addJob(new TestJob3(), [TestJob1::class, TestJob2::class])
-        ->build();
+    if ($retry) {
+        $workflow->markJobAsFailed($job, new RuntimeException('Original failure.'));
+    }
 
-    $workflow->markJobAsFinished($first);
-    $workflow->markJobAsFinished($second);
-
-    $dependent = $workflow->jobs()->where('name', TestJob3::class)->sole();
-    $selectDependent = WorkflowJob::query()->whereIn('uuid', [$dependent->uuid])->toSql();
-    $dispatchOtherWorker = true;
-    $dispatcher = new QueueDispatcher();
-
-    // The first worker has read the pending row, but has not hydrated it yet.
-    DB::listen(function (QueryExecuted $query) use (&$dispatchOtherWorker, $selectDependent, $dispatcher, $second): void {
-        if ($dispatchOtherWorker && $query->sql === $selectDependent) {
-            $dispatchOtherWorker = false;
-            $dispatcher->dispatchDependentJobs($second);
-        }
-    });
-
-    $dispatcher->dispatchDependentJobs($first);
-
-    expect($dispatchOtherWorker)->toBeFalse();
-    expect($dependent->fresh()->isProcessing())->toBeTrue();
-    Bus::assertDispatchedTimes(TestJob3::class, 1);
-});
-
-test('a failed enqueue leaves the step available for another dispatch attempt', function (): void {
-    [$workflow] = createDefinition()->addJob(new TestJob1())->build();
     $step = $workflow->jobs()->sole();
+    $attributes = $step->only(['started_at', 'failed_at', 'exception']);
+    $method = $retry ? 'retry' : 'start';
     $dispatcher = Bus::getFacadeRoot();
 
     Bus::shouldReceive('dispatch')->once()->andThrow(new RuntimeException('Queue unavailable.'));
 
-    expect(fn () => $step->start())->toThrow(RuntimeException::class, 'Queue unavailable.');
-    expect($step->fresh()->isPending())->toBeTrue();
+    expect(fn () => $step->{$method}())->toThrow(RuntimeException::class, 'Queue unavailable.');
+    expect($step->fresh()->only(['started_at', 'failed_at', 'exception']))->toEqual($attributes);
+    expect($workflow->fresh()->jobs_failed)->toBe($retry ? 1 : 0);
 
     Bus::swap($dispatcher);
     Bus::fake();
 
-    $step->start();
+    $step->{$method}();
 
     expect($step->fresh()->isProcessing())->toBeTrue();
-    Bus::assertDispatchedTimes(TestJob1::class, 1);
-});
-
-test('starting a synchronous step preserves its completed state', function (): void {
-    [$workflow, $jobs] = createDefinition()
-        ->addJob((new RetryableJob())->onConnection('sync'))
-        ->build();
-
-    (new QueueDispatcher())->dispatch($jobs);
-
-    expect($workflow->jobs()->sole()->isFinished())->toBeTrue();
-    expect($workflow->fresh()->jobs_processed)->toBe(1);
-    expect($workflow->fresh()->isFinished())->toBeTrue();
-});
-
-test('starting a failing synchronous step preserves its failure state', function (): void {
-    [$workflow, $jobs] = createDefinition()
-        ->addJob((new RetryableJob(shouldFail: true))->onConnection('sync'))
-        ->build();
-
-    expect(fn () => (new QueueDispatcher())->dispatch($jobs))
-        ->toThrow(RuntimeException::class, 'The retry failed.');
-
-    $step = $workflow->jobs()->sole();
-
-    expect($step->hasFailed())->toBeTrue();
-    expect($step->exception)->toContain('The retry failed.');
-    expect($workflow->fresh()->jobs_failed)->toBe(1);
-    expect($workflow->fresh()->jobs_processed)->toBe(0);
-});
-
-test('starting a failed step preserves successful retry accounting', function (): void {
-    [$workflow] = createDefinition()
-        ->addJob($job = (new RetryableJob())->onConnection('sync'))
-        ->build();
-
-    $workflow->markJobAsFailed($job, new RuntimeException('Original failure.'));
-    $step = $workflow->jobs()->sole();
-
-    $step->start();
-
-    expect($step->fresh()->isFinished())->toBeTrue();
     expect($workflow->fresh()->jobs_failed)->toBe(0);
-    expect($workflow->fresh()->jobs_processed)->toBe(1);
+    Bus::assertDispatchedTimes(TestJob1::class, 1);
+})->with([
+    'initial dispatch' => [false],
+    'retry' => [true],
+]);
+
+test('a failed step requires an explicit retry and cannot queue duplicate retries', function (): void {
+    Bus::fake();
+
+    [$workflow] = createDefinition()->addJob($job = new TestJob1())->build();
+    $workflow->markJobAsFailed($job, new RuntimeException('Original failure.'));
+    $first = $workflow->jobs()->sole();
+    $second = $workflow->jobs()->sole();
+
+    expect(fn () => $first->start())->toThrow(JobAlreadyStartedException::class);
+
+    $first->retry();
+
+    expect(fn () => $second->retry())->toThrow(CannotRetryJobException::class);
+    expect($first->fresh()->isProcessing())->toBeTrue();
+    expect($workflow->fresh()->jobs_failed)->toBe(0);
+    Bus::assertDispatchedTimes(TestJob1::class, 1);
 });

@@ -157,7 +157,18 @@ class WorkflowJob extends Model
 
     public function start(): void
     {
-        $attributes = $this->getConnection()->transaction(function (): ?array {
+        $this->dispatch();
+    }
+
+    public function retry(): void
+    {
+        $this->dispatch(retry: true);
+    }
+
+    protected function dispatch(bool $retry = false): void
+    {
+        $attributes = $this->getConnection()->transaction(function () use ($retry): array {
+            $workflow = $this->workflow()->lockForUpdate()->firstOrFail();
             $job = $this->newQuery()
                 ->whereKey($this->getKey())
                 ->lockForUpdate()
@@ -165,12 +176,12 @@ class WorkflowJob extends Model
 
             $this->setRawAttributes($job->getAttributes(), true);
 
-            if ($this->isProcessing() || $this->isFinished()) {
-                throw new JobAlreadyStartedException();
+            if ($retry && !$this->hasFailed()) {
+                throw new CannotRetryJobException();
             }
 
-            if ($this->hasFailed()) {
-                return null;
+            if ($this->isProcessing() || $this->isFinished() || (!$retry && $this->hasFailed())) {
+                throw new JobAlreadyStartedException();
             }
 
             $attributes = $this->only([
@@ -180,41 +191,38 @@ class WorkflowJob extends Model
                 'exception',
             ]);
 
+            if (null !== $attributes['failed_at']) {
+                $workflow->decrement('jobs_failed');
+            }
+
             $this->markAsProcessing();
 
             return $attributes;
-        });
-
-        if (null === $attributes) {
-            $this->retry();
-
-            return;
-        }
+        }, 5);
 
         try {
             \dispatch($this->step());
         } catch (\Throwable $exception) {
-            // Release the reservation only if execution has not already finished or failed.
-            $this->newQuery()
-                ->whereKey($this->getKey())
-                ->where('started_at', $this->getRawOriginal('started_at'))
-                ->whereNull('finished_at')
-                ->whereNull('failed_at')
-                ->update($attributes);
+            $this->getConnection()->transaction(function () use ($attributes): void {
+                $workflow = $this->workflow()->lockForUpdate()->firstOrFail();
+
+                // Restore the reservation only if execution has not already finished or failed.
+                $restored = $this->newQuery()
+                    ->whereKey($this->getKey())
+                    ->where('started_at', $this->getRawOriginal('started_at'))
+                    ->whereNull('finished_at')
+                    ->whereNull('failed_at')
+                    ->update($attributes);
+
+                if ($restored && null !== $attributes['failed_at']) {
+                    $workflow->increment('jobs_failed');
+                }
+            }, 5);
 
             $this->refresh();
 
             throw $exception;
         }
-    }
-
-    public function retry(): void
-    {
-        if (!$this->hasFailed()) {
-            throw new CannotRetryJobException();
-        }
-
-        \dispatch($this->step());
     }
 
     protected function getState(): WorkflowJobState
