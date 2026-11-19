@@ -261,15 +261,15 @@ final class WorkflowTester
     private static function formatAssertErrorMessage(string $message, mixed $expected, mixed $actual): string
     {
         $template = <<<'TEXT'
-%s
+            %s
 
-Expected
-%s
+            Expected
+            %s
 
-Actual
-%s
+            Actual
+            %s
 
-TEXT;
+            TEXT;
 
         return \sprintf(
             $template,
