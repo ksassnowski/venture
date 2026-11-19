@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0",
+        "php": "~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0 || ~8.6.0",
         "ext-json": "*",
         "illuminate/bus": "^11.0 || ^12.0 || ^13.0",
         "illuminate/container": "^11.0 || ^12.0 || ^13.0",
@@ -27,9 +27,9 @@
         "lorisleiva/laravel-actions": "^2.5.1",
         "mockery/mockery": "^1.5.1",
         "orchestra/testbench": "^8.0 || ^9.0 || ^10.0 || ^11.0",
-        "pestphp/pest": "^3.8 || ^4.4",
-        "pestphp/pest-plugin-laravel": "^3.0 || ^4.1",
-        "phpunit/phpunit": "^11.5 || ^12.5.12",
+        "pestphp/pest": "^3.8 || ^4.4 || ^5.0",
+        "pestphp/pest-plugin-laravel": "^3.0 || ^4.1 || ^5.0",
+        "phpunit/phpunit": "^11.5 || ^12.5.12 || ^13.4",
         "spatie/laravel-ignition": "^2.0"
     },
     "suggest": {
